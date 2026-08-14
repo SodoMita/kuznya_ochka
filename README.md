@@ -1,4 +1,4 @@
-# kuznya_ochka — FORGE//ZERO
+# КУЗНЯ//ОЧКА — FORGE//ZERO
 
 Robot card tower defense ("forge of points"). The whole game ships as a **single static `index.html`** —
 open it in any browser and play. No server, no build step required to play.
