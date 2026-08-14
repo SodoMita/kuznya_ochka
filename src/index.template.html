@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>FORGE//ZERO — Autonomous Salvage Front</title>
+<style>
+:root{
+  --bg:#12171a; --panel:#1a2226; --panel2:#222d33; --line:#35424a; --line2:#2a353c;
+  --ink:#e9e4d6; --dim:#8fa0a6; --amber:#ffa02f; --teal:#3ec9b0; --red:#e5484d;
+  --copper:#e0854e; --steel:#9fb6c9; --gold:#ffd23f;
+  --disp:Impact,Haettenschweiler,'Franklin Gothic Bold','Arial Narrow Bold',sans-serif;
+  --mono:ui-monospace,'Cascadia Mono','JetBrains Mono',Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--mono)}
+button{font-family:var(--mono);color:var(--ink);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#app{width:100vw;height:100dvh;max-width:980px;margin:auto;display:grid;grid-template-rows:42px minmax(0,1fr) 142px;position:relative;background:
+  radial-gradient(120% 90% at 50% -10%,#1b252b 0%,var(--bg) 55%),var(--bg)}
+/* ---------- HUD ---------- */
+#hud{display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid var(--line);background:linear-gradient(#1e282e,#171f24)}
+#brand{font-family:var(--disp);font-size:19px;letter-spacing:.5px;color:var(--amber);line-height:1;white-space:nowrap}
+#brand em{font-style:normal;color:var(--teal)}
+#brand span{display:block;font-family:var(--mono);font-size:7px;letter-spacing:2.5px;color:var(--dim)}
+#chips{display:flex;gap:5px;flex:1;justify-content:center;min-width:0}
+.chip{display:flex;align-items:baseline;gap:4px;padding:3px 7px;border:1px solid var(--line);background:#151d21;min-width:0}
+.chip b{font-size:12px;font-weight:700;white-space:nowrap}
+.chip i{font-style:normal;font-size:7px;letter-spacing:1px;color:var(--dim)}
+.chip.fe b{color:var(--copper)}.chip.cu b{color:var(--amber)}.chip.si b{color:var(--steel)}
+.chip.pw b{color:var(--gold)}.chip.core b{color:var(--teal)}.chip.wv b{color:var(--ink)}
+#hbtns{display:flex;gap:4px}
+#hbtns button{border:1px solid var(--line);background:var(--panel2);padding:5px 8px;font-size:9px;letter-spacing:1px;cursor:pointer;transition:border-color .15s,background .15s}
+#hbtns button:hover{border-color:var(--amber);background:#2a353c}
+/* ---------- STAGE ---------- */
+#stageWrap{position:relative;min-height:0;overflow:hidden;border-bottom:1px solid var(--line)}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+#stTop{position:absolute;left:10px;top:8px;pointer-events:none}
+#phaseBig{font-family:var(--disp);font-size:21px;letter-spacing:1px;color:var(--amber);line-height:1;text-shadow:0 2px 0 #0009}
+#phaseBig.war{color:var(--red)}
+#phaseSub{font-size:9px;color:var(--dim);letter-spacing:1px;margin-top:3px}
+#stInfo{position:absolute;right:10px;top:8px;text-align:right;pointer-events:none}
+#stInfo b{display:block;font-family:var(--disp);font-size:12px;letter-spacing:1px;color:var(--ink)}
+#stInfo span{font-size:8px;color:var(--dim);letter-spacing:1px}
+#banner{position:absolute;left:0;right:0;top:34%;text-align:center;font-family:var(--disp);font-size:34px;letter-spacing:3px;color:var(--ink);pointer-events:none;opacity:0;text-shadow:0 3px 0 #000a,0 0 26px #ffa02f55}
+#banner small{display:block;font-family:var(--mono);font-size:9px;letter-spacing:4px;color:var(--amber);margin-top:4px}
+#banner.show{animation:ban 1.7s ease-out forwards}
+@keyframes ban{0%{opacity:0;transform:translateY(14px) scaleX(.9)}12%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
+#toast{position:absolute;left:50%;bottom:30px;transform:translateX(-50%) translateY(6px);background:#2a353cf0;border:1px solid var(--line);border-left:3px solid var(--teal);padding:6px 12px;font-size:9px;letter-spacing:1px;color:var(--ink);opacity:0;transition:.2s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%)}
+#hint{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);font-size:8px;letter-spacing:2px;color:#697a80;pointer-events:none}
+#abils{position:absolute;left:8px;bottom:8px;display:flex;gap:5px;z-index:5}
+#abils button{border:1px solid #7a5b22;background:linear-gradient(rgba(44,36,16,.94),rgba(30,24,10,.94));color:var(--gold);font-family:var(--disp);font-size:12px;letter-spacing:1px;padding:6px 9px 5px;cursor:pointer;min-width:70px;transition:border-color .15s,filter .15s,transform .06s}
+#abils button:hover{border-color:var(--gold);filter:brightness(1.25)}
+#abils button:active{transform:translateY(1px)}
+#abils button small{display:block;font-family:var(--mono);font-size:7px;color:#b39a55;letter-spacing:.5px;margin-top:2px}
+#abils button.cooling{opacity:.45;filter:grayscale(.7)}
+#abils button.ready{animation:hot 1.6s infinite}
+/* ---------- DECK ---------- */
+#deck{display:grid;grid-template-areas:"L C R";grid-template-columns:150px minmax(0,1fr) 186px;gap:7px;padding:7px;background:linear-gradient(#171f24,#131a1e);min-height:0}
+#deckL{grid-area:L;display:flex;flex-direction:column;gap:5px;min-height:0}
+#cards{grid-area:C;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:5px;min-height:0}
+#deckR{grid-area:R;display:flex;flex-direction:column;min-height:0}
+#startBtn{border:1px solid var(--amber);background:linear-gradient(#ffb648,#e08a1e);color:#221503;font-family:var(--disp);font-size:16px;letter-spacing:1px;padding:6px 4px 5px;cursor:pointer;line-height:1;transition:filter .12s,transform .06s}
+#startBtn:hover{filter:brightness(1.1)}
+#startBtn:active{transform:translateY(1px)}
+#startBtn.hot{animation:hot 1s infinite}
+@keyframes hot{50%{filter:brightness(1.25)}}
+#startBtn div{font-family:var(--mono);font-size:8px;letter-spacing:1px;margin-top:3px;color:#4a3305}
+#startBtn.armed{background:linear-gradient(#3a4a52,#2b383f);border-color:var(--line);color:var(--dim)}
+#timebar{height:5px;background:#0e1417;border:1px solid var(--line2)}
+#timefill{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--teal),var(--amber));transition:width .2s linear}
+.sq{border:1px solid var(--line);background:var(--panel2);padding:5px 4px;font-size:9px;letter-spacing:1px;cursor:pointer;transition:border-color .12s,background .12s;min-height:27px}
+.sq:hover{border-color:var(--teal);background:#2a353c}
+.sq.warn:hover{border-color:var(--red)}
+.sq.on{border-color:var(--teal);color:var(--teal)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.spd{display:grid;grid-template-columns:34px 1fr 34px;gap:4px}
+.spd button{border:1px solid var(--line);background:var(--panel2);cursor:pointer;font-size:11px;padding:4px 0;transition:border-color .12s}
+.spd button:hover{border-color:var(--gold)}
+#spdVal{color:var(--gold);font-weight:700;font-size:10px}
+/* cards */
+.card{position:relative;border:1px solid var(--line);background:linear-gradient(#1c252b,#161e22);padding:5px 6px;cursor:pointer;display:flex;flex-direction:column;min-width:0;overflow:hidden;transition:border-color .12s,transform .12s,box-shadow .12s}
+.card:hover{border-color:var(--amber);transform:translateY(-2px);box-shadow:0 4px 14px #0008}
+.card.sel{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal),0 0 12px #3ec9b033}
+.card.broke{opacity:.45}
+.card .hd{display:flex;align-items:center;gap:5px;min-width:0}
+.card svg{flex:0 0 15px;height:15px}
+.card strong{font-family:var(--disp);font-size:10px;letter-spacing:.3px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400}
+.card .key{margin-left:auto;font-size:7px;color:var(--dim);border:1px solid var(--line2);padding:1px 3px;flex:0 0 auto}
+.card p{margin:3px 0 0;font-size:8px;line-height:1.3;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .cst{margin-top:auto;padding-top:3px;font-size:7px;font-weight:700;letter-spacing:.2px;white-space:nowrap}
+.cst .fe{color:var(--copper)}.cst .cu{color:var(--amber)}.cst .si{color:var(--steel)}
+.card .cst span+span{margin-left:5px}
+.card .rank{position:absolute;right:4px;bottom:3px;font-size:7px;color:var(--teal);letter-spacing:1px}
+/* unit panel */
+#unitBox{border:1px solid var(--line);background:var(--panel);padding:6px;flex:1;display:flex;flex-direction:column;gap:4px;min-height:0}
+#unitHead{font-family:var(--disp);font-size:13px;letter-spacing:.5px;color:var(--teal);line-height:1.1}
+#unitStats{font-size:8px;color:var(--dim);letter-spacing:.4px;line-height:1.4}
+#upBtn{border-color:#7a5b22;background:linear-gradient(#3a2f14,#2c2410);color:var(--gold)}
+#upBtn:hover{border-color:var(--gold)}
+#upBtn small{display:block;font-size:7px;color:#b39a55;margin-top:2px;letter-spacing:.3px}
+#tgtRow{display:none;grid-template-columns:repeat(6,1fr);gap:3px}
+#tgtRow button{border:1px solid var(--line2);background:#161e22;color:var(--dim);font-size:7px;letter-spacing:.5px;padding:3px 0;cursor:pointer;transition:border-color .12s,color .12s,background .12s}
+#tgtRow button:hover{border-color:var(--teal);color:var(--ink)}
+#tgtRow button.on{border-color:var(--teal);color:var(--teal);background:#12312c}
+#timefill.low{background:linear-gradient(90deg,#e5484d,#ffa02f);animation:hot .5s infinite}
+/* ---------- MODALS ---------- */
+.modal{position:absolute;inset:0;background:#0b0f11ec;z-index:40;display:none;align-items:center;justify-content:center;padding:14px}
+.modal.open{display:flex}
+.modal.open .panel{animation:pop .18s ease-out}
+@keyframes pop{from{transform:scale(.96) translateY(10px);opacity:.3}}
+.panel{width:min(560px,100%);max-height:100%;border:1px solid var(--line);background:linear-gradient(#1a2329,#141c20);padding:14px;overflow:auto;box-shadow:0 20px 60px #000c}
+.panel h2{font-family:var(--disp);font-size:22px;letter-spacing:1.5px;color:var(--amber);margin:0 0 2px;font-weight:400}
+.panel .sub{font-size:8px;letter-spacing:3px;color:var(--dim);margin-bottom:10px}
+.panel p{font-size:10px;color:#aeb9bd;line-height:1.55}
+.close{float:right;border:1px solid var(--line);background:var(--panel2);padding:4px 9px;cursor:pointer;font-size:9px;letter-spacing:1px}
+.close:hover{border-color:var(--red);color:var(--red)}
+#offers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.offer{border:1px solid var(--line);background:#151d21;padding:9px 8px;cursor:pointer;transition:transform .12s,border-color .12s;position:relative}
+.offer:hover{transform:translateY(-3px)}
+.offer .rar{font-size:7px;letter-spacing:2px;padding:2px 5px;display:inline-block;margin-bottom:6px}
+.rar.r0{color:var(--steel);border:1px solid var(--steel)}
+.rar.r1{color:var(--teal);border:1px solid var(--teal)}
+.rar.r2{color:var(--amber);border:1px solid var(--amber)}
+.offer:hover.rarwrap, .offer:hover{border-color:var(--amber)}
+.offer b{display:block;font-family:var(--disp);font-size:14px;letter-spacing:.5px;font-weight:400;color:var(--ink);margin:2px 0 4px}
+.offer p{font-size:8px;margin:0;color:var(--dim);line-height:1.4}
+.offer .pick{margin-top:7px;font-size:7px;letter-spacing:2px;color:var(--amber);opacity:0;transition:.15s}
+.offer:hover .pick{opacity:1}
+#worldCv{width:100%;height:280px;display:block;border:1px solid var(--line2);background:#0e1417;cursor:pointer}
+#nodeInfo{font-size:9px;color:var(--dim);letter-spacing:.5px;margin-top:7px;min-height:14px}
+table.bal{border-collapse:collapse;width:100%;font-size:9px;margin:6px 0}
+table.bal td{border:1px solid var(--line2);padding:4px 6px;color:#aeb9bd}
+table.bal td:first-child{color:var(--teal);white-space:nowrap}
+h3.sec{font-family:var(--disp);font-size:13px;letter-spacing:1px;color:var(--teal);margin:12px 0 2px;font-weight:400}
+.endbtns{display:flex;gap:8px;margin-top:12px}
+.endbtns button{flex:1;border:1px solid var(--amber);background:linear-gradient(#ffb648,#e08a1e);color:#221503;font-family:var(--disp);font-size:15px;letter-spacing:1px;padding:9px;cursor:pointer}
+.endbtns button.ghost{background:var(--panel2);border-color:var(--line);color:var(--ink)}
+kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
+/* ---------- PORTRAIT ---------- */
+@media (max-width:560px){
+  #app{grid-template-rows:40px minmax(0,1fr) 218px}
+  #brand{font-size:15px}#brand span{display:none}
+  .chip{padding:2px 4px}.chip b{font-size:10px}.chip i{display:none}
+  #hbtns button{padding:4px 6px;font-size:8px}
+  #deck{grid-template-areas:"L C" "L R";grid-template-columns:128px minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:5px;padding:5px}
+  #cards{grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr}
+  #deckR{flex-direction:row;gap:5px;align-items:stretch}
+  #unitBox{flex:1;padding:5px;gap:3px}
+  #unitStats{display:none}
+  #phaseBig{font-size:16px}
+  #banner{font-size:24px}
+  #offers{grid-template-columns:1fr}
+}
+@media (max-height:430px) and (min-width:561px){
+  #app{grid-template-rows:38px minmax(0,1fr) 116px}
+  #deck{padding:5px;gap:5px}
+  .card p{display:none}
+  #unitStats{display:none}
+}
+@media (min-width:561px) and (max-width:700px){
+  #app{grid-template-rows:42px minmax(0,1fr) 128px}
+  #deck{grid-template-columns:146px minmax(0,1fr) 168px;gap:5px;padding:5px}
+  .card p{display:none}
+  #brand span{display:none}
+  .chip i{display:none}
+}
+</style>
+</head>
+<body>
+<main id="app">
+  <header id="hud">
+    <div id="brand">FORGE<em>//</em>ZERO<span>AUTONOMOUS SALVAGE FRONT</span></div>
+    <div id="chips">
+      <div class="chip fe"><b id="vFe">120</b><i>IRON</i></div>
+      <div class="chip cu"><b id="vCu">65</b><i>COPPER</i></div>
+      <div class="chip si"><b id="vSi">36</b><i>SILICON</i></div>
+      <div class="chip pw"><b id="vW">0/10</b><i>GRID</i></div>
+      <div class="chip core"><b id="vCore">20</b><i>CORE</i></div>
+      <div class="chip wv"><b id="vWave">0/12</b><i>WAVE</i></div>
+    </div>
+    <div id="hbtns">
+      <button id="mapBtn" title="World route">MAP</button>
+      <button id="sndBtn" title="Sound">SND</button>
+      <button id="helpBtn" title="Field manual">?</button>
+    </div>
+  </header>
+  <section id="stageWrap">
+    <canvas id="cv"></canvas>
+    <div id="stTop"><div id="phaseBig">FABRICATION</div><div id="phaseSub">window 18.0s — build, refine, prepare</div></div>
+    <div id="stInfo"><b id="sectorName">SECTOR 01 · RUST BASIN</b><span id="sectorMix">SALVAGE Fe-heavy</span></div>
+    <div id="banner"></div>
+    <div id="toast"></div>
+    <div id="hint">SELECT BLUEPRINT [1-6] · DRAG &amp; RELEASE TO DEPLOY — INVALID SPOTS SNAP TO NEAREST FOUNDATION · [SPACE] LAUNCH</div>
+    <div id="abils">
+      <button id="abilSurge" title="All units +50% fire rate for 8s — costs 40 Fe">SURGE<small id="surgeCd">READY · 40Fe</small></button>
+      <button id="abilWeld" title="Restore 3 core integrity — costs 30 Fe 15 Cu">WELD<small id="weldCd">READY · 30Fe 15Cu</small></button>
+    </div>
+  </section>
+  <section id="deck">
+    <div id="deckL">
+      <button id="startBtn">START WAVE<div id="startSub">AUTO-LAUNCH 18.0s</div></button>
+      <div id="timebar"><i id="timefill"></i></div>
+      <div class="row2">
+        <button id="modeBtn" class="sq" title="Salvage doctrine (M)">DOCTRINE: LOOT</button>
+        <button id="pauseBtn" class="sq" title="Pause (P)">❚❚ PAUSE</button>
+      </div>
+      <div class="spd">
+        <button id="spdDn" title="Slower (-)">–</button>
+        <button id="spdVal" title="Toggle speed">1×</button>
+        <button id="spdUp" title="Faster (+)">+</button>
+      </div>
+    </div>
+    <div id="cards"></div>
+    <div id="deckR">
+      <div id="unitBox">
+        <div id="unitHead">NO UNIT SELECTED</div>
+        <div id="unitStats">tap near a unit — nearest one is grabbed</div>
+        <div id="tgtRow">
+          <button data-tgt="first" title="furthest along route">1ST</button>
+          <button data-tgt="last" title="closest to your gate">LST</button>
+          <button data-tgt="strong" title="highest hull">MAX</button>
+          <button data-tgt="weak" title="lowest hull">MIN</button>
+          <button data-tgt="near" title="nearest unit">NEAR</button>
+          <button data-tgt="far" title="farthest unit">FAR</button>
+        </div>
+        <div class="row2">
+          <button id="upBtn" class="sq">UPGRADE<small id="upCost">—</small></button>
+          <button id="recBtn" class="sq warn">RECYCLE<small id="recVal" style="display:block;font-size:7px;color:#8f9aa0;margin-top:2px">—</small></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="modal" id="draftModal">
+    <div class="panel">
+      <button class="close" data-close="draftModal">LATER</button>
+      <h2>SALVAGE CACHE RECOVERED</h2>
+      <div class="sub">CHOOSE ONE COMPONENT — FABRICATION CLOCK IS HELD</div>
+      <div id="offers"></div>
+    </div>
+  </div>
+  <div class="modal" id="mapModal">
+    <div class="panel">
+      <button class="close" data-close="mapModal">CLOSE</button>
+      <h2>WORLD ROUTE</h2>
+      <div class="sub">12 PROCEDURAL SECTORS · CLEAR WAVE 12 TO OPEN ADJACENT ROUTES</div>
+      <canvas id="worldCv"></canvas>
+      <div id="nodeInfo">select a sector to inspect · bars show local salvage mix (Fe/Cu/Si)</div>
+    </div>
+  </div>
+  <div class="modal" id="helpModal">
+    <div class="panel">
+      <button class="close" data-close="helpModal">CLOSE</button>
+      <h2>FIELD MANUAL</h2>
+      <div class="sub">ECONOMY · DOCTRINE · BALANCE LEDGER</div>
+      <h3 class="sec">OBJECTIVE</h3>
+      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. Six blueprints, nine hostile classes, eighteen relics, two field abilities. Survive wave 12 to clear a sector and open the world route.</p>
+      <h3 class="sec">SALVAGE DOCTRINES [M]</h3>
+      <p><b style="color:var(--copper)">LOOT</b> — Harvesters fire normally; every wreck drops base salvage.<br>
+      <b style="color:var(--teal)">CAPTURE</b> — Harvesters lock a tractor beam on units inside the <b style="color:var(--teal)">teal 30% zone</b> shown on every hull bar. The beam channels just 0.85s, slows the victim 55%, and rasps at 35% of Harvester DPS. While a target is beamed, <b style="color:var(--teal)">allied units hold fire on it</b> whenever another target is in range, and the beam tolerates integrity drift up to 40%. Completed captures yield <b style="color:var(--teal)">×2.5 salvage, +0.4 grid capacity</b> and bonus Silicon from Titans; escapes or forced kills fail the capture.</p>
+      <h3 class="sec">FIRE DOCTRINES [T]</h3>
+      <p>Every combat unit carries its own targeting order: <b>1ST</b> furthest along the route · <b>LST</b> closest to your gate · <b>MAX</b> strongest hull · <b>MIN</b> weakest hull · <b>NEAR</b> / <b>FAR</b> by distance from the unit. The active doctrine is badged above each unit — select one and use the chips in the unit panel or <kbd>T</kbd> to cycle. <kbd>E</kbd> cycles selection through deployed units, right-click cancels a placement.</p>
+      <h3 class="sec">THREAT INDEX</h3>
+      <p><b style="color:#c9714a">SCRAPLET</b> fodder · <b style="color:#8d9aa5">PLATED</b> 25% armor, leaks 2 · <b style="color:#d8a24a">SWARM</b> fast, fragile, many · <b style="color:#7ac98a">REGEN</b> rebuilds 1.2% hull/s — fight the capture zone · <b style="color:#ffd23f">GILDED</b> fast loot-piñata worth ×3, capture priority · <b style="color:#7fa8d9">PHASE</b> blinks +36px every 2.5s, telegraphs before jumping · <b style="color:#e5484d">TITAN</b> every 8th wave, armored, leaks 5, bonus Silicon on capture. Every 5th wave is a RUSH (double spawn rate), every 12th an ASSAULT.</p>
+      <p><b style="color:#a58a6a">CARRIER</b> leaks 3 and splits into three swarmlets when destroyed (capture it intact to deny the split) · <b style="color:#8a2a30">DREAD</b> leads every 12th wave — armored, regenerating, leaking 6. Any spawn can roll <b style="color:#ffd23f">VETERAN</b>: +60% hull, +70% bounty, gold frame.</p>
+      <h3 class="sec">FIELD ABILITIES &amp; WEATHER</h3>
+      <p><b style="color:var(--gold)">SURGE</b> (40 Fe, 45s recharge): every unit fires 50% faster for 8s — golden overdrive frames show who's boosted. <b style="color:var(--teal)">WELD</b> (30 Fe 15 Cu, 60s): +3 core integrity. Waves can roll weather: <b>ION STORM</b> +40% arc damage · <b>GRAV SHEAR</b> hostiles −15% speed · <b>RUST WIND</b> foundries +40%. Units calibrate every 5 levels (★), gaining +5% damage and rate per star.</p>
+      <h3 class="sec">BALANCE LEDGER</h3>
+      <table class="bal">
+        <tr><td>Wave HP</td><td>(34+11w) × 1.058^(w−1) — compounds forever</td></tr>
+        <tr><td>Upgrade</td><td>cost ×1.28 · damage ×1.16 · rate ×1.05 · range +4% per level (marginal efficiency ≈ constant → infinite ladder, no soft-lock)</td></tr>
+        <tr><td>Recycle</td><td>returns 70% of total invested matter — buy/sell cycles always lose 30%, no exploit</td></tr>
+        <tr><td>Grid</td><td>10 base · +2 per wave · +0.4 per capture · every level draws +0.3 — caps spam</td></tr>
+        <tr><td>Foundry</td><td>0.34 Fe / 0.12 Cu / 0.05 Si per s × 1.13^L · boosts fire rate of units within 92px (+8% each, max +24%)</td></tr>
+        <tr><td>Early launch</td><td>+0.8 Fe per skipped fabrication second — aggression is paid, turtling is not</td></tr>
+        <tr><td>Rail / Aegis</td><td>Rail: 150-range sniper, ignores 80% armor, Si-hungry. Aegis: 30% slow field, +2%/level (cap 50%), stacks with beams by taking the max</td></tr>
+        <tr><td>Scrap streak</td><td>kills within 2.2s chain: +1% salvage per link, cap +25% (Tithe: +40%) — density pays</td></tr>
+        <tr><td>Abilities</td><td>Surge/Weld are matter-sink pressure valves with hard recharge timers — no spam loop possible</td></tr>
+        <tr><td>Elites</td><td>veteran rolls scale 3%→25%: +60% hull vs +70% bounty keeps them net-positive but never farmable</td></tr>
+        <tr><td>Simulation</td><td>fixed 60Hz ticks, identical at 1× and 100×, runs live between waves</td></tr>
+      </table>
+      <h3 class="sec">CONTROLS</h3>
+      <p><kbd>1-6</kbd> blueprints · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect · drag &amp; release to deploy — invalid spots snap to the nearest foundation</p>
+    </div>
+  </div>
+  <div class="modal" id="endModal">
+    <div class="panel">
+      <h2 id="endTitle">CORE OFFLINE</h2>
+      <div class="sub" id="endSub">SECTOR LOST</div>
+      <p id="endStats"></p>
+      <div class="endbtns">
+        <button id="endRebuild">REBUILD SECTOR</button>
+        <button id="endMap" class="ghost">WORLD ROUTE</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+//__BUNDLE_JS__</script>
+</body>
+</html>
