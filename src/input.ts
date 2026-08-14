@@ -1,11 +1,12 @@
 /* All user input: pointer on the battlefield, deck buttons, hotkeys. */
 import { S } from './state';
 import { cv, wcv } from './view';
-import { CARDS, SPEEDS, TGTS, RKEYS } from './data';
+import { SPEEDS, TGTS, RKEYS } from './data';
 import { $ } from './utils';
 import { canPlace, placeTower } from './towers';
 import { launchWave } from './enemies';
-import { hud, renderUnit, toast, award } from './hud';
+import { hud, renderUnit, toast, award, playHandCard, openDeckModal } from './hud';
+import { defOf, selBoard } from './deck';
 import { canAfford, spend, usedGrid, gainRes, upCost, gridCap } from './economy';
 import { burst, float } from './fx';
 import { openMap, pickWorld } from './worldmap';
@@ -42,7 +43,7 @@ function nearestValid(x: number, y: number): { x: number; y: number } | null {
 
 function updGhost(p: { x: number; y: number }): GhostState | null {
   if (!p) return null;
-  if (S.selCard == null) return { x: p.x, y: p.y, sx: null, sy: null };
+  if (!selBoard()) return { x: p.x, y: p.y, sx: null, sy: null };
   var sn = nearestValid(p.x, p.y);
   return { x: p.x, y: p.y, sx: sn ? sn.x : null, sy: sn ? sn.y : null };
 }
@@ -62,7 +63,7 @@ cv.addEventListener('pointerdown', function (ev) {
     return;
   }
   placing = true;
-  if (S.selCard == null && !towerNear(p, 48)) { S.selTower = null; hud(true); } /* stray taps near a unit never deselect */
+  if (!selBoard() && !towerNear(p, 48)) { S.selTower = null; hud(true); } /* stray taps near a unit never deselect */
   S.ghost = updGhost(p);
 });
 
@@ -87,7 +88,7 @@ cv.addEventListener('pointerup', function (ev) {
     S.ghost = updGhost(p);
     return;
   }
-  if (wasPlacing && S.selCard != null) {
+  if (wasPlacing && selBoard()) {
     var g = updGhost(p);
     S.ghost = g;
     if (g && g.sx != null) placeTower(g.sx!, g.sy!);
@@ -255,13 +256,29 @@ $('abilWeld').addEventListener('pointerdown', function (ev) {
   hud(true);
 });
 
+/* pile buttons open the circuit ledger */
+['pileDraw', 'pileDisc', 'pileExh'].forEach(function (id) {
+  $(id).addEventListener('pointerdown', function () {
+    Snd.init();
+    openDeckModal();
+  });
+});
+
 addEventListener('keydown', function (ev) {
   Snd.init();
-  if (ev.key >= '1' && ev.key <= '6') {
-    S.selCard = Math.min(CARDS.length - 1, +ev.key - 1);
-    S.selTower = null;
+  if (ev.key >= '1' && ev.key <= '9') {
+    var hi = +ev.key - 1;
+    if (!S.hand[hi]) { Snd.play('error'); return; }
+    if (S.selCard === hi && defOf(S.hand[hi]).kind !== 'board') {
+      playHandCard(hi);            /* second press runs the subroutine */
+    } else {
+      S.selCard = hi;
+      S.selTower = null;
+      Snd.play('ui');
+    }
     hud(true);
   }
+  else if (ev.key === 'd' || ev.key === 'D') openDeckModal();
   else if (ev.code === 'Space') { ev.preventDefault(); launchWave(); }
   else if (ev.key === 'm' || ev.key === 'M') $('modeBtn').click();
   else if (ev.key === 'p' || ev.key === 'P') $('pauseBtn').click();

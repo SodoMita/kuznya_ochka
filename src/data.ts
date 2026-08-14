@@ -1,5 +1,5 @@
 /* Static game data: cards, relics, enemy archetypes, sector templates, speeds. */
-import type { Card, Relic, EnemyTypeDef, SectorDef } from './types';
+import type { Card, DeckCardDef, Relic, EnemyTypeDef, SectorDef } from './types';
 
 export const RKEYS = ['fe', 'cu', 'si'] as const;
 
@@ -20,6 +20,48 @@ export const CARDS: Card[] = [
   { id: 'rail', name: 'RAIL', desc: 'long-range sniper, punches 80% of armor', cost: { fe: 20, cu: 12, si: 26 }, dmg: 60, rate: .5, range: 150, draw: 3, col: '#ffd23f' },
   { id: 'aegis', name: 'AEGIS', desc: 'slow field 30% — no guns, pure drag', cost: { fe: 12, cu: 26, si: 6 }, dmg: 0, rate: 0, range: 70, draw: 1, col: '#7fd8c8' }
 ];
+
+/* ---- the circuit deck: StS-style cards --------------------------------- */
+/* boards deploy the printed unit and cycle back through the discard pile;
+   subroutines are one-shot effects; firmware installs a sector-wide mod and
+   always exhausts. EXHAUST = out for the rest of the sector. ETHEREAL =
+   exhausts if still unplayed when the turn ends. RETAIN = survives the redraw.
+   INNATE = guaranteed in the opening hand. CONSUME = torn from the deck
+   permanently after play. */
+export const DECK_CARDS: DeckCardDef[] = [
+  /* circuit boards — the only way to deploy units */
+  { id: 'board_needle', name: 'NEEDLE BOARD', kind: 'board', tower: 0, desc: 'print a NEEDLE — rapid kinetic sentry', cost: CARDS[0].cost, rar: 0, innate: true },
+  { id: 'board_arc', name: 'ARC BOARD', kind: 'board', tower: 1, desc: 'print an ARC COIL — chains past armor', cost: CARDS[1].cost, rar: 0 },
+  { id: 'board_harvest', name: 'HARVEST BOARD', kind: 'board', tower: 2, desc: 'print a HARVESTER — tractor-beam captor', cost: CARDS[2].cost, rar: 0 },
+  { id: 'board_foundry', name: 'FOUNDRY BOARD', kind: 'board', tower: 3, desc: 'print a FOUNDRY — refines matter, feeds allies', cost: CARDS[3].cost, rar: 0, innate: true },
+  { id: 'board_rail', name: 'RAIL BOARD', kind: 'board', tower: 4, desc: 'print a RAIL — long-range armor-piercing sniper', cost: CARDS[4].cost, rar: 2, exhaust: true },
+  { id: 'board_aegis', name: 'AEGIS BOARD', kind: 'board', tower: 5, desc: 'print an AEGIS — 30% slow field, pure drag', cost: CARDS[5].cost, rar: 1 },
+  /* subroutines — one-shot skills */
+  { id: 'skill_scrap', name: 'SCRAP INFUSION', kind: 'skill', desc: 'gain 26 Fe · 10 Cu · 4 Si', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
+  { id: 'skill_hotswap', name: 'HOTSWAP', kind: 'skill', desc: 'draw 2 cards', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
+  { id: 'skill_weld', name: 'PATCH WELD', kind: 'skill', desc: 'restore 4 core integrity', cost: { fe: 10, cu: 0, si: 0 }, rar: 0, exhaust: true },
+  { id: 'skill_overdrive', name: 'OVERDRIVE PULSE', kind: 'skill', desc: 'all units +50% fire rate for 8s', cost: { fe: 0, cu: 15, si: 0 }, rar: 1, retain: true },
+  { id: 'skill_emp', name: 'EMP BURST', kind: 'skill', desc: 'zap every hostile for 12% max hull', cost: { fe: 0, cu: 12, si: 6 }, rar: 1, ethereal: true },
+  { id: 'skill_recall', name: 'MAGNET RECALL', kind: 'skill', desc: 'drag every hostile 70px back along its route', cost: { fe: 0, cu: 8, si: 0 }, rar: 1, exhaust: true },
+  { id: 'skill_refit', name: 'MASS REFIT', kind: 'skill', desc: 'every deployed unit gains +1 level, free', cost: { fe: 0, cu: 0, si: 20 }, rar: 2, exhaust: true },
+  { id: 'skill_graft', name: 'CORE GRAFT', kind: 'skill', desc: '+5 max core integrity, permanently', cost: { fe: 25, cu: 0, si: 10 }, rar: 2, exhaust: true, consume: true },
+  /* firmware — sector-wide powers, always exhaust */
+  { id: 'power_lathe', name: 'TUNGSTEN LATHE', kind: 'power', desc: '+10% unit damage this sector', cost: { fe: 20, cu: 0, si: 8 }, rar: 1, exhaust: true },
+  { id: 'power_sub', name: 'SUBSTATION', kind: 'power', desc: '+4 grid capacity this sector', cost: { fe: 0, cu: 18, si: 0 }, rar: 0, exhaust: true },
+  { id: 'power_reserve', name: 'DEEP RESERVES', kind: 'power', desc: 'foundries +25% output this sector', cost: { fe: 15, cu: 10, si: 0 }, rar: 1, exhaust: true },
+  { id: 'power_loader', name: 'AUTOLOADER', kind: 'power', desc: 'draw +1 card per turn this sector', cost: { fe: 0, cu: 0, si: 14 }, rar: 2, exhaust: true }
+];
+
+/** The run starts with this 10-card deck. */
+export const STARTER_DECK: string[] = [
+  'board_needle', 'board_needle', 'board_needle',
+  'board_arc', 'board_harvest', 'board_foundry',
+  'skill_scrap', 'skill_scrap', 'skill_hotswap', 'skill_weld'
+];
+
+export const KIND_LABEL: Record<string, string> = {
+  board: 'CIRCUIT BOARD', skill: 'SUBROUTINE', power: 'FIRMWARE'
+};
 
 export const RELICS: Relic[] = [
   { id: 'cap', name: 'CAPACITOR BANK', desc: '+8 grid capacity, immediately', rar: 1 },

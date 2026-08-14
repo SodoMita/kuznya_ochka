@@ -1,9 +1,12 @@
-/* DOM HUD: resource chips, phase bar, blueprint cards, unit panel, toasts. */
+/* DOM HUD: resource chips, phase bar, the card hand, unit panel, toasts. */
 import { S } from './state';
 import { $, fmt, pad2 } from './utils';
-import { CARDS, GLYPHS, TGT_LABEL, HAZNAMES, MEDALS } from './data';
-import { costStr, sector, canAfford, usedGrid, upCost, gridCap } from './economy';
+import { CARDS, GLYPHS, KIND_LABEL, TGT_LABEL, HAZNAMES, MEDALS } from './data';
+import { sector, canAfford, usedGrid, upCost, gridCap } from './economy';
 import { stats, foundryOut, nextWaveStr } from './towers';
+import { defOf, canPlayDef, playCard, handSize, HAND_CAP } from './deck';
+import type { CardInst, DeckCardDef, Cost } from './types';
+import { openModal } from './modals';
 import { Snd } from './audio';
 
 let toastTimer: number | undefined = undefined;
@@ -83,32 +86,134 @@ export function hud(force?: boolean): void {
   if (sec.mix.cu > sec.mix.fe && sec.mix.cu >= sec.mix.si) dom = 'Cu';
   if (sec.mix.si > sec.mix.fe && sec.mix.si > sec.mix.cu) dom = 'Si';
   $('sectorMix').textContent = 'SALVAGE ' + dom + '-HEAVY · ' + HAZNAMES[sec.haz];
-  if (S.selCard != null && !canAfford(CARDS[S.selCard].cost)) renderCards();
+  /* re-render the hand when any card's playability flips */
+  var sig = S.hand.map(function (ci) { return canPlayDef(defOf(ci)).ok ? '1' : '0'; }).join('') + '·' + S.hand.length + '·' + S.selCard;
+  if (sig !== handSig) { handSig = sig; renderCards(); }
 }
 
-export function renderCards(): void {
+let handSig = '';
+
+const KIND_COL: Record<string, string> = { board: '#9fb6c9', skill: '#3ec9b0', power: '#ffd23f' };
+
+function tagStr(d: DeckCardDef): string {
+  var t = '';
+  if (d.innate) t += '<em class="tag-inn">INNATE</em>';
+  if (d.retain) t += '<em class="tag-ret">RETAIN</em>';
+  if (d.ethereal) t += '<em class="tag-eth">ETHEREAL</em>';
+  if (d.exhaust) t += '<em class="tag-ex">EXHAUST</em>';
+  if (d.consume) t += '<em class="tag-con">CONSUME</em>';
+  return t;
+}
+
+function costHtml(c: Cost): string {
+  if (!c.fe && !c.cu && !c.si) return '<span class="free">NO MATTER COST</span>';
   var h = '';
-  for (var i = 0; i < CARDS.length; i++) {
-    var c = CARDS[i];
-    h += '<div class="card' + (i === S.selCard ? ' sel' : '') + (canAfford(c.cost) ? '' : ' broke') + '" data-card="' + i + '" style="color:' + c.col + '">' +
-      '<div class="hd">' + GLYPHS[c.id] + '<strong style="color:var(--ink)">' + c.name + '</strong><span class="key">' + (i + 1) + '</span></div>' +
-      '<p>' + c.desc + '</p><div class="cst">' + costStr(c.cost) + '</div>' +
-      (S.ranks[c.id] ? '<span class="rank">Mk.' + (S.ranks[c.id] + 1) + '</span>' : '') + '</div>';
+  if (c.fe) h += '<span class="fe">' + c.fe + 'Fe</span>';
+  if (c.cu) h += '<span class="cu">' + c.cu + 'Cu</span>';
+  if (c.si) h += '<span class="si">' + c.si + 'Si</span>';
+  return h;
+}
+
+/** Render the current HAND — real card instances, not a static shop. */
+export function renderCards(): void {
+  handSig = S.hand.map(function (ci) { return canPlayDef(defOf(ci)).ok ? '1' : '0'; }).join('') + '·' + S.hand.length + '·' + S.selCard;
+  var h = '';
+  for (var i = 0; i < S.hand.length; i++) {
+    var ci = S.hand[i], d = defOf(ci);
+    var col = d.kind === 'board' ? CARDS[d.tower!].col : KIND_COL[d.kind];
+    var ok = canPlayDef(d).ok;
+    var glyph = d.kind === 'board' ? GLYPHS[CARDS[d.tower!].id] : '';
+    var rankTag = d.kind === 'board' && S.ranks[CARDS[d.tower!].id] ? '<span class="rank">Mk.' + (S.ranks[CARDS[d.tower!].id] + 1) + '</span>' : '';
+    h += '<div class="card' + (i === S.selCard ? ' sel' : '') + (ok ? ' runnable' : ' broke') + '" data-card="' + i + '" style="color:' + col + '">' +
+      '<div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div>' +
+      '<div class="hd">' + glyph + '<strong>' + d.name + '</strong>' + (i < 9 ? '<span class="key">' + (i + 1) + '</span>' : '') + '</div>' +
+      '<p>' + d.desc + '</p>' +
+      '<div class="tags">' + tagStr(d) + '</div>' +
+      '<div class="cst">' + costHtml(d.cost) + '</div>' + rankTag +
+      '<div class="play">' + (d.kind === 'board' ? '▸ TAP FIELD TO PRINT' : '▸ TAP AGAIN TO RUN') + '</div>' +
+      '</div>';
+  }
+  if (!S.hand.length) {
+    h = '<div style="align-self:center;margin:auto;font-size:8px;letter-spacing:2px;color:var(--dim)">HAND EMPTY — NEW CARDS DEALT NEXT FABRICATION WINDOW</div>';
   }
   $('cards').innerHTML = h;
-  var nodes = $('cards').children;
+  var nodes = $('cards').querySelectorAll('.card');
   for (i = 0; i < nodes.length; i++) {
     (function (n: HTMLElement) {
       n.addEventListener('pointerdown', function (ev) {
         ev.stopPropagation();
-        S.selCard = +n.dataset.card!;
-        S.selTower = null;
         Snd.init();
-        Snd.play('ui');
-        hud(true);
+        cardTap(+n.dataset.card!);
       });
     })(nodes[i] as HTMLElement);
   }
+  renderPiles();
+}
+
+/** Tap logic: first tap selects; second tap runs a subroutine/firmware.
+    Boards stay selected — they resolve on battlefield placement. */
+function cardTap(i: number): void {
+  var ci = S.hand[i];
+  if (!ci) return;
+  var d = defOf(ci);
+  if (S.selCard === i) {
+    if (d.kind === 'board') { S.selCard = null; hud(true); return; }  /* toggle off */
+    var res = playHandCard(i);
+    if (!res) return;
+  } else {
+    S.selCard = i;
+    S.selTower = null;
+    Snd.play('ui');
+  }
+  hud(true);
+}
+
+/** Run a non-board card immediately. Returns true if it resolved. */
+export function playHandCard(i: number): boolean {
+  var r = playCard(i);
+  if (!r.ok) { toast(r.msg); Snd.play('error'); return false; }
+  toast(r.msg);
+  return true;
+}
+
+function renderPiles(): void {
+  $('vDraw').textContent = S.drawPile.length + '';
+  $('vDisc').textContent = S.discardPile.length + '';
+  $('vExh').textContent = S.exhaustPile.length + '';
+  $('pileInfo').textContent = 'HAND ' + S.hand.length + '/' + HAND_CAP + ' · DRAW ' + handSize() + '/TURN · DECK ' + S.deck.length;
+}
+
+function miniCard(ci: CardInst): string {
+  var d = defOf(ci);
+  var col = d.kind === 'board' ? CARDS[d.tower!].col : KIND_COL[d.kind];
+  var flags: string[] = [];
+  if (d.exhaust) flags.push('EXH');
+  if (d.ethereal) flags.push('ETH');
+  if (d.retain) flags.push('RET');
+  if (d.innate) flags.push('INN');
+  if (d.consume) flags.push('CON');
+  return '<span class="mini" style="color:' + col + '"><b>' + d.name + '</b><i>' + KIND_LABEL[d.kind] + (flags.length ? ' · ' + flags.join('/') : '') + '</i></span>';
+}
+
+function pileSection(title: string, list: CardInst[], sortForPrivacy?: boolean): string {
+  var shown = list.slice();
+  /* draw pile is shown alphabetically — its true order stays hidden, like StS */
+  if (sortForPrivacy) shown.sort(function (a, b) { return defOf(a).name < defOf(b).name ? -1 : 1; });
+  return '<div><h4>' + title + ' <span>· ' + list.length + '</span></h4><div class="pileRow">' +
+    (shown.length ? shown.map(miniCard).join('') : '<span style="font-size:8px;color:var(--dim);letter-spacing:1px">EMPTY</span>') +
+    '</div></div>';
+}
+
+/** The circuit ledger: full contents of every pile. */
+export function openDeckModal(): void {
+  $('deckList').innerHTML =
+    pileSection('HAND', S.hand) +
+    pileSection('DRAW PILE (ORDER HIDDEN)', S.drawPile, true) +
+    pileSection('DISCARD PILE', S.discardPile) +
+    pileSection('EXHAUSTED THIS SECTOR', S.exhaustPile) +
+    pileSection('FULL DECK', S.deck, true);
+  openModal('deckModal');
+  Snd.play('ui');
 }
 
 export function renderUnit(): void {

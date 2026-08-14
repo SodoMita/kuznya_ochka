@@ -58,7 +58,16 @@ button{font-family:var(--mono);color:var(--ink);touch-action:manipulation;user-s
 /* ---------- DECK ---------- */
 #deck{display:grid;grid-template-areas:"L C R";grid-template-columns:150px minmax(0,1fr) 186px;gap:7px;padding:7px;background:linear-gradient(#171f24,#131a1e);min-height:0}
 #deckL{grid-area:L;display:flex;flex-direction:column;gap:5px;min-height:0}
-#cards{grid-area:C;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:5px;min-height:0}
+#handCol{grid-area:C;display:flex;flex-direction:column;gap:4px;min-height:0;min-width:0}
+#cards{flex:1;display:flex;gap:5px;min-height:0;min-width:0;overflow-x:auto;overflow-y:hidden;padding-bottom:1px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+#cards::-webkit-scrollbar{height:5px}
+#cards::-webkit-scrollbar-thumb{background:var(--line)}
+#pileBar{display:flex;gap:4px;align-items:center;flex:0 0 16px;min-width:0}
+#pileBar button{border:1px solid var(--line2);background:#151d21;color:var(--dim);font-size:7px;letter-spacing:1px;padding:2px 6px;cursor:pointer;transition:border-color .12s,color .12s;white-space:nowrap}
+#pileBar button:hover{border-color:var(--teal);color:var(--ink)}
+#pileBar button b{color:var(--ink);font-size:8px}
+#pileDraw b{color:var(--teal)}#pileDisc b{color:var(--copper)}#pileExh b{color:var(--red)}
+#pileInfo{margin-left:auto;font-size:7px;letter-spacing:1px;color:var(--dim);white-space:nowrap;overflow:hidden}
 #deckR{grid-area:R;display:flex;flex-direction:column;min-height:0}
 #startBtn{border:1px solid var(--amber);background:linear-gradient(#ffb648,#e08a1e);color:#221503;font-family:var(--disp);font-size:16px;letter-spacing:1px;padding:6px 4px 5px;cursor:pointer;line-height:1;transition:filter .12s,transform .06s}
 #startBtn:hover{filter:brightness(1.1)}
@@ -78,20 +87,35 @@ button{font-family:var(--mono);color:var(--ink);touch-action:manipulation;user-s
 .spd button{border:1px solid var(--line);background:var(--panel2);cursor:pointer;font-size:11px;padding:4px 0;transition:border-color .12s}
 .spd button:hover{border-color:var(--gold)}
 #spdVal{color:var(--gold);font-weight:700;font-size:10px}
-/* cards */
-.card{position:relative;border:1px solid var(--line);background:linear-gradient(#1c252b,#161e22);padding:5px 6px;cursor:pointer;display:flex;flex-direction:column;min-width:0;overflow:hidden;transition:border-color .12s,transform .12s,box-shadow .12s}
+/* hand cards — StS style: kind ribbon, body, keyword tags, cost footer */
+.card{position:relative;flex:0 0 96px;width:96px;border:1px solid var(--line);border-top:2px solid currentColor;background:linear-gradient(#1c252b,#161e22);padding:0 0 4px;cursor:pointer;display:flex;flex-direction:column;min-width:0;overflow:hidden;transition:border-color .12s,transform .12s,box-shadow .12s}
 .card:hover{border-color:var(--amber);transform:translateY(-2px);box-shadow:0 4px 14px #0008}
-.card.sel{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal),0 0 12px #3ec9b033}
+.card.sel{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal),0 0 12px #3ec9b033;transform:translateY(-3px)}
 .card.broke{opacity:.45}
-.card .hd{display:flex;align-items:center;gap:5px;min-width:0}
-.card svg{flex:0 0 15px;height:15px}
-.card strong{font-family:var(--disp);font-size:10px;letter-spacing:.3px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400}
-.card .key{margin-left:auto;font-size:7px;color:var(--dim);border:1px solid var(--line2);padding:1px 3px;flex:0 0 auto}
-.card p{margin:3px 0 0;font-size:8px;line-height:1.3;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card .cst{margin-top:auto;padding-top:3px;font-size:7px;font-weight:700;letter-spacing:.2px;white-space:nowrap}
-.cst .fe{color:var(--copper)}.cst .cu{color:var(--amber)}.cst .si{color:var(--steel)}
-.card .cst span+span{margin-left:5px}
-.card .rank{position:absolute;right:4px;bottom:3px;font-size:7px;color:var(--teal);letter-spacing:1px}
+.card .kind{font-size:6px;letter-spacing:1.5px;padding:2px 5px 1px;color:#0f1517;background:currentColor;white-space:nowrap;overflow:hidden}
+.card .kind i{font-style:normal;color:#0f1517}
+.card .hd{display:flex;align-items:center;gap:4px;min-width:0;padding:3px 5px 0}
+.card svg{flex:0 0 13px;height:13px}
+.card strong{font-family:var(--disp);font-size:9px;letter-spacing:.3px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400}
+.card .key{margin-left:auto;font-size:7px;color:var(--dim);border:1px solid var(--line2);padding:0 3px;flex:0 0 auto}
+.card p{margin:2px 0 0;padding:0 5px;font-size:7px;line-height:1.35;color:var(--dim);overflow:hidden}
+.card .tags{padding:1px 5px 0;font-size:6px;letter-spacing:1px;line-height:1.5;min-height:9px}
+.card .tags em{font-style:normal;margin-right:4px;white-space:nowrap}
+.tag-ex{color:var(--red)}.tag-eth{color:#b18cd9}.tag-ret{color:var(--teal)}.tag-inn{color:var(--steel)}.tag-con{color:var(--gold)}
+.card .cst{margin-top:auto;padding:3px 5px 0;font-size:7px;font-weight:700;letter-spacing:.2px;white-space:nowrap}
+.cst .fe{color:var(--copper)}.cst .cu{color:var(--amber)}.cst .si{color:var(--steel)}.cst .free{color:var(--dim);font-weight:400}
+.card .cst span+span{margin-left:4px}
+.card .rank{position:absolute;right:4px;top:14px;font-size:7px;color:var(--teal);letter-spacing:1px}
+.card .play{position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:6px;letter-spacing:2px;color:#0f1517;background:var(--teal);padding:1px 0;opacity:0;transition:.12s}
+.card.sel.runnable .play{opacity:1}
+/* deck ledger modal */
+#deckList{display:flex;flex-direction:column;gap:10px}
+#deckList h4{font-family:var(--disp);font-size:12px;letter-spacing:1px;margin:0;font-weight:400;color:var(--teal)}
+#deckList h4 span{color:var(--dim);font-family:var(--mono);font-size:8px;letter-spacing:1px}
+.pileRow{display:flex;flex-wrap:wrap;gap:4px}
+.mini{border:1px solid var(--line2);border-left:3px solid currentColor;background:#151d21;padding:3px 6px;font-size:8px;letter-spacing:.4px}
+.mini b{color:var(--ink);font-weight:400;font-family:var(--disp);letter-spacing:.5px}
+.mini i{font-style:normal;color:var(--dim);font-size:7px;margin-left:4px}
 /* unit panel */
 #unitBox{border:1px solid var(--line);background:var(--panel);padding:6px;flex:1;display:flex;flex-direction:column;gap:4px;min-height:0}
 #unitHead{font-family:var(--disp);font-size:13px;letter-spacing:.5px;color:var(--teal);line-height:1.1}
@@ -144,7 +168,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   .chip{padding:2px 4px}.chip b{font-size:10px}.chip i{display:none}
   #hbtns button{padding:4px 6px;font-size:8px}
   #deck{grid-template-areas:"L C" "L R";grid-template-columns:128px minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:5px;padding:5px}
-  #cards{grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr}
+  .card{flex-basis:86px;width:86px}
   #deckR{flex-direction:row;gap:5px;align-items:stretch}
   #unitBox{flex:1;padding:5px;gap:3px}
   #unitStats{display:none}
@@ -191,7 +215,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     <div id="stInfo"><b id="sectorName">SECTOR 01 · RUST BASIN</b><span id="sectorMix">SALVAGE Fe-heavy</span></div>
     <div id="banner"></div>
     <div id="toast"></div>
-    <div id="hint">SELECT BLUEPRINT [1-6] · DRAG &amp; RELEASE TO DEPLOY — INVALID SPOTS SNAP TO NEAREST FOUNDATION · [SPACE] LAUNCH</div>
+    <div id="hint">SELECT A CARD [1-9] · BOARDS: TAP FIELD TO PRINT — SKILLS: TAP CARD AGAIN TO RUN · [D] DECK · [SPACE] LAUNCH</div>
     <div id="abils">
       <button id="abilSurge" title="All units +50% fire rate for 8s — costs 40 Fe">SURGE<small id="surgeCd">READY · 40Fe</small></button>
       <button id="abilWeld" title="Restore 3 core integrity — costs 30 Fe 15 Cu">WELD<small id="weldCd">READY · 30Fe 15Cu</small></button>
@@ -211,7 +235,15 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
         <button id="spdUp" title="Faster (+)">+</button>
       </div>
     </div>
-    <div id="cards"></div>
+    <div id="handCol">
+      <div id="cards"></div>
+      <div id="pileBar">
+        <button id="pileDraw" title="Draw pile (D)">DRAW <b id="vDraw">0</b></button>
+        <button id="pileDisc" title="Discard pile (D)">DISCARD <b id="vDisc">0</b></button>
+        <button id="pileExh" title="Exhausted this sector (D)">EXHAUST <b id="vExh">0</b></button>
+        <span id="pileInfo">HAND 0/10 · DECK 10</span>
+      </div>
+    </div>
     <div id="deckR">
       <div id="unitBox">
         <div id="unitHead">NO UNIT SELECTED</div>
@@ -240,6 +272,14 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       <div id="offers"></div>
     </div>
   </div>
+  <div class="modal" id="deckModal">
+    <div class="panel">
+      <button class="close" data-close="deckModal">CLOSE</button>
+      <h2>CIRCUIT LEDGER</h2>
+      <div class="sub">EVERY CARD OWNED THIS RUN · DRAW / DISCARD / EXHAUST PILES</div>
+      <div id="deckList"></div>
+    </div>
+  </div>
   <div class="modal" id="mapModal">
     <div class="panel">
       <button class="close" data-close="mapModal">CLOSE</button>
@@ -255,7 +295,11 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       <h2>FIELD MANUAL</h2>
       <div class="sub">ECONOMY · DOCTRINE · BALANCE LEDGER</div>
       <h3 class="sec">OBJECTIVE</h3>
-      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. Six blueprints, nine hostile classes, eighteen relics, two field abilities. Survive wave 12 to clear a sector and open the world route.</p>
+      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, nine hostile classes, eighteen relics, two field abilities. Survive wave 12 to clear a sector and open the world route.</p>
+      <h3 class="sec">THE CIRCUIT DECK</h3>
+      <p>You fight with a <b style="color:var(--teal)">deck of cards</b>, drawn Slay-the-Spire style. Your run starts with 10 cards; salvage caches add more. Each fabrication window is a <b>turn</b>: your old hand is discarded and you draw 5 (Autoloader: +1). Playing a card costs matter, not energy — your resources are the mana pool.</p>
+      <p><b style="color:var(--steel)">CIRCUIT BOARDS</b> are the only way to build: select one and tap the field to print its unit — the board is consumed into the discard pile and cycles back on reshuffle. <b style="color:var(--teal)">SUBROUTINES</b> are one-shot skills (matter, draws, heals, EMP). <b style="color:var(--gold)">FIRMWARE</b> installs a sector-wide modifier and always exhausts.</p>
+      <p>Keywords: <b style="color:var(--red)">EXHAUST</b> — removed for the rest of the sector after play · <b style="color:#b18cd9">ETHEREAL</b> — exhausts if still unplayed when the turn ends (hand redraw) · <b style="color:var(--teal)">RETAIN</b> — not discarded at turn end · <b style="color:var(--steel)">INNATE</b> — guaranteed in the sector's opening hand · <b style="color:var(--gold)">CONSUME</b> — torn from the deck permanently after one use. When the draw pile empties, the discard pile reshuffles into it. Deploying to a new sector restores exhausted cards and deals a fresh opening hand. Press <kbd>D</kbd> or tap the pile counters to audit every pile.</p>
       <h3 class="sec">SALVAGE DOCTRINES [M]</h3>
       <p><b style="color:var(--copper)">LOOT</b> — Harvesters fire normally; every wreck drops base salvage.<br>
       <b style="color:var(--teal)">CAPTURE</b> — Harvesters lock a tractor beam on units inside the <b style="color:var(--teal)">teal 30% zone</b> shown on every hull bar. The beam channels just 0.85s, slows the victim 55%, and rasps at 35% of Harvester DPS. While a target is beamed, <b style="color:var(--teal)">allied units hold fire on it</b> whenever another target is in range, and the beam tolerates integrity drift up to 40%. Completed captures yield <b style="color:var(--teal)">×2.5 salvage, +0.4 grid capacity</b> and bonus Silicon from Titans; escapes or forced kills fail the capture.</p>
@@ -281,7 +325,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
         <tr><td>Simulation</td><td>fixed 60Hz ticks, identical at 1× and 100×, runs live between waves</td></tr>
       </table>
       <h3 class="sec">CONTROLS</h3>
-      <p><kbd>1-6</kbd> blueprints · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect · drag &amp; release to deploy — invalid spots snap to the nearest foundation</p>
+      <p><kbd>1-9</kbd> select hand card (press again to run a subroutine) · <kbd>D</kbd> circuit ledger · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect · with a board selected, drag &amp; release on the field to print — invalid spots snap to the nearest foundation</p>
     </div>
   </div>
   <div class="modal" id="endModal">

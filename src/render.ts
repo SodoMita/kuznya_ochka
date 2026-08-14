@@ -5,6 +5,7 @@ import { CARDS, TGT_LABEL } from './data';
 import { hexA, clamp } from './utils';
 import { sector, canAfford, usedGrid, gridCap, capZone } from './economy';
 import { stats } from './towers';
+import { selBoard } from './deck';
 import type { Tower, Enemy, SectorDef } from './types';
 
 export function draw(): void {
@@ -65,7 +66,8 @@ export function draw(): void {
   if (S.shake > 0) ctx.translate((Math.random() - .5) * S.shake, (Math.random() - .5) * S.shake);
 
   /* build pads */
-  ctx.globalAlpha = S.selCard != null ? .55 : .16;
+  var ghostBoard = selBoard();
+  ctx.globalAlpha = ghostBoard ? .55 : .16;
   ctx.strokeStyle = '#8fa0a6';
   ctx.lineWidth = 1;
   for (i = 0; i < S.spots.length; i++) {
@@ -79,8 +81,8 @@ export function draw(): void {
   drawSpawn();
 
   /* ghost preview — snaps to nearest valid foundation */
-  if (S.ghost && S.selCard != null && !S.modalOpen) {
-    var c = CARDS[S.selCard],
+  if (S.ghost && ghostBoard && !S.modalOpen) {
+    var c = ghostBoard,
         gx = S.ghost.sx != null ? S.ghost.sx : S.ghost.x,
         gy = S.ghost.sy != null ? S.ghost.sy : S.ghost.y;
     var posOk = S.ghost.sx != null, afford = canAfford(c.cost) && usedGrid() + c.draw <= gridCap();

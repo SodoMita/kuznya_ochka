@@ -21,7 +21,7 @@ export function showEnd(win: boolean): void {
     (MEDALS.filter(function (m) { return S.medals[m[0]]; }).map(function (m) { return m[1]; }).join(' · ') || 'none yet') +
     '</b><br><br>' +
     (win ? 'The salvage front is yours. Rebuild and push an endless escalation, or open the route network.'
-         : 'Rebuild keeps your blueprint ranks, relics and cleared routes. Matter resets.');
+         : 'Rebuild keeps your circuit deck, blueprint ranks, relics and cleared routes. Matter resets; exhausted cards return.');
   $('endRebuild').textContent = win ? 'ENDLESS ESCALATION' : 'REBUILD SECTOR';
   openModal('endModal');
 }

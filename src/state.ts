@@ -2,7 +2,7 @@
 import type {
   Tower, Enemy, Shot, Beam, Part, FloatTxt, Ring, Mote, Spot, WorldNode,
   DraftOffer, GhostState, RouteNode, WeatherEvent, AbilityState, StreakState,
-  SkyBuilding, Ember
+  SkyBuilding, Ember, CardInst
 } from './types';
 
 export interface GameState {
@@ -26,12 +26,18 @@ export interface GameState {
   motes: Mote[];
   ranks: Record<string, number>;
   relics: Record<string, boolean>;
+  deck: CardInst[];            // every card owned this run
+  drawPile: CardInst[];        // face-down pile (top = last element)
+  hand: CardInst[];            // cards currently playable
+  discardPile: CardInst[];     // played/discarded, reshuffles into draw
+  exhaustPile: CardInst[];     // out for the rest of the sector
+  powers: Record<string, number>; // installed firmware (per sector)
   speed: number;
   paused: boolean;
   over: boolean;
   victoryShown: boolean;
   modalOpen: boolean;
-  selCard: number | null;
+  selCard: number | null;   // index into S.hand (a live card instance)
   selTower: Tower | null;
   mode: 'loot' | 'capture';
   ghost: GhostState | null;
@@ -84,12 +90,18 @@ export const S: GameState = {
   motes: [],
   ranks: { needle: 0, arc: 0, harvest: 0, foundry: 0 },
   relics: {},
+  deck: [],
+  drawPile: [],
+  hand: [],
+  discardPile: [],
+  exhaustPile: [],
+  powers: {},
   speed: 1,
   paused: false,
   over: false,
   victoryShown: false,
   modalOpen: false,
-  selCard: 0,
+  selCard: null,
   selTower: null,
   mode: 'loot',
   ghost: null,
