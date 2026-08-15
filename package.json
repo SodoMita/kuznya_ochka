@@ -2,14 +2,18 @@
   "name": "kuznya-ochka",
   "version": "1.0.0",
   "private": true,
-  "description": "FORGE//ZERO — robot card tower defense. TypeScript sources compile into a single static index.html.",
+  "description": "FORGE//ZERO \u2014 robot card tower defense. TypeScript sources compile into a single static index.html.",
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && node scripts/build.mjs",
     "serve": "node scripts/serve.mjs",
     "test": "node scripts/smoke.mjs",
-    "gencheck": "node scripts/gencheck.mjs"
+    "gencheck": "node scripts/gencheck.mjs",
+    "rendercheck": "node scripts/rendercheck.mjs",
+    "balance": "node scripts/balance/run.mjs",
+    "verify": "npm run build && npm test && npm run rendercheck && npm run gencheck && npm run constraints && npm run balance",
+    "constraints": "node scripts/constraints.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.0",

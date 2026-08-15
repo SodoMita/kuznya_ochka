@@ -3,10 +3,10 @@ import { S } from './state';
 import { cv, wcv } from './view';
 import { SPEEDS, TGTS, RKEYS } from './data';
 import { $ } from './utils';
-import { canPlace, placeTower } from './towers';
+import { canPlace, placeTower, installModule } from './towers';
 import { launchWave } from './enemies';
 import { hud, renderUnit, toast, award, playHandCard, openDeckModal } from './hud';
-import { defOf, selBoard } from './deck';
+import { defOf, selBoard, isTargetedSkill, castRecalibrate, discardSelCard, recycleSelCard } from './deck';
 import { canAfford, spend, usedGrid, gainRes, upCost, gridCap } from './economy';
 import { burst, float } from './fx';
 import { openMap, pickWorld } from './worldmap';
@@ -54,6 +54,24 @@ cv.addEventListener('pointerdown', function (ev) {
   ev.preventDefault();
   Snd.init();
   var p = canvasPos(ev), hit = towerNear(p, 30);
+  if (hit && S.selCard != null) {
+    var sd = defOf(S.hand[S.selCard]);
+    /* a selected MODULE card bolts onto the tapped unit */
+    if (sd.kind === 'module') {
+      installModule(hit);
+      S.ghost = updGhost(p);
+      return;
+    }
+    /* a targeted skill (RECALIBRATE) resolves on the tapped unit */
+    if (isTargetedSkill(sd)) {
+      var msg = castRecalibrate(hit);
+      if (msg === 'SELECT RECALIBRATE FIRST' || msg === 'INSUFFICIENT MATTER') Snd.play('error');
+      toast(msg);
+      hud(true);
+      S.ghost = updGhost(p);
+      return;
+    }
+  }
   if (hit) {
     if (S.selTower === hit) { S.selTower = null; }               /* tap again to release */
     else { S.selTower = hit; S.selCard = null; hit.selF = 1; Snd.play('ui'); }
@@ -147,7 +165,8 @@ $('upBtn').addEventListener('pointerdown', function () {
   RKEYS.forEach(function (k) { t.inv[k] += uc[k]; });
   t.lvl++;
   if (t.lvl >= 10) award('calib');
-  burst(t.x, t.y, '#ffd23f', 10);
+  burst(t.x, t.y, '#ffd84a', 10);
+  S.screenFlash = { col: '#ffd84a', a: 0.04 };
   Snd.play('upgrade');
   hud(true);
 });
@@ -163,6 +182,42 @@ $('recBtn').addEventListener('pointerdown', function () {
   burst(t.x, t.y, '#8fa0a6', 10);
   Snd.play('boom', true);
   toast('70% MATTER RECOVERED');
+  hud(true);
+});
+
+$('modBtn').addEventListener('pointerdown', function () {
+  Snd.init();
+  const t = S.selTower;
+  if (!t || S.towers.indexOf(t) < 0) { Snd.play('error'); return; }
+  installModule(t);
+});
+
+$('recalBtn').addEventListener('pointerdown', function () {
+  Snd.init();
+  const t = S.selTower;
+  if (!t || S.towers.indexOf(t) < 0) { Snd.play('error'); return; }
+  var msg = castRecalibrate(t);
+  if (msg === 'SELECT RECALIBRATE FIRST' || msg === 'INSUFFICIENT MATTER') Snd.play('error');
+  toast(msg);
+  hud(true);
+});
+
+/* hand-card management: DISCARD / RECYCLE the selected card */
+$('discardCard').addEventListener('pointerdown', function () {
+  Snd.init();
+  var msg = discardSelCard();
+  if (!msg) { toast('SELECT A CARD FIRST'); Snd.play('error'); return; }
+  toast(msg);
+  Snd.play('ui');
+  hud(true);
+});
+
+$('recycleCard').addEventListener('pointerdown', function () {
+  Snd.init();
+  var msg = recycleSelCard();
+  if (!msg) { toast('SELECT A CARD FIRST'); Snd.play('error'); return; }
+  toast(msg);
+  Snd.play('upgrade');
   hud(true);
 });
 
@@ -231,8 +286,10 @@ $('abilSurge').addEventListener('pointerdown', function (ev) {
   S.stat.surges++;
   if (S.stat.surges >= 10) award('surge10');
   S.shake = Math.max(S.shake, 3);
+  S.screenFlash = { col: '#ffd84a', a: 0.1 };
   var cp = S.nodes[S.coreIdx];
-  S.rings.push({ x: cp.px, y: cp.py, r: 6, max: 60, col: '#ffd23f' });
+  S.rings.push({ x: cp.px, y: cp.py, r: 6, max: 60, col: '#ffd84a' });
+  S.gridPulse = { x: cp.px, y: cp.py, col: '#ffd84a', a: 0.2, r: 10 };
   toast('OVERDRIVE ENGAGED — +50% RATE');
   Snd.play('surge');
   hud(true);
@@ -249,9 +306,10 @@ $('abilWeld').addEventListener('pointerdown', function (ev) {
   S.res.cu -= 15;
   a.cd = S.time + 60;
   S.core = Math.min(S.coreMax, S.core + 3);
+  S.screenFlash = { col: '#3edcb0', a: 0.06 };
   var cp = S.nodes[S.coreIdx];
-  float(cp.px, cp.py - 16, '+3 CORE', '#3ec9b0');
-  S.rings.push({ x: cp.px, y: cp.py, r: 4, max: 36, col: '#3ec9b0' });
+  float(cp.px, cp.py - 16, '+3 CORE', '#3edcb0');
+  S.rings.push({ x: cp.px, y: cp.py, r: 4, max: 36, col: '#3edcb0' });
   Snd.play('weld');
   hud(true);
 });
@@ -269,11 +327,12 @@ addEventListener('keydown', function (ev) {
   if (ev.key >= '1' && ev.key <= '9') {
     var hi = +ev.key - 1;
     if (!S.hand[hi]) { Snd.play('error'); return; }
-    if (S.selCard === hi && defOf(S.hand[hi]).kind !== 'board') {
+    var d = defOf(S.hand[hi]);
+    if (S.selCard === hi && d.kind !== 'board' && d.kind !== 'module' && !isTargetedSkill(d)) {
       playHandCard(hi);            /* second press runs the subroutine */
     } else {
       S.selCard = hi;
-      S.selTower = null;
+      if (d.kind !== 'module' && !isTargetedSkill(d)) S.selTower = null;   /* keep unit for targeted cards */
       Snd.play('ui');
     }
     hud(true);

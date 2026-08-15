@@ -1,5 +1,5 @@
 /* Static game data: cards, relics, enemy archetypes, sector templates, speeds. */
-import type { Card, DeckCardDef, Relic, EnemyTypeDef, SectorDef } from './types';
+import type { Card, DeckCardDef, ModuleDef, Relic, EnemyTypeDef, SectorDef } from './types';
 
 export const RKEYS = ['fe', 'cu', 'si'] as const;
 
@@ -9,7 +9,13 @@ export const GLYPHS: Record<string, string> = {
   harvest: '<svg viewBox="0 0 16 16"><path d="M3 3v6a5 5 0 0 0 10 0V3M8 6v9M5 15h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
   foundry: '<svg viewBox="0 0 16 16"><path d="M2 14V7l4 2V7l4 2V4h3v10H2zM11 1v2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
   rail: '<svg viewBox="0 0 16 16"><path d="M1 13L13 3M13 3l2-2M13 3v3M10 6v3M3 15h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
-  aegis: '<svg viewBox="0 0 16 16"><path d="M8 1l6 3v4c0 3.5-2.7 6-6 7-3.3-1-6-3.5-6-7V4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="7.5" r="1.6" fill="currentColor"/></svg>'
+  aegis: '<svg viewBox="0 0 16 16"><path d="M8 1l6 3v4c0 3.5-2.7 6-6 7-3.3-1-6-3.5-6-7V4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="7.5" r="1.6" fill="currentColor"/></svg>',
+  mortar: '<svg viewBox="0 0 16 16"><path d="M3 13h10M4 13V9l3-2h4l2 2v4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 4l2-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  mod: '<svg viewBox="0 0 16 16"><path d="M10 2l4 4-6 6-3 1-1-3 6-8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="4" cy="12" r="1.3" fill="currentColor"/></svg>',
+  /* generic card-kind schematics — subroutine / firmware / corruption */
+  k_skill: '<svg viewBox="0 0 16 16"><path d="M5 4L2 8l3 4M11 4l3 4-3 4M9.5 3l-3 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  k_power: '<svg viewBox="0 0 16 16"><rect x="4" y="4" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 1v3M10 1v3M6 12v3M10 12v3M1 6h3M1 10h3M12 6h3M12 10h3" stroke="currentColor" stroke-width="1.2"/></svg>',
+  k_curse: '<svg viewBox="0 0 16 16"><path d="M8 2v6M8 11v.5M2.5 13.5L8 2l5.5 11.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>'
 };
 
 export const CARDS: Card[] = [
@@ -18,7 +24,26 @@ export const CARDS: Card[] = [
   { id: 'harvest', name: 'HARVESTER', desc: 'tractor-beam captor', cost: { fe: 30, cu: 12, si: 7 }, dmg: 12, rate: 1.7, range: 78, draw: 2, col: '#3ec9b0' },
   { id: 'foundry', name: 'FOUNDRY', desc: 'refines matter, feeds nearby units +8%', cost: { fe: 40, cu: 10, si: 10 }, dmg: 0, rate: 0, range: 92, draw: 1, col: '#e0854e' },
   { id: 'rail', name: 'RAIL', desc: 'long-range sniper, punches 80% of armor', cost: { fe: 20, cu: 12, si: 26 }, dmg: 60, rate: .5, range: 150, draw: 3, col: '#ffd23f' },
-  { id: 'aegis', name: 'AEGIS', desc: 'slow field 30% — no guns, pure drag', cost: { fe: 12, cu: 26, si: 6 }, dmg: 0, rate: 0, range: 70, draw: 1, col: '#7fd8c8' }
+  { id: 'aegis', name: 'AEGIS', desc: 'slow field 30% — no guns, pure drag', cost: { fe: 12, cu: 26, si: 6 }, dmg: 0, rate: 0, range: 70, draw: 1, col: '#7fd8c8' },
+  { id: 'mortar', name: 'MORTAR', desc: 'lobbed shells, area splash', cost: { fe: 30, cu: 14, si: 12 }, dmg: 42, rate: .55, range: 118, draw: 2, col: '#c9a6e0' }
+];
+
+/* ---- unit upgrade modules ---------------------------------------------- */
+/* Each module bolts onto ONE deployed unit of a compatible blueprint. Install
+   by playing its MODULE card and tapping the unit on the field (or selecting
+   the unit and pressing INSTALL). One module of a kind per unit. */
+export const MODULES: ModuleDef[] = [
+  { id: 'flame', name: 'FLAMETHROWER HEAD', forIds: ['needle'], desc: 'Needle rounds ignite hosts — 40% of each shot burns over 2.5s', cost: { fe: 14, cu: 16, si: 4 }, rar: 1, col: '#ff8a3d' },
+  { id: 'tesla', name: 'TESLA FRAME', forIds: ['arc'], desc: 'Arcs chain to +2 targets at full strength, +40% jump reach', cost: { fe: 10, cu: 24, si: 8 }, rar: 1, col: '#8fd8ff' },
+  { id: 'grasp', name: 'HYDRAULIC GRASP', forIds: ['harvest'], desc: 'Beam channels 60% faster and rasps 25% harder', cost: { fe: 12, cu: 18, si: 6 }, rar: 1, col: '#3ec9b0' },
+  { id: 'smelter', name: 'SMELTER BELLY', forIds: ['foundry'], desc: 'Foundry output +60%; its aura also grants +8% damage', cost: { fe: 18, cu: 14, si: 10 }, rar: 1, col: '#e0854e' },
+  { id: 'railcoil', name: 'RAILGUN COIL', forIds: ['rail'], desc: 'Rail ignores armor entirely and hits 25% harder', cost: { fe: 10, cu: 12, si: 18 }, rar: 1, col: '#ffd23f' },
+  { id: 'cryo', name: 'CRYO GRID', forIds: ['aegis'], desc: 'Slow field 45% and +25% range', cost: { fe: 8, cu: 16, si: 8 }, rar: 1, col: '#7fd8c8' },
+  { id: 'scope', name: 'RANGEFINDER SCOPE', forIds: ['needle', 'arc', 'harvest', 'rail'], desc: '+35% range', cost: { fe: 10, cu: 14, si: 6 }, rar: 0, col: '#9fb6c9' },
+  { id: 'overvolt', name: 'OVERVOLT CAPACITOR', forIds: ['needle', 'arc', 'rail'], desc: '+20% fire rate', cost: { fe: 8, cu: 18, si: 6 }, rar: 0, col: '#ffd23f' },
+  { id: 'hollow', name: 'HOLLOW-POINT AMMO', forIds: ['needle'], desc: 'Needle rounds punch through 40% of armor', cost: { fe: 12, cu: 20, si: 4 }, rar: 1, col: '#c9a6e0' },
+  { id: 'frag', name: 'FRAG SHELLS', forIds: ['mortar'], desc: 'Mortar splash radius +50%, splash damage +25%', cost: { fe: 16, cu: 12, si: 8 }, rar: 1, col: '#c9a6e0' },
+  { id: 'static', name: 'STATIC GRID', forIds: ['aegis'], desc: 'Aegis field also zaps hosts for 2 + 0.5/level dps', cost: { fe: 10, cu: 20, si: 8 }, rar: 1, col: '#8fd8ff' }
 ];
 
 /* ---- the circuit deck: StS-style cards --------------------------------- */
@@ -36,6 +61,7 @@ export const DECK_CARDS: DeckCardDef[] = [
   { id: 'board_foundry', name: 'FOUNDRY BOARD', kind: 'board', tower: 3, desc: 'print a FOUNDRY — refines matter, feeds allies', cost: CARDS[3].cost, rar: 0, innate: true },
   { id: 'board_rail', name: 'RAIL BOARD', kind: 'board', tower: 4, desc: 'print a RAIL — long-range armor-piercing sniper', cost: CARDS[4].cost, rar: 2, exhaust: true },
   { id: 'board_aegis', name: 'AEGIS BOARD', kind: 'board', tower: 5, desc: 'print an AEGIS — 30% slow field, pure drag', cost: CARDS[5].cost, rar: 1 },
+  { id: 'board_mortar', name: 'MORTAR BOARD', kind: 'board', tower: 6, desc: 'print a MORTAR — lobbed shells, area splash', cost: CARDS[6].cost, rar: 1, exhaust: true },
   /* subroutines — one-shot skills */
   { id: 'skill_scrap', name: 'SCRAP INFUSION', kind: 'skill', desc: 'gain 26 Fe · 10 Cu · 4 Si', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
   { id: 'skill_hotswap', name: 'HOTSWAP', kind: 'skill', desc: 'draw 2 cards', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
@@ -62,6 +88,9 @@ export const DECK_CARDS: DeckCardDef[] = [
   { id: 'skill_quarantine', name: 'QUARANTINE', kind: 'skill', desc: 'exhaust every curse in hand this sector · gain 12 Fe each', cost: { fe: 0, cu: 5, si: 0 }, rar: 0, exhaust: true },
   { id: 'skill_siphon', name: 'ORE SIPHON', kind: 'skill', desc: 'gain 3 Fe per living hostile, up to 45 Fe', cost: { fe: 0, cu: 4, si: 0 }, rar: 0 },
   { id: 'skill_gridloan', name: 'GRID LOAN', kind: 'skill', desc: '+7 grid this sector, but add a permanent RUST DEBT', cost: { fe: 0, cu: 0, si: 0 }, rar: 1, exhaust: true },
+  { id: 'skill_artillery', name: 'ARTILLERY CALL', kind: 'skill', desc: '3 shells strike random hostiles for 45 damage each', cost: { fe: 0, cu: 10, si: 14 }, rar: 2, exhaust: true },
+  { id: 'skill_deepfreeze', name: 'DEEPFREEZE', kind: 'skill', desc: 'all hostiles slowed 60% for 6s', cost: { fe: 0, cu: 12, si: 10 }, rar: 1, exhaust: true },
+  { id: 'skill_recal', name: 'RECALIBRATE', kind: 'skill', desc: 'selected unit gains +1 level, free', cost: { fe: 0, cu: 0, si: 10 }, rar: 1, exhaust: true },
   /* firmware — sector-wide powers, always exhaust */
   { id: 'power_lathe', name: 'TUNGSTEN LATHE', kind: 'power', desc: '+10% unit damage this sector', cost: { fe: 20, cu: 0, si: 8 }, rar: 1, exhaust: true },
   { id: 'power_sub', name: 'SUBSTATION', kind: 'power', desc: '+4 grid capacity this sector', cost: { fe: 0, cu: 18, si: 0 }, rar: 0, exhaust: true },
@@ -76,19 +105,37 @@ export const DECK_CARDS: DeckCardDef[] = [
   /* curses — dead draws acquired by risky technology; never offered directly */
   { id: 'curse_jam', name: 'SIGNAL JAM', kind: 'curse', desc: 'unplayable · clogs your hand until discarded', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
   { id: 'curse_rust', name: 'RUST DEBT', kind: 'curse', desc: 'unplayable · lose 8 Fe when left in hand at turn end', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
-  { id: 'curse_breach', name: 'HULL BREACH', kind: 'curse', desc: 'unplayable · lose 1 core when left in hand at turn end', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 }
+  { id: 'curse_breach', name: 'HULL BREACH', kind: 'curse', desc: 'unplayable · lose 1 core when left in hand at turn end', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
+  { id: 'power_reactor', name: 'ARC REACTOR', kind: 'power', desc: 'arcs chain to +1 target this sector', cost: { fe: 12, cu: 16, si: 10 }, rar: 1, exhaust: true },
+  { id: 'power_seek', name: 'HOMING RIG', kind: 'power', desc: 'units +20% range this sector', cost: { fe: 8, cu: 14, si: 8 }, rar: 1, exhaust: true },
+  /* modules — bolt an upgrade onto one deployed unit, then exhaust */
+  { id: 'mod_flame', name: 'FLAMETHROWER HEAD', kind: 'module', module: 'flame', desc: 'bolt onto a NEEDLE — rounds ignite hosts: 40% of each shot burns 2.5s', cost: MODULES[0].cost, rar: 1, innate: true, exhaust: true },
+  { id: 'mod_tesla', name: 'TESLA FRAME', kind: 'module', module: 'tesla', desc: 'bolt onto an ARC COIL — chains +2 targets, full strength, +40% reach', cost: MODULES[1].cost, rar: 1, exhaust: true },
+  { id: 'mod_grasp', name: 'HYDRAULIC GRASP', kind: 'module', module: 'grasp', desc: 'bolt onto a HARVESTER — beam channels 60% faster, rasps 25% harder', cost: MODULES[2].cost, rar: 1, exhaust: true },
+  { id: 'mod_smelter', name: 'SMELTER BELLY', kind: 'module', module: 'smelter', desc: 'bolt onto a FOUNDRY — +60% output, aura grants +8% damage', cost: MODULES[3].cost, rar: 1, exhaust: true },
+  { id: 'mod_railcoil', name: 'RAILGUN COIL', kind: 'module', module: 'railcoil', desc: 'bolt onto a RAIL — ignores armor entirely, +25% damage', cost: MODULES[4].cost, rar: 1, exhaust: true },
+  { id: 'mod_cryo', name: 'CRYO GRID', kind: 'module', module: 'cryo', desc: 'bolt onto an AEGIS — slow field 45%, +25% range', cost: MODULES[5].cost, rar: 1, exhaust: true },
+  { id: 'mod_scope', name: 'RANGEFINDER SCOPE', kind: 'module', module: 'scope', desc: 'bolt onto any gun turret — +35% range', cost: MODULES[6].cost, rar: 0, exhaust: true },
+  { id: 'mod_overvolt', name: 'OVERVOLT CAPACITOR', kind: 'module', module: 'overvolt', desc: 'bolt onto a gun turret — +20% fire rate', cost: MODULES[7].cost, rar: 0, exhaust: true },
+  { id: 'mod_hollow', name: 'HOLLOW-POINT AMMO', kind: 'module', module: 'hollow', desc: 'bolt onto a NEEDLE — rounds punch 40% of armor', cost: MODULES[8].cost, rar: 1, exhaust: true },
+  { id: 'mod_frag', name: 'FRAG SHELLS', kind: 'module', module: 'frag', desc: 'bolt onto a MORTAR — +50% splash radius, +25% splash damage', cost: MODULES[9].cost, rar: 1, exhaust: true },
+  { id: 'mod_static', name: 'STATIC GRID', kind: 'module', module: 'static', desc: 'bolt onto an AEGIS — field zaps hosts for 2 + 0.5/level dps', cost: MODULES[10].cost, rar: 1, exhaust: true }
 ];
 
 /** The run starts with this 10-card deck. */
 export const STARTER_DECK: string[] = [
   'board_needle', 'board_needle', 'board_needle',
   'board_arc', 'board_harvest', 'board_foundry',
-  'skill_scrap', 'skill_scrap', 'skill_hotswap', 'skill_weld'
+  'skill_scrap', 'skill_scrap', 'skill_hotswap', 'skill_weld',
+  'mod_flame'
 ];
 
 export const KIND_LABEL: Record<string, string> = {
-  board: 'CIRCUIT BOARD', skill: 'SUBROUTINE', power: 'FIRMWARE', curse: 'CORRUPTION'
+  board: 'CIRCUIT BOARD', skill: 'SUBROUTINE', power: 'FIRMWARE', curse: 'CORRUPTION', module: 'MODULE'
 };
+
+/** Accent color per card kind (boards use their tower's color instead). */
+export const KIND_COL: Record<string, string> = { board: '#9fb6c9', skill: '#3ec9b0', power: '#ffd23f', curse: '#b18cd9', module: '#c78bff' };
 
 export const RELICS: Relic[] = [
   { id: 'cap', name: 'CAPACITOR BANK', desc: '+8 grid capacity, immediately', rar: 1 },
@@ -108,7 +155,10 @@ export const RELICS: Relic[] = [
   { id: 'twin', name: 'TWIN FEED', desc: 'Needle fire rate +20%', rar: 1 },
   { id: 'lattice', name: 'ARC LATTICE', desc: 'arc chains to one extra target', rar: 2 },
   { id: 'tithe', name: 'SCRAP TITHE', desc: 'streak salvage cap +25% → +40%', rar: 2 },
-  { id: 'lens', name: 'ORBITAL LENS', desc: 'Rail range +25%', rar: 1 }
+  { id: 'lens', name: 'ORBITAL LENS', desc: 'Rail range +25%', rar: 1 },
+  { id: 'shock', name: 'VOLT COUPLING', desc: 'arcs chain to one extra target, +15% arc damage', rar: 2 },
+  { id: 'flak', name: 'PROXIMITY FUSES', desc: 'mortar splash radius +40%', rar: 1 },
+  { id: 'shrine', name: 'SALVAGE SHRINE', desc: 'captured titans yield +4 bonus silicon', rar: 2 }
 ];
 
 export const ETYPES: Record<string, EnemyTypeDef> = {
@@ -120,7 +170,8 @@ export const ETYPES: Record<string, EnemyTypeDef> = {
   gilded: { hp: .8, sp: 1.35, dmg: 1, armor: 0, reward: 3, size: 5, col: '#ffd23f' },
   phase: { hp: 1.1, sp: .9, dmg: 1, armor: 0, reward: 1.2, size: 6, col: '#7fa8d9' },
   carrier: { hp: 6, sp: .65, dmg: 3, armor: .1, reward: 4, size: 11, col: '#a58a6a' },
-  dread: { hp: 22, sp: .45, dmg: 6, armor: .35, regen: .008, reward: 12, size: 15, col: '#8a2a30' }
+  dread: { hp: 22, sp: .45, dmg: 6, armor: .35, regen: .008, reward: 12, size: 15, col: '#8a2a30' },
+  reaver: { hp: 1.6, sp: .72, dmg: 2, armor: .5, reward: 2.6, size: 8, col: '#b8e986' }
 };
 
 export const SECTORS: SectorDef[] = [
@@ -129,11 +180,12 @@ export const SECTORS: SectorDef[] = [
   { name: 'SILICA FLATS', mix: { fe: .8, cu: .85, si: 1.5 }, tint: '#171d22', grid: '#243039', path: '#3a4a55', haz: 2 },
   { name: "GRINDER'S DELTA", mix: { fe: 1.05, cu: 1.05, si: .95 }, tint: '#221818', grid: '#332424', path: '#4d3535', haz: 5 },
   { name: 'MAGNA TRENCH', mix: { fe: 1.1, cu: .95, si: 1.1 }, tint: '#191a22', grid: '#272a37', path: '#3d4155', haz: 3 },
-  { name: 'VAULT MERIDIAN', mix: { fe: .9, cu: 1.15, si: 1.05 }, tint: '#221f14', grid: '#33301f', path: '#57513a', haz: 4, gild: 2.2 }
+  { name: 'VAULT MERIDIAN', mix: { fe: .9, cu: 1.15, si: 1.05 }, tint: '#221f14', grid: '#33301f', path: '#57513a', haz: 4, gild: 2.2 },
+  { name: 'REAVER SLAG', mix: { fe: 1.15, cu: .9, si: 1.0 }, tint: '#171c16', grid: '#26301f', path: '#46563a', haz: 6, gild: .4 }
 ];
 
-export const HAZNAMES = ['PLATED HEAVY', 'SWARM DENSE', 'REGEN CELLS', 'PHASE SHIFTERS', 'GILDED VEINS', 'CARRIER BELT'];
-export const HAZCODE = ['PL', 'SW', 'RG', 'PH', 'GL', 'CR'];
+export const HAZNAMES = ['PLATED HEAVY', 'SWARM DENSE', 'REGEN CELLS', 'PHASE SHIFTERS', 'GILDED VEINS', 'CARRIER BELT', 'REAVER ARMOR'];
+export const HAZCODE = ['PL', 'SW', 'RG', 'PH', 'GL', 'CR', 'RV'];
 
 export const MEDALS: [string, string][] = [
   ['firstcap', 'FIRST RECLAMATION'],
@@ -145,13 +197,16 @@ export const MEDALS: [string, string][] = [
   ['dreadkill', 'KINGSLAYER'],
   ['gild5', 'GOLD RUSH'],
   ['surge10', 'OVERDRIVER'],
-  ['calib', 'MASTERWORK']
+  ['calib', 'MASTERWORK'],
+  ['burn10', 'PYROMANIAC']
 ];
 
 export const EVENTS: { id: string; name: string }[] = [
   { id: 'ion', name: 'ION STORM' },
   { id: 'grav', name: 'GRAV SHEAR' },
-  { id: 'rust', name: 'RUST WIND' }
+  { id: 'rust', name: 'RUST WIND' },
+  { id: 'solar', name: 'SOLAR FLARE' },
+  { id: 'frost', name: 'HARD FROST' }
 ];
 
 export const SPEEDS = [1, 2, 4, 8, 16, 32, 64, 100];

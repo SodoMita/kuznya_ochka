@@ -7,6 +7,7 @@ import type {
 
 export interface GameState {
   seed: number;
+  sectorGen: number;      // bumped on every genSector(); invalidates baked render layers
   sector: number;
   wave: number;
   phase: 'build' | 'wave';
@@ -45,11 +46,14 @@ export interface GameState {
   spawnT: number;
   time: number;
   shake: number;
-  stat: { kills: number; captures: number; leaks: number; waves: number; salvaged: number; gilds: number; surges: number };
+  stat: { kills: number; captures: number; leaks: number; waves: number; salvaged: number; gilds: number; surges: number; burnKills: number };
   streak: StreakState;
   medals: Record<string, boolean>;
   ability: AbilityState;
   event: WeatherEvent | null;
+  /* screen FX */
+  screenFlash: { col: string; a: number };
+  gridPulse: { x: number; y: number; col: string; a: number; r: number } | null;
   sky: SkyBuilding[];
   embers: Ember[];
   cleared: Record<number, boolean>;
@@ -71,6 +75,7 @@ export interface GameState {
 
 export const S: GameState = {
   seed: (Date.now() ^ 0x5f3a9) >>> 0,
+  sectorGen: 0,
   sector: 0,
   wave: 0,
   phase: 'build',
@@ -109,11 +114,13 @@ export const S: GameState = {
   spawnT: 0,
   time: 0,
   shake: 0,
-  stat: { kills: 0, captures: 0, leaks: 0, waves: 0, salvaged: 0, gilds: 0, surges: 0 },
+  stat: { kills: 0, captures: 0, leaks: 0, waves: 0, salvaged: 0, gilds: 0, surges: 0, burnKills: 0 },
   streak: { n: 0, t: 0 },
   medals: {},
   ability: { surge: { cd: 0, until: 0 }, weld: { cd: 0 } },
   event: null,
+  screenFlash: { col: '', a: 0 },
+  gridPulse: null,
   sky: [],
   embers: [],
   cleared: {},
