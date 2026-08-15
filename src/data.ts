@@ -9,7 +9,11 @@ export const GLYPHS: Record<string, string> = {
   harvest: '<svg viewBox="0 0 16 16"><path d="M3 3v6a5 5 0 0 0 10 0V3M8 6v9M5 15h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
   foundry: '<svg viewBox="0 0 16 16"><path d="M2 14V7l4 2V7l4 2V4h3v10H2zM11 1v2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
   rail: '<svg viewBox="0 0 16 16"><path d="M1 13L13 3M13 3l2-2M13 3v3M10 6v3M3 15h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
-  aegis: '<svg viewBox="0 0 16 16"><path d="M8 1l6 3v4c0 3.5-2.7 6-6 7-3.3-1-6-3.5-6-7V4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="7.5" r="1.6" fill="currentColor"/></svg>'
+  aegis: '<svg viewBox="0 0 16 16"><path d="M8 1l6 3v4c0 3.5-2.7 6-6 7-3.3-1-6-3.5-6-7V4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="7.5" r="1.6" fill="currentColor"/></svg>',
+  /* generic card-kind schematics — subroutine / firmware / corruption */
+  k_skill: '<svg viewBox="0 0 16 16"><path d="M5 4L2 8l3 4M11 4l3 4-3 4M9.5 3l-3 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  k_power: '<svg viewBox="0 0 16 16"><rect x="4" y="4" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 1v3M10 1v3M6 12v3M10 12v3M1 6h3M1 10h3M12 6h3M12 10h3" stroke="currentColor" stroke-width="1.2"/></svg>',
+  k_curse: '<svg viewBox="0 0 16 16"><path d="M8 2v6M8 11v.5M2.5 13.5L8 2l5.5 11.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>'
 };
 
 export const CARDS: Card[] = [

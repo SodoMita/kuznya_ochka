@@ -145,7 +145,7 @@ export function renderCards(): void {
     var ci = S.hand[i], d = defOf(ci);
     var col = d.kind === 'board' ? CARDS[d.tower!].col : KIND_COL[d.kind];
     var chk = canPlayDef(d);
-    var glyph = d.kind === 'board' ? GLYPHS[CARDS[d.tower!].id] : '';
+    var glyph = d.kind === 'board' ? GLYPHS[CARDS[d.tower!].id] : (GLYPHS['k_' + d.kind] || '');
     var rankTag = d.kind === 'board' && S.ranks[CARDS[d.tower!].id] ? '<span class="rank">Mk.' + (S.ranks[CARDS[d.tower!].id] + 1) + '</span>' : '';
     var isNew = !seenUids[ci.uid];
     if (isNew) dealt++;

@@ -8,6 +8,17 @@ import { stats } from './towers';
 import { selBoard } from './deck';
 import type { Tower, Enemy, SectorDef } from './types';
 
+/** Regular n-gon path helper (flat terminal-style glyphs). */
+function ngon(x: number, y: number, r: number, n: number, rot: number): void {
+  ctx.beginPath();
+  for (var k = 0; k < n; k++) {
+    var a = rot + k * Math.PI * 2 / n;
+    if (k === 0) ctx.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+    else ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+  }
+  ctx.closePath();
+}
+
 export function draw(): void {
   var sec = sector(), i;
   ctx.fillStyle = sec.tint;
@@ -51,13 +62,18 @@ export function draw(): void {
   }
   ctx.globalAlpha = 1;
 
-  /* grid */
+  /* grid — faint 1px etch with brighter major lines every 4 cells */
   ctx.strokeStyle = hexA(sec.grid.replace('#', '#'), 1);
-  ctx.globalAlpha = .5;
+  ctx.globalAlpha = .35;
   ctx.lineWidth = 1;
   ctx.beginPath();
   for (var gx = 0; gx < W; gx += 26) { ctx.moveTo(gx, 0); ctx.lineTo(gx, H); }
   for (var gy = 0; gy < H; gy += 26) { ctx.moveTo(0, gy); ctx.lineTo(W, gy); }
+  ctx.stroke();
+  ctx.globalAlpha = .55;
+  ctx.beginPath();
+  for (gx = 0; gx < W; gx += 104) { ctx.moveTo(gx, 0); ctx.lineTo(gx, H); }
+  for (gy = 0; gy < H; gy += 104) { ctx.moveTo(0, gy); ctx.lineTo(W, gy); }
   ctx.stroke();
   ctx.globalAlpha = 1;
 
@@ -65,14 +81,15 @@ export function draw(): void {
   ctx.save();
   if (S.shake > 0) ctx.translate((Math.random() - .5) * S.shake, (Math.random() - .5) * S.shake);
 
-  /* build pads */
+  /* build pads — octagonal foundation outlines */
   var ghostBoard = selBoard();
-  ctx.globalAlpha = ghostBoard ? .55 : .16;
+  ctx.globalAlpha = ghostBoard ? .6 : .18;
   ctx.strokeStyle = '#8fa0a6';
   ctx.lineWidth = 1;
   for (i = 0; i < S.spots.length; i++) {
     var sp = S.spots[i];
-    ctx.strokeRect(sp.px - 4, sp.py - 4, 8, 8);
+    ngon(sp.px, sp.py, 5.5, 8, Math.PI / 8);
+    ctx.stroke();
   }
   ctx.globalAlpha = 1;
 
@@ -274,33 +291,40 @@ export function draw(): void {
 function drawPath(sec: SectorDef): void {
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
+  /* dark casing, then an amber rim the lane fill overlays — leaves ~1.5px lit edges */
   ctx.strokeStyle = '#0d1012';
   ctx.lineWidth = 27;
   strokeEdges();
-  ctx.strokeStyle = sec.path;
-  ctx.lineWidth = 21;
+  ctx.strokeStyle = hexA('#ffa02f', .38);
+  ctx.lineWidth = 22;
   strokeEdges();
   ctx.strokeStyle = '#0d1012';
-  ctx.lineWidth = 15;
+  ctx.lineWidth = 19;
   strokeEdges();
   ctx.strokeStyle = hexA(sec.path, 1);
-  ctx.globalAlpha = .5;
-  ctx.lineWidth = 11;
+  ctx.globalAlpha = .55;
+  ctx.lineWidth = 15;
   strokeEdges();
   ctx.globalAlpha = 1;
-  ctx.strokeStyle = '#c8bfa8';
-  ctx.globalAlpha = .5;
+  /* animated dashed centerline — flow direction */
+  ctx.strokeStyle = hexA('#ffa02f', .55);
   ctx.lineWidth = 1.5;
-  ctx.setLineDash([4, 9]);
+  ctx.setLineDash([5, 8]);
   ctx.lineDashOffset = -S.time * 26;
   strokeEdges();
   ctx.setLineDash([]);
   ctx.lineDashOffset = 0;
-  ctx.globalAlpha = 1;
-  /* junction hubs: small pads where roads meet */
-  ctx.fillStyle = '#0d1012';
+  /* junction hubs: lit node dots where roads meet */
   for (const n of S.nodes) {
-    if (n.kind === 'junc') ctx.fillRect(n.px - 3.5, n.py - 3.5, 7, 7);
+    if (n.kind !== 'junc') continue;
+    ctx.fillStyle = '#0d1012';
+    ctx.beginPath();
+    ctx.arc(n.px, n.py, 4.5, 0, 7);
+    ctx.fill();
+    ctx.fillStyle = hexA('#ffd8a0', .8);
+    ctx.beginPath();
+    ctx.arc(n.px, n.py, 2, 0, 7);
+    ctx.fill();
   }
 }
 
@@ -355,17 +379,19 @@ function drawCore(): void {
   var p = S.nodes[S.coreIdx], pulse = (Math.sin(S.time * 3) + 1) / 2;
   ctx.save();
   ctx.translate(p.px, p.py);
+  /* hex silhouette with a single soft glow — terminal style */
   ctx.fillStyle = '#141c20';
   ctx.strokeStyle = '#3ec9b0';
   ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(0, 0, 13, 0, 7);
+  ctx.shadowColor = hexA('#3ec9b0', .5 + pulse * .3);
+  ctx.shadowBlur = 10 + pulse * 6;
+  ngon(0, 0, 14, 6, -Math.PI / 2);
   ctx.fill();
   ctx.stroke();
+  ctx.shadowBlur = 0;
   ctx.strokeStyle = hexA('#3ec9b0', .25 + pulse * .35);
   ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.arc(0, 0, 17 + pulse * 2.5, 0, 7);
+  ngon(0, 0, 18 + pulse * 2.5, 6, -Math.PI / 2);
   ctx.stroke();
   var frac = Math.max(0, S.core / S.coreMax);
   ctx.strokeStyle = frac > .4 ? '#3ec9b0' : '#e5484d';
