@@ -3008,11 +3008,9 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     ctx.restore();
     for (i = 0; i < S.sky.length; i++) {
       var sk = S.sky[i];
-      ctx.fillStyle = "rgba(0,0,0,.20)";
-      ctx.fillRect(sk.x * W, H - sk.h * H, sk.w * W + 1, sk.h * H);
       if (sk.ant) {
-        ctx.fillStyle = hexA("#e5484d", 0.25 + 0.45 * ((Math.sin(S.time * 2 + i * 2) + 1) / 2));
-        ctx.fillRect(sk.x * W + sk.w * W * 0.5, H - sk.h * H - 3, 2, 3);
+        ctx.fillStyle = hexA("#e5484d", 0.1 + 0.2 * ((Math.sin(S.time * 2 + i * 2) + 1) / 2));
+        ctx.fillRect(sk.x * W + sk.w * W * 0.5, H - sk.h * H - 3, 2, 2);
       }
     }
     for (i = 0; i < S.embers.length; i++) {
@@ -3028,8 +3026,8 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       ctx.fillRect(em.x, em.y, 1.5, 2.5);
     }
     ctx.globalAlpha = 1;
-    ctx.strokeStyle = hexA(sec.grid.replace("#", "#"), 1);
-    ctx.globalAlpha = 0.4;
+    ctx.strokeStyle = "#1c2329";
+    ctx.globalAlpha = 0.9;
     ctx.lineWidth = 1;
     var hr = 24, hw = hr * 1.7320508, row = 0;
     ctx.beginPath();
@@ -3047,7 +3045,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     ctx.save();
     if (S.shake > 0) ctx.translate((Math.random() - 0.5) * S.shake, (Math.random() - 0.5) * S.shake);
     var ghostBoard = selBoard();
-    ctx.globalAlpha = ghostBoard ? 0.75 : 0.3;
+    ctx.globalAlpha = ghostBoard ? 0.85 : 0.45;
     ctx.strokeStyle = "#66757d";
     ctx.lineWidth = 1.5;
     for (i = 0; i < S.spots.length; i++) {
@@ -3227,21 +3225,18 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   function drawPath(sec) {
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
-    ctx.strokeStyle = "#07090b";
-    ctx.lineWidth = 22;
+    ctx.strokeStyle = hexA("#ffa02f", 0.55);
+    ctx.lineWidth = 16;
     strokeEdges();
-    ctx.strokeStyle = hexA("#ffa02f", 0.85);
-    ctx.lineWidth = 18;
+    ctx.strokeStyle = "#14181d";
+    ctx.lineWidth = 14;
     strokeEdges();
-    ctx.strokeStyle = "#10151a";
-    ctx.lineWidth = 15.5;
+    ctx.strokeStyle = hexA(sec.path, 0.22);
+    ctx.lineWidth = 11;
     strokeEdges();
-    ctx.strokeStyle = hexA(sec.path, 0.35);
-    ctx.lineWidth = 12;
-    strokeEdges();
-    ctx.strokeStyle = hexA("#ffa02f", 0.5);
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([5, 8]);
+    ctx.strokeStyle = hexA("#ffa02f", 0.4);
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 9]);
     ctx.lineDashOffset = -S.time * 26;
     strokeEdges();
     ctx.setLineDash([]);

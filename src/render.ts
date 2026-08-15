@@ -45,14 +45,12 @@ export function draw(): void {
   }
   ctx.restore();
 
-  /* ruined skyline */
+  /* distant beacon lights on the horizon (terminal style: no dark skyline slabs) */
   for (i = 0; i < S.sky.length; i++) {
     var sk = S.sky[i];
-    ctx.fillStyle = 'rgba(0,0,0,.20)';
-    ctx.fillRect(sk.x * W, H - sk.h * H, sk.w * W + 1, sk.h * H);
     if (sk.ant) {
-      ctx.fillStyle = hexA('#e5484d', .25 + .45 * ((Math.sin(S.time * 2 + i * 2) + 1) / 2));
-      ctx.fillRect(sk.x * W + sk.w * W * .5, H - sk.h * H - 3, 2, 3);
+      ctx.fillStyle = hexA('#e5484d', .1 + .2 * ((Math.sin(S.time * 2 + i * 2) + 1) / 2));
+      ctx.fillRect(sk.x * W + sk.w * W * .5, H - sk.h * H - 3, 2, 2);
     }
   }
   /* rising forge embers */
@@ -67,9 +65,9 @@ export function draw(): void {
   }
   ctx.globalAlpha = 1;
 
-  /* ground — faint 1px hex etch, terminal style */
-  ctx.strokeStyle = hexA(sec.grid.replace('#', '#'), 1);
-  ctx.globalAlpha = .4;
+  /* ground — faint 1px hex etch, terminal style (neutral, sector tint stays subtle) */
+  ctx.strokeStyle = '#1c2329';
+  ctx.globalAlpha = .9;
   ctx.lineWidth = 1;
   var hr = 24, hw = hr * 1.7320508, row = 0;
   ctx.beginPath();
@@ -91,7 +89,7 @@ export function draw(): void {
 
   /* build pads — octagonal foundation outlines */
   var ghostBoard = selBoard();
-  ctx.globalAlpha = ghostBoard ? .75 : .3;
+  ctx.globalAlpha = ghostBoard ? .85 : .45;
   ctx.strokeStyle = '#66757d';
   ctx.lineWidth = 1.5;
   for (i = 0; i < S.spots.length; i++) {
@@ -299,23 +297,20 @@ export function draw(): void {
 function drawPath(sec: SectorDef): void {
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-  /* terminal lanes: dark bed, crisp amber edge lines, dashed flow centerline */
-  ctx.strokeStyle = '#07090b';
-  ctx.lineWidth = 22;
+  /* terminal lanes: slim dark bed with crisp 1px amber edge rims */
+  ctx.strokeStyle = hexA('#ffa02f', .55);
+  ctx.lineWidth = 16;
   strokeEdges();
-  ctx.strokeStyle = hexA('#ffa02f', .85);
-  ctx.lineWidth = 18;
+  ctx.strokeStyle = '#14181d';
+  ctx.lineWidth = 14;
   strokeEdges();
-  ctx.strokeStyle = '#10151a';
-  ctx.lineWidth = 15.5;
-  strokeEdges();
-  ctx.strokeStyle = hexA(sec.path, .35);
-  ctx.lineWidth = 12;
+  ctx.strokeStyle = hexA(sec.path, .22);
+  ctx.lineWidth = 11;
   strokeEdges();
   /* animated dashed centerline — flow direction */
-  ctx.strokeStyle = hexA('#ffa02f', .5);
-  ctx.lineWidth = 1.5;
-  ctx.setLineDash([5, 8]);
+  ctx.strokeStyle = hexA('#ffa02f', .4);
+  ctx.lineWidth = 1;
+  ctx.setLineDash([5, 9]);
   ctx.lineDashOffset = -S.time * 26;
   strokeEdges();
   ctx.setLineDash([]);
