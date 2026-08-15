@@ -147,7 +147,8 @@ $('upBtn').addEventListener('pointerdown', function () {
   RKEYS.forEach(function (k) { t.inv[k] += uc[k]; });
   t.lvl++;
   if (t.lvl >= 10) award('calib');
-  burst(t.x, t.y, '#ffd23f', 10);
+  burst(t.x, t.y, '#ffd84a', 10);
+  S.screenFlash = { col: '#ffd84a', a: 0.04 };
   Snd.play('upgrade');
   hud(true);
 });
@@ -231,8 +232,10 @@ $('abilSurge').addEventListener('pointerdown', function (ev) {
   S.stat.surges++;
   if (S.stat.surges >= 10) award('surge10');
   S.shake = Math.max(S.shake, 3);
+  S.screenFlash = { col: '#ffd84a', a: 0.1 };
   var cp = S.nodes[S.coreIdx];
-  S.rings.push({ x: cp.px, y: cp.py, r: 6, max: 60, col: '#ffd23f' });
+  S.rings.push({ x: cp.px, y: cp.py, r: 6, max: 60, col: '#ffd84a' });
+  S.gridPulse = { x: cp.px, y: cp.py, col: '#ffd84a', a: 0.2, r: 10 };
   toast('OVERDRIVE ENGAGED — +50% RATE');
   Snd.play('surge');
   hud(true);
@@ -249,9 +252,10 @@ $('abilWeld').addEventListener('pointerdown', function (ev) {
   S.res.cu -= 15;
   a.cd = S.time + 60;
   S.core = Math.min(S.coreMax, S.core + 3);
+  S.screenFlash = { col: '#3edcb0', a: 0.06 };
   var cp = S.nodes[S.coreIdx];
-  float(cp.px, cp.py - 16, '+3 CORE', '#3ec9b0');
-  S.rings.push({ x: cp.px, y: cp.py, r: 4, max: 36, col: '#3ec9b0' });
+  float(cp.px, cp.py - 16, '+3 CORE', '#3edcb0');
+  S.rings.push({ x: cp.px, y: cp.py, r: 4, max: 36, col: '#3edcb0' });
   Snd.play('weld');
   hud(true);
 });

@@ -3,7 +3,7 @@ import { S } from './state';
 import { ETYPES, EVENTS } from './data';
 import type { Enemy, Cost } from './types';
 import { sector, gainRes, scavMult } from './economy';
-import { burst, float } from './fx';
+import { burst, ringBurst, sparks, debris, float, bigFloat, shockwave, shake } from './fx';
 import { banner, hud, award } from './hud';
 import { Snd } from './audio';
 import { openDraft } from './draft';
@@ -58,13 +58,10 @@ export function compFor(w: number): string[] {
 
 export function spawnEnemy(type: string): void {
   var e = ETYPES[type];
-  /* pick a spawn gate: round-robin so every gate feeds each wave */
   var gate = S.spawns[S.spawnIdx % S.spawns.length];
   S.spawnIdx++;
   var route = shortestRoute(gate, S.coreIdx, type === 'swarm' ? Math.random : undefined);
   var rp = routePolyline(route);
-  /* normalize speed so short routes don't turn into instant leaks (and long
-     scenic routes don't crawl): same time-to-CORE as the old zig-zag maps */
   var diag = Math.hypot(W, H);
   var spScale = clamp(rp.len / (diag * .85), .7, 1.5);
   var hp = waveHP(S.wave) * e.hp * (0.9 + mulberry32((S.time * 1000 | 0) ^ type.length ^ S.enemies.length)() * .2);
@@ -101,7 +98,7 @@ export function launchWave(): void {
     var bonus = S.buildT * (S.relics.ledger ? 1.6 : .8);
     S.res.fe += bonus;
     var core = S.nodes[S.coreIdx];
-    float(core.px, core.py - 14, '+' + bonus.toFixed(0) + 'Fe EARLY CALL', '#ffd23f');
+    float(core.px, core.py - 14, '+' + bonus.toFixed(0) + 'Fe EARLY CALL', '#ffd84a');
   }
   S.wave++;
   S.phase = 'wave';
@@ -112,6 +109,12 @@ export function launchWave(): void {
   if (tag === 'RUSH') S.spawnInt *= .5;
   var er = mulberry32((S.seed ^ (S.wave * 0x9E3779b9)) >>> 0);
   S.event = er() < .4 ? EVENTS[Math.floor(er() * EVENTS.length)] : null;
+  /* wave-start visual pulse */
+  var cp = S.nodes[S.coreIdx];
+  shockwave(cp.px, cp.py, '#ffb83a', 50);
+  shake(2);
+  S.screenFlash = { col: '#ffb83a', a: 0.08 };
+  S.gridPulse = { x: cp.px, y: cp.py, col: '#ffb83a', a: 0.25, r: 10 };
   banner('WAVE ' + pad2(S.wave),
     (tag ? tag + ' · ' : '') + (S.event ? S.event.name + ' · ' : '') +
     'HOSTILES INBOUND · ' + S.spawnQ.length + ' CONTACTS');
@@ -126,14 +129,22 @@ export function endWave(): void {
   S.event = null;
   S.gridMax += 2;
   S.stat.waves++;
-  /* new turn: ethereal cards burn, non-retain hand discards, redraw */
+  /* wave-clear visual pulse */
+  var cp2 = S.nodes[S.coreIdx];
+  shockwave(cp2.px, cp2.py, '#3edcb0', 40);
+  S.screenFlash = { col: '#3edcb0', a: 0.05 };
   var eth = startTurn();
-  if (eth) float(S.nodes[S.coreIdx].px, S.nodes[S.coreIdx].py - 26, eth + ' ETHEREAL CARD' + (eth > 1 ? 'S' : '') + ' EXHAUSTED', '#b18cd9');
+  if (eth) float(S.nodes[S.coreIdx].px, S.nodes[S.coreIdx].py - 26, eth + ' ETHEREAL CARD' + (eth > 1 ? 'S' : '') + ' EXHAUSTED', '#b88ce0');
   if (S.core <= 0) { S.core = 0; S.over = true; hud(true); showEnd(false); return; }
   if (S.relics.repair) S.core = Math.min(S.coreMax, S.core + 1);
   if (S.wave % 12 === 0 && !S.cleared[S.sector]) {
     S.cleared[S.sector] = true;
     gainRes({ fe: 80 + S.wave * 6, cu: 30 + S.wave * 2, si: 12 + S.wave });
+    /* sector clear — big dramatic FX */
+    shockwave(cp2.px, cp2.py, '#3edcb0', 80);
+    ringBurst(cp2.px, cp2.py, '#3edcb0', 24, 60);
+    shake(5);
+    S.screenFlash = { col: '#3edcb0', a: 0.15 };
     banner('SECTOR CLEARED', 'ROUTE NETWORK EXPANDED');
     Snd.play('fanfare');
     if (Object.keys(S.cleared).length >= 3) award('sector3');
@@ -150,14 +161,13 @@ export function killEnemy(e: Enemy, captured: boolean): void {
   if (e.dead) return;
   e.dead = true;
   var mix = sector().mix, sc = scavMult(), mult = captured ? 2.5 : 1;
-  /* scrap streak: consecutive kills inside 2.2s chain a salvage bonus */
   var now = S.time;
   if (now - S.streak.t < 2.2) S.streak.n++;
   else S.streak.n = 1;
   S.streak.t = now;
   if (S.streak.n >= 20) award('streak20');
   if (S.streak.n >= 10 && S.streak.n % 10 === 0) {
-    float(e.x, e.y - 16, 'STREAK ×' + S.streak.n, '#ffd23f');
+    bigFloat(e.x, e.y - 18, 'STREAK ×' + S.streak.n, '#ffd84a');
     Snd.play('draft');
   }
   var rw = (e.reward || 1) * (1 + Math.min(S.relics.tithe ? 40 : 25, S.streak.n) * .01);
@@ -170,8 +180,12 @@ export function killEnemy(e: Enemy, captured: boolean): void {
     if (e.type === 'titan') b.si += 1;
     S.gridMax += S.relics.magnet ? .9 : .4;
     S.stat.captures++;
-    S.rings.push({ x: e.x, y: e.y, r: 4, max: 34, col: '#3ec9b0' });
-    float(e.x, e.y - 10, 'CAPTURED ×2.5', '#3ec9b0');
+    /* capture — teal shockwave + spark shower */
+    S.screenFlash = { col: '#3edcb0', a: 0.06 };
+    shockwave(e.x, e.y, '#3edcb0', 36);
+    ringBurst(e.x, e.y, '#3edcb0', 12, 35);
+    sparks(e.x, e.y, '#3edcb0', 8);
+    float(e.x, e.y - 10, 'CAPTURED ×2.5', '#3edcb0');
     Snd.play('capture');
     award('firstcap');
     if (S.stat.captures >= 25) award('cap25');
@@ -185,10 +199,32 @@ export function killEnemy(e: Enemy, captured: boolean): void {
     if (S.stat.kills >= 200) award('k200');
     if (e.type === 'dread') award('dreadkill');
     if (e.type === 'dread' || e.type === 'titan') {
-      S.shake = Math.min(9, S.shake + 4);
-      S.rings.push({ x: e.x, y: e.y, r: 6, max: 44, col: '#e5484d' });
+      shake(5);
+      S.screenFlash = { col: '#f04a50', a: 0.06 };
+      shockwave(e.x, e.y, '#f04a50', 50);
+      debris(e.x, e.y, '#8a4a30', 12);
+      sparks(e.x, e.y, '#ffb83a', 10);
+      ringBurst(e.x, e.y, '#f04a50', 16, 45);
+    } else if (e.type === 'gilded') {
+      /* gilded death — golden shower */
+      S.screenFlash = { col: '#ffd84a', a: 0.04 };
+      ringBurst(e.x, e.y, '#ffd84a', 14, 40);
+      sparks(e.x, e.y, '#ffd84a', 12);
+      shockwave(e.x, e.y, '#ffd84a', 28);
+    } else if (e.type === 'carrier') {
+      /* carrier explodes into swarmlets */
+      debris(e.x, e.y, '#a58a6a', 10);
+      shockwave(e.x, e.y, '#a58a6a', 32);
+      shake(3);
+    } else if (e.type === 'plated') {
+      /* plated — armor shrapnel */
+      debris(e.x, e.y, '#5f6d78', 8);
+      sparks(e.x, e.y, '#8d9aa5', 6);
+    } else {
+      /* standard kill */
+      burst(e.x, e.y, e.col, 8);
     }
-    /* carriers split into three swarmlets where they die (capture denies it) */
+    /* carriers split into three swarmlets where they die */
     if (e.type === 'carrier') {
       for (var ci = 0; ci < 3; ci++) {
         spawnEnemy('swarm');
@@ -205,7 +241,6 @@ export function killEnemy(e: Enemy, captured: boolean): void {
     }
   }
   gainRes(b, e.x, e.y);
-  burst(e.x, e.y, captured ? '#3ec9b0' : '#e0854e', captured ? 14 : 7);
   Snd.play('boom', true);
 }
 
@@ -213,8 +248,13 @@ export function leak(e: Enemy): void {
   e.dead = true;
   S.core -= ETYPES[e.type].dmg;
   S.stat.leaks++;
-  S.shake = Math.min(9, S.shake + 5);
-  S.rings.push({ x: e.x, y: e.y, r: 4, max: 30, col: '#e5484d' });
+  shake(6);
+  S.screenFlash = { col: '#f04a50', a: 0.12 };
+  /* leak — red shockwave + debris spray */
+  shockwave(e.x, e.y, '#f04a50', 40);
+  ringBurst(e.x, e.y, '#f04a50', 10, 30);
+  sparks(e.x, e.y, '#f04a50', 8);
+  float(e.x, e.y - 12, '-' + ETYPES[e.type].dmg + ' CORE', '#f04a50');
   Snd.play('leak');
   if (S.core <= 0) { S.core = 0; S.over = true; showEnd(false); }
   hud(true);
