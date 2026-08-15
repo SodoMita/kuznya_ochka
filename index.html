@@ -15,7 +15,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--mono)}
 button{font-family:var(--mono);color:var(--ink);touch-action:manipulation;user-select:none;-webkit-user-select:none}
-#app{width:100vw;height:100dvh;max-width:980px;margin:auto;display:grid;grid-template-rows:42px minmax(0,1fr) 142px;position:relative;background:
+#app{width:100vw;height:100dvh;max-width:980px;margin:auto;display:grid;grid-template-rows:42px minmax(0,1fr) 158px;position:relative;background:
   radial-gradient(120% 90% at 50% -10%,#1b252b 0%,var(--bg) 55%),var(--bg)}
 /* ---------- HUD ---------- */
 #hud{display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid var(--line);background:linear-gradient(#1e282e,#171f24)}
@@ -90,32 +90,36 @@ button{font-family:var(--mono);color:var(--ink);touch-action:manipulation;user-s
 .spd button{border:1px solid var(--line);background:var(--panel2);cursor:pointer;font-size:11px;padding:4px 0;transition:border-color .12s}
 .spd button:hover{border-color:var(--gold)}
 #spdVal{color:var(--gold);font-weight:700;font-size:10px}
-/* hand cards — StS style: diagonal-cut ribbon, schematic icon, stamped tags, hex cost chips */
-.card{position:relative;flex:1 0 100px;max-width:136px;border:1px solid var(--line);border-top:2px solid currentColor;background:linear-gradient(172deg,#1e272d,#161e22 70%);padding:0 0 4px;cursor:pointer;display:flex;flex-direction:column;min-width:0;overflow:hidden;transition:border-color .12s,transform .12s,box-shadow .12s}
-.card:hover{border-color:var(--amber);transform:translateY(-3px);box-shadow:0 5px 16px #000a}
-.card.sel{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal),0 0 14px #3ec9b040;transform:translateY(-4px)}
-.card.broke{opacity:.72;filter:saturate(.55)}
-.card.broke::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(229,72,77,.15) 0 6px,transparent 6px 13px);pointer-events:none}
+/* hand cards — spec-sheet anatomy: colored frame, diagonal ribbon, name,
+   framed icon zone, centered body, stamped tags, hex cost chips */
+.card{position:relative;flex:1 0 104px;max-width:140px;border:1px solid currentColor;background:#14191d;padding:0 0 4px;cursor:pointer;display:flex;flex-direction:column;min-width:0;overflow:hidden;text-align:center;transition:border-color .12s,transform .12s,box-shadow .12s,filter .12s}
+.card:hover{transform:translateY(-3px);box-shadow:0 5px 16px #000a;filter:brightness(1.12)}
+.card.sel{box-shadow:inset 0 0 0 1px var(--teal),0 0 14px #3ec9b066;border-color:var(--teal);transform:translateY(-4px)}
+.card.broke{filter:saturate(.4) brightness(.75)}
+.card.broke::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(229,72,77,.22) 0 7px,transparent 7px 16px);pointer-events:none}
 .card.broke:hover{border-color:var(--red);transform:none;box-shadow:none}
 .card.deal{animation:deal .3s ease-out backwards}
 @keyframes deal{from{opacity:0;transform:translateY(16px) scale(.94)}}
-.card .kind{font-size:6px;letter-spacing:1.5px;padding:2px 6px 1px;color:#0f1517;background:currentColor;white-space:nowrap;overflow:hidden;clip-path:polygon(0 0,100% 0,100% 40%,82% 100%,0 100%)}
+.card .kind{position:relative;font-size:6px;letter-spacing:1.5px;padding:2px 6px 1px;color:#0f1517;background:currentColor;white-space:nowrap;overflow:hidden;clip-path:polygon(0 0,100% 0,100% 45%,86% 100%,0 100%);text-align:left}
 .card .kind i{font-style:normal;color:#0f1517}
-.card .hd{display:flex;align-items:center;gap:4px;min-width:0;padding:4px 5px 0}
-.card svg{flex:0 0 15px;height:15px;filter:drop-shadow(0 0 3px currentColor)}
-.card strong{font-family:var(--disp);font-size:10px;letter-spacing:.3px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400}
-.card .key{margin-left:auto;font-size:7px;color:var(--dim);border:1px solid var(--line2);padding:0 3px;flex:0 0 auto}
-.card p{margin:2px 0 0;padding:0 5px;font-size:7.5px;line-height:1.35;color:var(--dim);overflow:hidden}
-.card .tags{padding:2px 5px 0;font-size:6px;letter-spacing:.8px;line-height:1.7;min-height:10px}
-.card .tags em{font-style:normal;margin-right:3px;white-space:nowrap;cursor:help;border:1px solid currentColor;padding:0 2px}
+.card .hd{padding:3px 4px 0}
+.card strong{font-family:var(--disp);font-size:10.5px;letter-spacing:.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400;display:block}
+.card .key{position:absolute;right:3px;top:14px;font-size:6px;color:var(--dim);border:1px solid var(--line2);padding:0 2px;background:#14191d}
+.card .icon{display:flex;align-items:center;justify-content:center;margin:3px auto 0;width:34px;height:24px;border:1px solid var(--line);flex:0 0 auto;opacity:.95}
+@supports (border-color:color-mix(in srgb,red 50%,transparent)){.card .icon{border-color:color-mix(in srgb,currentColor 45%,transparent)}}
+.card .icon svg{width:18px;height:18px;filter:drop-shadow(0 0 3px currentColor)}
+.card p{margin:2px 0 0;padding:0 4px;font-size:7px;line-height:1.3;color:var(--dim);overflow:hidden}
+.card .tags{padding:2px 4px 0;font-size:6px;letter-spacing:.8px;line-height:1.7;min-height:10px}
+.card .tags em{font-style:normal;margin:0 1px;white-space:nowrap;cursor:help;border:1px solid currentColor;padding:0 2px}
 .tag-ex{color:var(--red)}.tag-eth{color:#b18cd9}.tag-ret{color:var(--teal)}.tag-inn{color:var(--steel)}.tag-con{color:var(--gold)}
-.card .cst{margin-top:auto;padding:3px 5px 1px;font-size:7px;font-weight:700;letter-spacing:.2px;white-space:nowrap;border-top:1px solid var(--line2)}
+.card .cst{margin-top:auto;padding:3px 4px 1px;font-size:7px;font-weight:700;letter-spacing:.2px;white-space:nowrap;border-top:1px solid var(--line2)}
+@supports (border-color:color-mix(in srgb,red 50%,transparent)){.card .cst{border-top-color:color-mix(in srgb,currentColor 35%,transparent)}}
 .cst span{display:inline-block;padding:1px 6px;clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 50%,calc(100% - 4px) 100%,4px 100%,0 50%);color:#12171a}
 .cst .fe{background:var(--copper)}.cst .cu{background:var(--amber)}.cst .si{background:var(--steel)}
 .cst .free{background:none;clip-path:none;padding:1px 0;color:var(--dim);font-weight:400}
 .cst .lack{background:var(--red);color:#1c0708}
 .card .cst span+span{margin-left:3px}
-.card .rank{position:absolute;right:4px;top:14px;font-size:7px;color:var(--teal);letter-spacing:1px}
+.card .rank{position:absolute;left:3px;top:14px;font-size:7px;color:var(--teal);letter-spacing:1px}
 .card .play{position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:7px;letter-spacing:2px;color:#0f1517;background:var(--teal);padding:1px 0;opacity:0;transition:.12s}
 .card.sel.runnable .play{opacity:1}
 #handEmpty{align-self:center;margin:auto;font-size:8px;letter-spacing:2px;color:var(--dim);border:1px dashed var(--line2);padding:8px 14px}
@@ -180,7 +184,7 @@ h3.sec{font-family:var(--disp);font-size:13px;letter-spacing:1px;color:var(--tea
 kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
 /* ---------- PORTRAIT ---------- */
 @media (max-width:560px){
-  #app{grid-template-rows:40px minmax(0,1fr) 218px}
+  #app{grid-template-rows:40px minmax(0,1fr) 232px}
   #brand{font-size:15px}#brand span{display:none}
   .chip{padding:2px 4px}.chip b{font-size:10px}.chip i{display:none}
   #hbtns button{padding:4px 6px;font-size:8px}
@@ -197,10 +201,11 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   #app{grid-template-rows:38px minmax(0,1fr) 116px}
   #deck{padding:5px;gap:5px}
   .card p{display:none}
+  .card .icon{display:none}
   #unitStats{display:none}
 }
 @media (min-width:561px) and (max-width:700px){
-  #app{grid-template-rows:42px minmax(0,1fr) 128px}
+  #app{grid-template-rows:42px minmax(0,1fr) 136px}
   #deck{grid-template-columns:146px minmax(0,1fr) 168px;gap:5px;padding:5px}
   .card p{display:none}
   #brand span{display:none}
@@ -2376,7 +2381,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       var rankTag = d.kind === "board" && S.ranks[CARDS[d.tower].id] ? '<span class="rank">Mk.' + (S.ranks[CARDS[d.tower].id] + 1) + "</span>" : "";
       var isNew = !seenUids[ci.uid];
       if (isNew) dealt++;
-      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div><div class="hd">' + glyph + "<strong>" + d.name + "</strong>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + "</div><p>" + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "curse" ? "UNPLAYABLE" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
+      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + "</i></div>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + '<div class="hd"><strong>' + d.name + '</strong></div><div class="icon">' + glyph + "</div><p>" + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "curse" ? "UNPLAYABLE" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
     }
     if (!S.hand.length) {
       h = '<div id="handEmpty">HAND EMPTY \u2014 NEW CARDS DEALT NEXT FABRICATION WINDOW</div>';
@@ -2981,8 +2986,12 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   }
   function draw() {
     var sec = sector(), i;
+    ctx.fillStyle = "#0c1013";
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 0.28;
     ctx.fillStyle = sec.tint;
     ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
     ctx.save();
     for (i = 0; i < S.motes.length; i++) {
       var m = S.motes[i];
@@ -3020,39 +3029,30 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     }
     ctx.globalAlpha = 1;
     ctx.strokeStyle = hexA(sec.grid.replace("#", "#"), 1);
-    ctx.globalAlpha = 0.35;
+    ctx.globalAlpha = 0.4;
     ctx.lineWidth = 1;
+    var hr = 24, hw = hr * 1.7320508, row = 0;
     ctx.beginPath();
-    for (var gx = 0; gx < W; gx += 26) {
-      ctx.moveTo(gx, 0);
-      ctx.lineTo(gx, H);
-    }
-    for (var gy = 0; gy < H; gy += 26) {
-      ctx.moveTo(0, gy);
-      ctx.lineTo(W, gy);
-    }
-    ctx.stroke();
-    ctx.globalAlpha = 0.55;
-    ctx.beginPath();
-    for (gx = 0; gx < W; gx += 104) {
-      ctx.moveTo(gx, 0);
-      ctx.lineTo(gx, H);
-    }
-    for (gy = 0; gy < H; gy += 104) {
-      ctx.moveTo(0, gy);
-      ctx.lineTo(W, gy);
+    for (var hy = -hr; hy < H + hr * 2; hy += hr * 1.5, row++) {
+      for (var hx = (row % 2 ? hw / 2 : 0) - hw; hx < W + hw; hx += hw) {
+        ctx.moveTo(hx + hw / 2, hy - hr / 2);
+        ctx.lineTo(hx + hw / 2, hy + hr / 2);
+        ctx.lineTo(hx, hy + hr);
+        ctx.moveTo(hx + hw / 2, hy + hr / 2);
+        ctx.lineTo(hx + hw, hy + hr);
+      }
     }
     ctx.stroke();
     ctx.globalAlpha = 1;
     ctx.save();
     if (S.shake > 0) ctx.translate((Math.random() - 0.5) * S.shake, (Math.random() - 0.5) * S.shake);
     var ghostBoard = selBoard();
-    ctx.globalAlpha = ghostBoard ? 0.6 : 0.18;
-    ctx.strokeStyle = "#8fa0a6";
-    ctx.lineWidth = 1;
+    ctx.globalAlpha = ghostBoard ? 0.75 : 0.3;
+    ctx.strokeStyle = "#66757d";
+    ctx.lineWidth = 1.5;
     for (i = 0; i < S.spots.length; i++) {
       var sp = S.spots[i];
-      ngon(sp.px, sp.py, 5.5, 8, Math.PI / 8);
+      ngon(sp.px, sp.py, 9, 8, Math.PI / 8);
       ctx.stroke();
     }
     ctx.globalAlpha = 1;
@@ -3227,21 +3227,19 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   function drawPath(sec) {
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
-    ctx.strokeStyle = "#0d1012";
-    ctx.lineWidth = 27;
-    strokeEdges();
-    ctx.strokeStyle = hexA("#ffa02f", 0.38);
+    ctx.strokeStyle = "#07090b";
     ctx.lineWidth = 22;
     strokeEdges();
-    ctx.strokeStyle = "#0d1012";
-    ctx.lineWidth = 19;
+    ctx.strokeStyle = hexA("#ffa02f", 0.85);
+    ctx.lineWidth = 18;
     strokeEdges();
-    ctx.strokeStyle = hexA(sec.path, 1);
-    ctx.globalAlpha = 0.55;
-    ctx.lineWidth = 15;
+    ctx.strokeStyle = "#10151a";
+    ctx.lineWidth = 15.5;
     strokeEdges();
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = hexA("#ffa02f", 0.55);
+    ctx.strokeStyle = hexA(sec.path, 0.35);
+    ctx.lineWidth = 12;
+    strokeEdges();
+    ctx.strokeStyle = hexA("#ffa02f", 0.5);
     ctx.lineWidth = 1.5;
     ctx.setLineDash([5, 8]);
     ctx.lineDashOffset = -S.time * 26;
@@ -3250,13 +3248,13 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     ctx.lineDashOffset = 0;
     for (const n of S.nodes) {
       if (n.kind !== "junc") continue;
-      ctx.fillStyle = "#0d1012";
+      ctx.fillStyle = "#10151a";
       ctx.beginPath();
-      ctx.arc(n.px, n.py, 4.5, 0, 7);
+      ctx.arc(n.px, n.py, 5, 0, 7);
       ctx.fill();
-      ctx.fillStyle = hexA("#ffd8a0", 0.8);
+      ctx.fillStyle = "#ffd8a0";
       ctx.beginPath();
-      ctx.arc(n.px, n.py, 2, 0, 7);
+      ctx.arc(n.px, n.py, 2.2, 0, 7);
       ctx.fill();
     }
   }
@@ -3331,6 +3329,9 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     ctx.font = "bold 8px ui-monospace,Menlo,monospace";
     ctx.textAlign = "center";
     ctx.fillText(S.core + "", 0, 3);
+    ctx.fillStyle = hexA("#3ec9b0", 0.8);
+    ctx.font = "6px ui-monospace,Menlo,monospace";
+    ctx.fillText("CORE", 0, 26);
     ctx.textAlign = "left";
     ctx.restore();
   }

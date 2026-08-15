@@ -21,8 +21,13 @@ function ngon(x: number, y: number, r: number, n: number, rot: number): void {
 
 export function draw(): void {
   var sec = sector(), i;
+  /* near-black terminal field; the sector tint survives only as a faint cast */
+  ctx.fillStyle = '#0c1013';
+  ctx.fillRect(0, 0, W, H);
+  ctx.globalAlpha = .28;
   ctx.fillStyle = sec.tint;
   ctx.fillRect(0, 0, W, H);
+  ctx.globalAlpha = 1;
 
   /* drifting smog motes — ambient, real-time */
   ctx.save();
@@ -62,18 +67,21 @@ export function draw(): void {
   }
   ctx.globalAlpha = 1;
 
-  /* grid — faint 1px etch with brighter major lines every 4 cells */
+  /* ground — faint 1px hex etch, terminal style */
   ctx.strokeStyle = hexA(sec.grid.replace('#', '#'), 1);
-  ctx.globalAlpha = .35;
+  ctx.globalAlpha = .4;
   ctx.lineWidth = 1;
+  var hr = 24, hw = hr * 1.7320508, row = 0;
   ctx.beginPath();
-  for (var gx = 0; gx < W; gx += 26) { ctx.moveTo(gx, 0); ctx.lineTo(gx, H); }
-  for (var gy = 0; gy < H; gy += 26) { ctx.moveTo(0, gy); ctx.lineTo(W, gy); }
-  ctx.stroke();
-  ctx.globalAlpha = .55;
-  ctx.beginPath();
-  for (gx = 0; gx < W; gx += 104) { ctx.moveTo(gx, 0); ctx.lineTo(gx, H); }
-  for (gy = 0; gy < H; gy += 104) { ctx.moveTo(0, gy); ctx.lineTo(W, gy); }
+  for (var hy = -hr; hy < H + hr * 2; hy += hr * 1.5, row++) {
+    for (var hx = (row % 2 ? hw / 2 : 0) - hw; hx < W + hw; hx += hw) {
+      ctx.moveTo(hx + hw / 2, hy - hr / 2);
+      ctx.lineTo(hx + hw / 2, hy + hr / 2);
+      ctx.lineTo(hx, hy + hr);
+      ctx.moveTo(hx + hw / 2, hy + hr / 2);
+      ctx.lineTo(hx + hw, hy + hr);
+    }
+  }
   ctx.stroke();
   ctx.globalAlpha = 1;
 
@@ -83,12 +91,12 @@ export function draw(): void {
 
   /* build pads — octagonal foundation outlines */
   var ghostBoard = selBoard();
-  ctx.globalAlpha = ghostBoard ? .6 : .18;
-  ctx.strokeStyle = '#8fa0a6';
-  ctx.lineWidth = 1;
+  ctx.globalAlpha = ghostBoard ? .75 : .3;
+  ctx.strokeStyle = '#66757d';
+  ctx.lineWidth = 1.5;
   for (i = 0; i < S.spots.length; i++) {
     var sp = S.spots[i];
-    ngon(sp.px, sp.py, 5.5, 8, Math.PI / 8);
+    ngon(sp.px, sp.py, 9, 8, Math.PI / 8);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -291,23 +299,21 @@ export function draw(): void {
 function drawPath(sec: SectorDef): void {
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-  /* dark casing, then an amber rim the lane fill overlays — leaves ~1.5px lit edges */
-  ctx.strokeStyle = '#0d1012';
-  ctx.lineWidth = 27;
-  strokeEdges();
-  ctx.strokeStyle = hexA('#ffa02f', .38);
+  /* terminal lanes: dark bed, crisp amber edge lines, dashed flow centerline */
+  ctx.strokeStyle = '#07090b';
   ctx.lineWidth = 22;
   strokeEdges();
-  ctx.strokeStyle = '#0d1012';
-  ctx.lineWidth = 19;
+  ctx.strokeStyle = hexA('#ffa02f', .85);
+  ctx.lineWidth = 18;
   strokeEdges();
-  ctx.strokeStyle = hexA(sec.path, 1);
-  ctx.globalAlpha = .55;
-  ctx.lineWidth = 15;
+  ctx.strokeStyle = '#10151a';
+  ctx.lineWidth = 15.5;
   strokeEdges();
-  ctx.globalAlpha = 1;
+  ctx.strokeStyle = hexA(sec.path, .35);
+  ctx.lineWidth = 12;
+  strokeEdges();
   /* animated dashed centerline — flow direction */
-  ctx.strokeStyle = hexA('#ffa02f', .55);
+  ctx.strokeStyle = hexA('#ffa02f', .5);
   ctx.lineWidth = 1.5;
   ctx.setLineDash([5, 8]);
   ctx.lineDashOffset = -S.time * 26;
@@ -317,13 +323,13 @@ function drawPath(sec: SectorDef): void {
   /* junction hubs: lit node dots where roads meet */
   for (const n of S.nodes) {
     if (n.kind !== 'junc') continue;
-    ctx.fillStyle = '#0d1012';
+    ctx.fillStyle = '#10151a';
     ctx.beginPath();
-    ctx.arc(n.px, n.py, 4.5, 0, 7);
+    ctx.arc(n.px, n.py, 5, 0, 7);
     ctx.fill();
-    ctx.fillStyle = hexA('#ffd8a0', .8);
+    ctx.fillStyle = '#ffd8a0';
     ctx.beginPath();
-    ctx.arc(n.px, n.py, 2, 0, 7);
+    ctx.arc(n.px, n.py, 2.2, 0, 7);
     ctx.fill();
   }
 }
@@ -403,6 +409,9 @@ function drawCore(): void {
   ctx.font = 'bold 8px ui-monospace,Menlo,monospace';
   ctx.textAlign = 'center';
   ctx.fillText(S.core + '', 0, 3);
+  ctx.fillStyle = hexA('#3ec9b0', .8);
+  ctx.font = '6px ui-monospace,Menlo,monospace';
+  ctx.fillText('CORE', 0, 26);
   ctx.textAlign = 'left';
   ctx.restore();
 }

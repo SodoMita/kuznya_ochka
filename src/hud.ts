@@ -151,7 +151,9 @@ export function renderCards(): void {
       '" data-card="' + i + '" style="color:' + col + (isNew ? ';animation-delay:' + ((dealt - 1) * 45) + 'ms' : '') + '"' +
       (chk.ok ? '' : ' title="' + chk.why + '"') + '>' +
       '<div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div>' +
-      '<div class="hd">' + glyph + '<strong>' + d.name + '</strong>' + (i < 9 ? '<span class="key">' + (i + 1) + '</span>' : '') + '</div>' +
+      (i < 9 ? '<span class="key">' + (i + 1) + '</span>' : '') +
+      '<div class="hd"><strong>' + d.name + '</strong></div>' +
+      '<div class="icon">' + glyph + '</div>' +
       '<p>' + d.desc + '</p>' +
       '<div class="tags">' + tagStr(d) + '</div>' +
       '<div class="cst">' + costHtml(d.cost) + '</div>' + rankTag +
