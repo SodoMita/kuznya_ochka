@@ -1,7 +1,7 @@
 /* DOM HUD: resource chips, phase bar, the card hand, unit panel, toasts. */
 import { S } from './state';
 import { $, fmt, pad2 } from './utils';
-import { CARDS, GLYPHS, KIND_LABEL, TGT_LABEL, HAZNAMES, MEDALS } from './data';
+import { CARDS, GLYPHS, KIND_LABEL, KIND_COL, TGT_LABEL, HAZNAMES, MEDALS } from './data';
 import { sector, canAfford, usedGrid, upCost, gridCap } from './economy';
 import { stats, foundryOut, nextWaveStr } from './towers';
 import { defOf, defById, canPlayDef, playCard, handSize, HAND_CAP } from './deck';
@@ -100,8 +100,6 @@ function handSignature(): string {
       (S.res.fe >= d.cost.fe ? '' : 'f') + (S.res.cu >= d.cost.cu ? '' : 'c') + (S.res.si >= d.cost.si ? '' : 's');
   }).join('|') + '·' + S.hand.length + '·' + S.selCard;
 }
-
-const KIND_COL: Record<string, string> = { board: '#9fb6c9', skill: '#3ec9b0', power: '#ffd23f', curse: '#b18cd9' };
 
 const TAG_TIP: Record<string, string> = {
   INNATE: 'guaranteed in the sector\u2019s opening hand',

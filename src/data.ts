@@ -94,6 +94,9 @@ export const KIND_LABEL: Record<string, string> = {
   board: 'CIRCUIT BOARD', skill: 'SUBROUTINE', power: 'FIRMWARE', curse: 'CORRUPTION'
 };
 
+/** Accent color per card kind (boards use their tower's color instead). */
+export const KIND_COL: Record<string, string> = { board: '#9fb6c9', skill: '#3ec9b0', power: '#ffd23f', curse: '#b18cd9' };
+
 export const RELICS: Relic[] = [
   { id: 'cap', name: 'CAPACITOR BANK', desc: '+8 grid capacity, immediately', rar: 1 },
   { id: 'scav', name: 'SCAVENGER PROTOCOL', desc: '+12% salvage from every source', rar: 1 },
