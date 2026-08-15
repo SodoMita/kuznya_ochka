@@ -253,16 +253,6 @@ button:focus-visible{outline:1px solid var(--teal);outline-offset:1px}
 #unitStats{font-size:8px;color:var(--dim);letter-spacing:.4px;line-height:1.45}
 #upBtn{border-color:#7a5b22;background:linear-gradient(#3f3316,#2b2310);color:var(--gold)}
 #upBtn:hover{border-color:var(--gold);background:linear-gradient(#4a3c1a,#332a13);box-shadow:var(--bevel),0 0 10px #ffd23f2e}
-/* --- merged: selectors unique to the gameplay branch --- */
-#deckList{display:flex;flex-direction:column;gap:10px}
-#deckList h4{font-family:var(--disp);font-size:12px;letter-spacing:1px;margin:0;font-weight:400;color:var(--teal)}
-#deckList h4 span{color:var(--dim);font-family:var(--mono);font-size:8px;letter-spacing:1px}
-.pileRow{display:flex;flex-wrap:wrap;gap:4px}
-.mini{border:1px solid var(--line2);border-left:3px solid currentColor;background:#151d21;padding:3px 6px;font-size:8px;letter-spacing:.4px;cursor:help}
-.mini b{color:var(--ink);font-weight:400;font-family:var(--disp);letter-spacing:.5px}
-.mini u{text-decoration:none;color:var(--gold);font-weight:700;margin-left:4px}
-.mini i{font-style:normal;color:var(--dim);font-size:7px;margin-left:4px}
-.pileEmpty{font-size:8px;color:var(--dim);letter-spacing:1px;border:1px dashed var(--line2);padding:3px 8px}
 #unitMods{font-size:7px;letter-spacing:.6px;color:var(--dim);line-height:1.5;min-height:0}
 #unitMods b{color:var(--gold);margin-right:3px}
 #unitMods em{font-style:normal;white-space:nowrap}
@@ -315,7 +305,6 @@ button:focus-visible{outline:1px solid var(--teal);outline-offset:1px}
 .offer p{font-size:8px;margin:0;color:var(--dim);line-height:1.45}
 .offer .pick{margin-top:8px;font-size:7px;letter-spacing:2px;color:var(--amber);opacity:0;transition:.15s}
 .offer .okind{display:block;font-size:6px;letter-spacing:1.5px;margin:0 -8px 7px;padding:2px 8px 1px;color:#0f1517;background:currentColor;clip-path:polygon(0 0,100% 0,100% 40%,88% 100%,0 100%)}
-.offer:hover.rarwrap, .offer:hover{border-color:var(--amber)}
 .offer b svg{flex:0 0 14px;height:14px;filter:drop-shadow(0 0 3px currentColor)}
 .offer .tags{margin-top:5px;font-size:6px;letter-spacing:.8px;line-height:1.7}
 .offer .tags em{font-style:normal;margin-right:3px;white-space:nowrap;border:1px solid currentColor;padding:0 2px}
@@ -350,6 +339,81 @@ h3.sec{font-family:var(--disp);font-size:13px;letter-spacing:1px;color:var(--tea
 .endbtns button.ghost{background:linear-gradient(#28343b,#1c252a);border-color:var(--line);color:var(--ink);box-shadow:var(--bevel)}
 kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gold);font-size:9px;background:#0e1417;
   box-shadow:0 1px 0 #0008}
+/* ---------- NEW SYSTEMS (score, objectives, medals, settings, archive) ---------- */
+.chip.score{color:var(--gold)}.chip.score b{color:var(--gold)}
+.chip.pulse{animation:chipPulse .5s var(--ease)}
+@keyframes chipPulse{0%{transform:scale(1.12);filter:brightness(1.8)}100%{transform:scale(1);filter:none}}
+.chip.warn{border-color:#8a6a2a}.chip.warn b{color:var(--amber)}
+.chip.danger{border-color:#8a3232}.chip.danger b{color:var(--red);animation:hot 1s infinite}
+#spdVal.turbo{color:var(--red);text-shadow:0 0 10px #e5484d66}
+#medBtn.new{position:relative;border-color:var(--gold);animation:abilready 1.6s ease-in-out infinite}
+#medBtn.new::after{content:'•';position:absolute;top:-4px;right:-3px;color:var(--gold);font-size:11px;text-shadow:0 0 6px #ffd23f}
+#objChip{display:none;position:absolute;right:11px;top:34px;max-width:240px;text-align:right;
+  font-size:8px;letter-spacing:1px;color:var(--dim);pointer-events:none;z-index:4;
+  text-shadow:0 1px 3px #000c;border-left:2px solid var(--teal);padding-left:8px}
+#objChip.done{color:var(--teal);border-left-color:var(--gold)}
+#mulliganBtn{display:none;border:1px dashed var(--teal);border-radius:var(--rad);
+  background:#0e1c1a;color:var(--teal);font-size:8px;letter-spacing:1px;padding:4px 8px;cursor:pointer}
+#mulliganBtn:hover{background:#14302c;box-shadow:0 0 10px #3ec9b026}
+#abils button.poor{opacity:.55;filter:grayscale(.6)}
+#sellAllBtn,#upAllBtn{border:1px solid var(--line);border-radius:var(--rad);background:linear-gradient(#232e34,#1a2328);
+  color:var(--dim);font-size:8.5px;letter-spacing:1px;padding:5px 4px;cursor:pointer;box-shadow:var(--bevel);
+  transition:border-color .12s,color .12s,background .12s}
+#sellAllBtn small,#upAllBtn small{display:block;font-size:7px;color:var(--dim2);margin-top:2px}
+#sellAllBtn:hover{border-color:var(--red);color:var(--red)}
+#upAllBtn:hover{border-color:var(--gold);color:var(--gold)}
+#upBtn.broke,#recBtn.broke{opacity:.45;filter:grayscale(.6)}
+/* medals gallery */
+#medalCount{font-size:9px;letter-spacing:2px;color:var(--teal);margin-bottom:10px}
+#medalList{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.medal{border:1px solid var(--line2);border-radius:var(--rad);background:linear-gradient(#151d21,#101619);
+  padding:8px 10px;opacity:.45;filter:grayscale(.8)}
+.medal b{display:block;font-family:var(--disp);font-size:12px;letter-spacing:.5px;color:var(--ink);font-weight:400}
+.medal i{font-style:normal;font-size:8px;color:var(--dim2);letter-spacing:.5px}
+.medal.own{opacity:1;filter:none;border-color:var(--teal-d);box-shadow:0 0 12px #3ec9b020}
+.medal.own b{color:var(--teal);text-shadow:0 0 10px #3ec9b044}
+/* archive tabs */
+#statsTabs{display:flex;gap:5px;margin-bottom:10px}
+#statsTabs button{border:1px solid var(--line2);border-radius:var(--rad);background:linear-gradient(#1a2328,#131a1e);
+  color:var(--dim);font-size:9px;letter-spacing:1.5px;padding:6px 12px;cursor:pointer;transition:.12s}
+#statsTabs button:hover{color:var(--ink);border-color:var(--teal)}
+#statsTabs button.on{border-color:var(--teal);color:var(--teal);background:#122a27}
+#histInfo{font-size:9px;color:var(--dim);letter-spacing:.5px;line-height:1.6;margin-bottom:8px;border-left:2px solid var(--teal-d);padding-left:8px}
+#histBody td{font-size:9px}
+#relicList,#codexTowers,#codexEnemies{display:flex;flex-wrap:wrap;gap:5px}
+/* settings */
+.setRow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line2);font-size:10px;color:var(--ink)}
+.setRow label{flex:1;letter-spacing:.5px}
+.setRow small{display:block;font-size:7.5px;color:var(--dim2);letter-spacing:.5px}
+.setRow input[type=checkbox]{accent-color:var(--teal);width:16px;height:16px}
+.setRow input[type=range]{width:110px;accent-color:var(--teal)}
+#setSeed{font-size:9px;color:var(--amber);letter-spacing:1px;margin:8px 0}
+.setBtns{display:flex;gap:8px;margin-top:12px}
+.setBtns button{flex:1;border:1px solid var(--line);border-radius:var(--rad);background:linear-gradient(#28343b,#1c252a);
+  color:var(--ink);font-size:10px;letter-spacing:1px;padding:9px;cursor:pointer;transition:.12s}
+.setBtns button:hover{border-color:var(--amber);color:var(--amber)}
+.setBtns button.danger:hover{border-color:var(--red);color:var(--red)}
+/* confirm dialog */
+#confirmModal .panel{width:min(400px,100%)}
+#confirmMsg{font-size:11px;color:#b3bec2;line-height:1.6;margin:10px 0 16px}
+#confirmOk{flex:1;border:1px solid #ffb648;border-radius:var(--rad);background:linear-gradient(#ffc061,#ef9a26 55%,#d9801a);
+  color:#241603;font-family:var(--disp);font-size:14px;letter-spacing:1px;padding:9px;cursor:pointer}
+#confirmOk.danger{background:linear-gradient(#e0675f,#c03b34 60%,#a02c26);border-color:#ff9a94;color:#2a0705}
+#confirmNo{flex:1;border:1px solid var(--line);border-radius:var(--rad);background:linear-gradient(#28343b,#1c252a);
+  color:var(--ink);font-size:11px;letter-spacing:1px;padding:9px;cursor:pointer}
+#confirmNo:hover{border-color:var(--dim)}
+/* draft skip + owned counts */
+.offer.skip{opacity:.8}
+.offer .owned{text-decoration:none;color:var(--steel);font-size:8px;margin-left:4px}
+/* accessibility themes */
+body.cb{--copper:#d97742;--amber:#ffb020;--steel:#7fb8e8;--teal:#4fd8a8;--gold:#ffe066;--red:#ff7070;--violet:#d09ae8}
+body.hc{--ink:#ffffff;--dim:#b8c6cc;--dim2:#8fa0a7;--line:#4a5a62;--line2:#3a474e;--panel:#1d292f}
+body.hc #app::after{opacity:.8}
+body.noline #app::after{display:none}
+/* retreat */
+#retreatBtn{border:1px solid var(--line);border-radius:var(--rad);background:linear-gradient(#2a2020,#1f1616);
+  color:var(--dim);font-size:9px;letter-spacing:1px;padding:6px 10px;cursor:pointer;margin-top:10px}
+#retreatBtn:hover{border-color:var(--red);color:var(--red)}
 /* ---------- REDUCED MOTION ---------- */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
@@ -397,11 +461,15 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       <div class="chip pw"><b id="vW">0/10</b><i>GRID</i></div>
       <div class="chip core"><b id="vCore">20</b><i>CORE</i></div>
       <div class="chip wv"><b id="vWave">0/12</b><i>WAVE</i></div>
+      <div class="chip score"><b id="vScore">0</b><i>SCORE</i></div>
     </div>
     <div id="hbtns">
-      <button id="mapBtn" title="World route">MAP</button>
-      <button id="sndBtn" title="Sound">SND</button>
-      <button id="helpBtn" title="Field manual">?</button>
+      <button id="mapBtn" title="World route" aria-label="World route map">MAP</button>
+      <button id="medBtn" title="Commendations" aria-label="Commendation medals">★</button>
+      <button id="statBtn" title="Run archive — history, relics, codex" aria-label="Run archive">≡</button>
+      <button id="sndBtn" title="Sound" aria-label="Toggle sound">SND</button>
+      <button id="setBtn" title="Settings" aria-label="Settings">⚙</button>
+      <button id="helpBtn" title="Field manual" aria-label="Field manual">?</button>
     </div>
   </header>
   <section id="stageWrap">
@@ -413,8 +481,9 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     <div id="hint">SELECT A CARD [1-9] · BOARDS: TAP FIELD · MODULES/RECALIBRATE: TAP A UNIT · SKILLS: TAP AGAIN · [D] DECK · ✕/♻ TOSS A SELECTED CARD · [SPACE] LAUNCH</div>
     <div id="abils">
       <button id="abilSurge" title="All units +50% fire rate for 8s — costs 40 Fe">SURGE<small id="surgeCd">READY · 40Fe</small></button>
-      <button id="abilWeld" title="Restore 3 core integrity — costs 30 Fe 15 Cu">WELD<small id="weldCd">READY · 30Fe 15Cu</small></button>
+      <button id="abilWeld" title="Restore 3 core integrity and patch all units — costs 30 Fe 15 Cu">WELD<small id="weldCd">READY · 30Fe 15Cu</small></button>
     </div>
+    <div id="objChip"></div>
   </section>
   <section id="deck">
     <div id="deckL">
@@ -438,6 +507,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         <button id="pileExh" title="Exhausted this sector (D)">EXHAUST <b id="vExh">0</b></button>
         <button id="discardCard" title="Discard the selected card into the discard pile">✕ DISCARD</button>
         <button id="recycleCard" title="Permanently remove the selected card from your deck for 50% matter">♻ RECYCLE</button>
+        <button id="mulliganBtn" title="One free hand redraw per sector — first fabrication window only">⇄ MULLIGAN</button>
         <span id="pileInfo">HAND 0/10 · DECK 10</span>
       </div>
     </div>
@@ -459,6 +529,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         <div class="row2">
           <button id="upBtn" class="sq">UPGRADE<small id="upCost">—</small></button>
           <button id="recBtn" class="sq warn">RECYCLE<small id="recVal" style="display:block;font-size:7px;color:#8f9aa0;margin-top:3px">—</small></button>
+        </div>
+        <div class="row2">
+          <button id="sellAllBtn" style="display:none"><span>SELL ALL</span><small>—</small></button>
+          <button id="upAllBtn" style="display:none"><span>UPGRADE ALL</span><small>—</small></button>
         </div>
       </div>
     </div>
@@ -487,6 +561,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       <div class="sub">12 PROCEDURAL SECTORS · CLEAR WAVE 12 TO OPEN ADJACENT ROUTES</div>
       <canvas id="worldCv"></canvas>
       <div id="nodeInfo">select a sector to inspect · bars show local salvage mix (Fe/Cu/Si)</div>
+      <button id="retreatBtn">⟲ RETREAT — ABANDON SECTOR, KEEP THE DECK</button>
     </div>
   </div>
   <div class="modal" id="helpModal">
@@ -495,7 +570,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       <h2>FIELD MANUAL</h2>
       <div class="sub">ECONOMY · DOCTRINE · BALANCE LEDGER</div>
       <h3 class="sec">OBJECTIVE</h3>
-      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, seven blueprints, ten hostile classes, twenty-one relics, eleven modules, two field abilities. Survive wave 12 to clear a sector and open the world route.</p>
+      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, nine blueprints, thirteen hostile classes, twenty-six relics, thirteen modules, two field abilities. Survive wave 12 to clear a sector and open the world route. Every sector also carries a <b style="color:var(--teal)">bonus objective</b> (top-right chip): sealed hull, capture quotas, blitz launches or zero unit losses — paid in bonus grid, matter and score. Runs auto-save and resume; score feeds the archive.</p>
       <h3 class="sec">THE CIRCUIT DECK</h3>
       <p>You fight with a <b style="color:var(--teal)">deck of cards</b>, drawn Slay-the-Spire style. Your run starts with 10 cards; salvage caches add more. Each fabrication window is a <b>turn</b>: your old hand is discarded and you draw 5 (Autoloader: +1). Playing a card costs matter, not energy — your resources are the mana pool.</p>
       <p><b style="color:var(--steel)">CIRCUIT BOARDS</b> are the only way to build: select one and tap the field to print its unit — the board is consumed into the discard pile and cycles back on reshuffle. <b style="color:var(--teal)">SUBROUTINES</b> are one-shot skills, including hand-control circuits that discard weak cards or recycle cards from discard. <b style="color:var(--gold)">FIRMWARE</b> installs a sector-wide modifier and always exhausts. <b style="color:#b18cd9">CORRUPTIONS</b> are unplayable curse cards: risky black-box technology adds them permanently, while CLEAN ROOM can purge them.</p>
@@ -511,9 +586,14 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       <p>Every combat unit carries its own targeting order: <b>1ST</b> furthest along the route · <b>LST</b> closest to your gate · <b>MAX</b> strongest hull · <b>MIN</b> weakest hull · <b>NEAR</b> / <b>FAR</b> by distance from the unit. The active doctrine is badged above each unit — select one and use the chips in the unit panel or <kbd>T</kbd> to cycle. <kbd>E</kbd> cycles selection through deployed units, right-click cancels a placement.</p>
       <h3 class="sec">THREAT INDEX</h3>
       <p><b style="color:#c9714a">SCRAPLET</b> fodder · <b style="color:#8d9aa5">PLATED</b> 25% armor, leaks 2 · <b style="color:#d8a24a">SWARM</b> fast, fragile, many · <b style="color:#7ac98a">REGEN</b> rebuilds 1.2% hull/s — fight the capture zone · <b style="color:#ffd23f">GILDED</b> fast loot-piñata worth ×3, capture priority · <b style="color:#7fa8d9">PHASE</b> blinks +36px every 2.5s, telegraphs before jumping · <b style="color:#b8e986">REAVER</b> heavy 50%-armor linebreaker, drops rich salvage · <b style="color:#e5484d">TITAN</b> every 8th wave, armored, leaks 5, bonus Silicon on capture. Every 5th wave is a RUSH (double spawn rate), every 12th an ASSAULT.</p>
-      <p><b style="color:#a58a6a">CARRIER</b> leaks 3 and splits into three swarmlets when destroyed (capture it intact to deny the split) · <b style="color:#8a2a30">DREAD</b> leads every 12th wave — armored, regenerating, leaking 6. Any spawn can roll <b style="color:#ffd23f">VETERAN</b>: +60% hull, +70% bounty, gold frame.</p>
+      <p><b style="color:#a58a6a">CARRIER</b> leaks 3 and splits into three swarmlets when destroyed (capture it intact to deny the split) · <b style="color:#8a2a30">DREAD</b> leads every 12th wave — armored, regenerating, leaking 6. Any spawn can roll <b style="color:#ffd23f">VETERAN</b>: +60% hull, +70% bounty, gold frame — veterans also carry a perk (F fast · T tough · R regen).</p>
+      <p>New threats: <b style="color:#ff5f5f">SHRIEKER</b> dart-kamikazes detonate on death and shred nearby unit integrity · <b style="color:#c78bff">JAMMER</b> dishes quarter the fire rate of every unit within 70px until destroyed · <b style="color:#ff3b47">ANNIHILATOR</b> siege-walkers lead every 24th wave (SIEGE), leak 8, birth scrap escorts and drop a relic when slain. Tap any hostile to pin its readout.</p>
+      <h3 class="sec">UNIT INTEGRITY</h3>
+      <p>Units carry their own hull: <b>20 + 10 per level</b> (boosted by ARMORED MOUNTS and SHIELD GRID). Shrieker blasts and stray meteors chew it away; zero integrity scraps the unit for a 50% refund. <b>WELD</b> now splashes +4 integrity onto every unit, FIELD PATCH restores all, upgrades heal the level-up delta, and the SELF-HEALING HULL relic ticks +1/s. Veterans: units track kills — every 10 kills earns +2% damage (V1–V5 badge, max +10%).</p>
       <h3 class="sec">FIELD ABILITIES &amp; WEATHER</h3>
-      <p><b style="color:var(--gold)">SURGE</b> (40 Fe, 45s recharge): every unit fires 50% faster for 8s — golden overdrive frames show who's boosted. <b style="color:var(--teal)">WELD</b> (30 Fe 15 Cu, 60s): +3 core integrity. Waves can roll weather: <b>ION STORM</b> +40% arc damage · <b>GRAV SHEAR</b> hostiles −15% speed · <b>RUST WIND</b> foundries +40% · <b>SOLAR FLARE</b> all units +15% damage · <b>HARD FROST</b> hostiles −10% speed (frost frames). Units calibrate every 5 levels (★), gaining +5% damage and rate per star.</p>
+      <p><b style="color:var(--gold)">SURGE</b> (40 Fe, 45s recharge): every unit fires 50% faster for 8s — golden overdrive frames show who's boosted. <b style="color:var(--teal)">WELD</b> (30 Fe 15 Cu, 60s): +3 core integrity and +4 unit integrity on every deployed unit. Waves can roll weather: <b>ION STORM</b> +40% arc damage · <b>GRAV SHEAR</b> hostiles −15% speed · <b>RUST WIND</b> foundries +40% · <b>SOLAR FLARE</b> all units +15% damage · <b>HARD FROST</b> hostiles −10% speed (frost frames) · <b>METEOR SHOWER</b> sky-fire strikes random hostiles (rare stray hits on your units) · <b>SILICON RAIN</b> +30% silicon salvage. Units calibrate every 5 levels (★), gaining +5% damage and rate per star.</p>
+      <h3 class="sec">NEW CIRCUITRY</h3>
+      <p>Blueprints <b style="color:#ff8a3d">VULCAN</b> (twin gatling, swarm shredder) and <b style="color:#b18cd9">PULSE CORE</b> (periodic radial blast) join the board pool with their own modules (TUNGSTEN BARRELS, RESONANCE CHAMBER). New subroutines: <b>GRAVITY WELL</b> drags and slows everything · <b>NANO SWARM</b> corrodes all hostiles over time · <b>CIRCUIT BREAKER</b> stuns the whole field 2s · <b>FIELD PATCH</b> repairs units · <b>WRECKING BALL</b> scraps your weakest unit for a full refund · <b>ASSEMBLY CALL</b> fetches boards from the draw pile · <b>OVERCHARGE</b> makes the next board print at L2 · <b>ORE VEIN</b> / <b>SALVAGE BOND</b> print matter. Firmware: <b>SCAVENGER DRONE</b> +12% salvage, <b>REPULSOR FIELD</b> −8% hostile speed, <b>BLUEPRINT EFFICIENCY</b> −10% board cost, <b>SHIELD GRID</b> +25% unit integrity. Drafts add a <b>SKIP</b> option (+15 Fe), and each sector grants one free <b>MULLIGAN</b> (⇄) in its first fabrication window.</p>
       <h3 class="sec">BALANCE LEDGER</h3>
       <table class="bal">
         <tr><td>Wave HP</td><td>(34+11w) × 1.058^(w−1) — compounds forever</td></tr>
@@ -531,7 +611,74 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         <tr><td>Simulation</td><td>fixed 60Hz ticks, identical at 1× and 100×, runs live between waves</td></tr>
       </table>
       <h3 class="sec">CONTROLS</h3>
-      <p><kbd>1-9</kbd> select hand card (press again to run a subroutine) · <kbd>D</kbd> circuit ledger · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect · with a board selected, drag &amp; release on the field to print — invalid spots snap to the nearest foundation. Select a card, then use ✕ DISCARD / ♻ RECYCLE to thin your hand or deck.</p>
+      <p><kbd>1-9</kbd> select hand card (press again to run a subroutine) · <kbd>D</kbd> circuit ledger · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>Z</kbd> undo last placement (full refund) · <kbd>C</kbd> copy the selected unit's doctrine to its sisters · <kbd>R</kbd> retreat to the route network · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect or close a modal · with a board selected, drag &amp; release on the field to print — invalid spots snap to the nearest foundation. Tap a hostile to pin its readout; select a card, then use ✕ DISCARD / ♻ RECYCLE to thin your hand or deck.</p>
+    </div>
+  </div>
+  <div class="modal" id="medalsModal">
+    <div class="panel">
+      <button class="close" data-close="medalsModal">CLOSE</button>
+      <h2>COMMENDATIONS</h2>
+      <div class="sub" id="medalCount">0/15 EARNED</div>
+      <div id="medalList"></div>
+    </div>
+  </div>
+  <div class="modal" id="statsModal">
+    <div class="panel">
+      <button class="close" data-close="statsModal">CLOSE</button>
+      <h2>RUN ARCHIVE</h2>
+      <div class="sub">HISTORY · RELICS · BLUEPRINT &amp; HOSTILE CODEX</div>
+      <div id="statsTabs">
+        <button data-tab="history">HISTORY</button>
+        <button data-tab="relics">RELICS</button>
+        <button data-tab="codex">CODEX</button>
+      </div>
+      <div id="tabHistory">
+        <div id="histInfo"></div>
+        <table class="bal">
+          <thead><tr><td>OUTCOME</td><td>SEED</td><td>WAVE</td><td>SCORE</td><td>KILLS</td><td>WHEN</td></tr></thead>
+          <tbody id="histBody"></tbody>
+        </table>
+      </div>
+      <div id="tabRelics" style="display:none"><div id="relicList"></div></div>
+      <div id="tabCodex" style="display:none">
+        <h3 class="sec">BLUEPRINTS</h3>
+        <div id="codexTowers"></div>
+        <h3 class="sec">HOSTILES</h3>
+        <div id="codexEnemies"></div>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="settingsModal">
+    <div class="panel">
+      <button class="close" data-close="settingsModal">CLOSE</button>
+      <h2>FORGE SETTINGS</h2>
+      <div class="sub">PREFERENCES ARE SAVED ON THIS DEVICE</div>
+      <div id="setSeed">CURRENT SEED —</div>
+      <div class="setRow"><label>MASTER VOLUME<small id="setVolLbl">0 — 10</small></label><input type="range" id="setVol" min="0" max="10" step="1"></div>
+      <div class="setRow"><label>SCREEN SHAKE<small>explosions and impacts kick the camera</small></label><input type="checkbox" id="setShake" value="on"></div>
+      <div class="setRow"><label>PARTICLE DENSITY<small>0 low · 1 normal · 2 heavy</small></label><input type="range" id="setPart" min="0" max="2" step="1"></div>
+      <div class="setRow"><label>SCANLINES<small>CRT texture over the shell</small></label><input type="checkbox" id="setScan" value="on"></div>
+      <div class="setRow"><label>AUTO-PAUSE<small>pause when the tab loses focus</small></label><input type="checkbox" id="setAuto" value="on"></div>
+      <div class="setRow"><label>UI SCALE<small>1 · 1.15 · 1.3</small></label><input type="range" id="setScale" min="1" max="1.3" step="0.15"></div>
+      <div class="setRow"><label>CONFIRM RECYCLING<small>confirm before cards are torn from the deck</small></label><input type="checkbox" id="setConfirm" value="on"></div>
+      <div class="setRow"><label>COLORBLIND MODE<small>shape-coded capture markers, safe palette</small></label><input type="checkbox" id="setCB" value="on"></div>
+      <div class="setRow"><label>HIGH CONTRAST<small>brighter ink, stronger outlines</small></label><input type="checkbox" id="setHC" value="on"></div>
+      <div class="setRow"><label>DAMAGE NUMBERS<small>floating digits on every hit</small></label><input type="checkbox" id="setDmg" value="on"></div>
+      <div class="setRow"><label>AUTO-SORT HAND<small>boards first, then skills, powers, modules, curses</small></label><input type="checkbox" id="setSort" value="on"></div>
+      <div class="setBtns">
+        <button id="setDaily">DAILY SEED</button>
+        <button id="setReroll" class="danger">NEW RUN · REROLL</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="confirmModal">
+    <div class="panel">
+      <h2 id="confirmTitle">CONFIRM</h2>
+      <p id="confirmMsg"></p>
+      <div class="endbtns">
+        <button id="confirmOk">CONFIRM</button>
+        <button id="confirmNo" class="ghost">CANCEL</button>
+      </div>
     </div>
   </div>
   <div class="modal" id="endModal">
@@ -551,71 +698,104 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
 "use strict";
 (() => {
   // src/state.ts
-  var S = {
-    seed: (Date.now() ^ 390057) >>> 0,
-    sectorGen: 0,
-    sector: 0,
-    wave: 0,
-    phase: "build",
-    buildT: 18,
-    buildMax: 18,
-    core: 20,
-    coreMax: 20,
-    gridMax: 10,
-    res: { fe: 120, cu: 65, si: 36 },
-    towers: [],
-    enemies: [],
-    shots: [],
-    beams: [],
-    parts: [],
-    floats: [],
-    rings: [],
-    motes: [],
-    ranks: { needle: 0, arc: 0, harvest: 0, foundry: 0 },
-    relics: {},
-    deck: [],
-    drawPile: [],
-    hand: [],
-    discardPile: [],
-    exhaustPile: [],
-    powers: {},
-    speed: 1,
-    paused: false,
-    over: false,
-    victoryShown: false,
-    modalOpen: false,
-    selCard: null,
-    selTower: null,
-    mode: "loot",
-    ghost: null,
-    spawnQ: [],
-    spawnT: 0,
-    time: 0,
-    shake: 0,
-    stat: { kills: 0, captures: 0, leaks: 0, waves: 0, salvaged: 0, gilds: 0, surges: 0, burnKills: 0 },
-    streak: { n: 0, t: 0 },
-    medals: {},
-    ability: { surge: { cd: 0, until: 0 }, weld: { cd: 0 } },
-    event: null,
-    screenFlash: { col: "", a: 0 },
-    gridPulse: null,
-    sky: [],
-    embers: [],
-    cleared: {},
-    nodes: [],
-    edges: [],
-    edgeLen: [],
-    edgeMap: /* @__PURE__ */ new Map(),
-    spawns: [],
-    coreIdx: 0,
-    spawnIdx: 0,
-    spots: [],
-    spawnInt: 0.6,
-    worldNodes: [],
-    worldEdges: [],
-    draftOffers: [],
-    worldPick: -1
-  };
+  function freshState(seed) {
+    return {
+      seed: seed >>> 0,
+      sectorGen: 0,
+      sector: 0,
+      wave: 0,
+      phase: "build",
+      buildT: 18,
+      buildMax: 18,
+      core: 20,
+      coreMax: 20,
+      gridMax: 10,
+      res: { fe: 120, cu: 65, si: 36 },
+      towers: [],
+      enemies: [],
+      shots: [],
+      beams: [],
+      parts: [],
+      floats: [],
+      rings: [],
+      motes: [],
+      ranks: { needle: 0, arc: 0, harvest: 0, foundry: 0 },
+      relics: {},
+      deck: [],
+      drawPile: [],
+      hand: [],
+      discardPile: [],
+      exhaustPile: [],
+      powers: {},
+      speed: 1,
+      paused: false,
+      over: false,
+      victoryShown: false,
+      modalOpen: false,
+      selCard: null,
+      selTower: null,
+      mode: "loot",
+      ghost: null,
+      spawnQ: [],
+      spawnT: 0,
+      time: 0,
+      shake: 0,
+      stat: { kills: 0, captures: 0, leaks: 0, waves: 0, salvaged: 0, gilds: 0, surges: 0, burnKills: 0, towerLoss: 0, maxTowers: 0, byType: {} },
+      streak: { n: 0, t: 0 },
+      medals: {},
+      ability: { surge: { cd: 0, until: 0 }, weld: { cd: 0 } },
+      event: null,
+      screenFlash: { col: "", a: 0 },
+      gridPulse: null,
+      sky: [],
+      embers: [],
+      cleared: {},
+      nodes: [],
+      edges: [],
+      edgeLen: [],
+      edgeMap: /* @__PURE__ */ new Map(),
+      spawns: [],
+      coreIdx: 0,
+      spawnIdx: 0,
+      spots: [],
+      spawnInt: 0.6,
+      worldNodes: [],
+      worldEdges: [],
+      draftOffers: [],
+      worldPick: -1,
+      settings: {
+        vol: 1,
+        shake: true,
+        particles: 1,
+        scanlines: true,
+        autopause: true,
+        uiScale: 1,
+        confirmRecycle: false,
+        colorblind: false,
+        contrast: false,
+        dmgNumbers: true,
+        handSort: false
+      },
+      score: 0,
+      best: 0,
+      history: [],
+      historySaved: false,
+      objective: null,
+      mulliganUsed: false,
+      undoStack: [],
+      overcharge: false,
+      inspect: null,
+      inspectT: 0,
+      pendingConfirm: null,
+      toastQ: [],
+      notif: 0,
+      meteorT: 0,
+      endStatsShown: false,
+      scorch: [],
+      pendingEnemies: null
+    };
+  }
+  var S = freshState((Date.now() ^ 390057) >>> 0);
 
   // src/utils.ts
   function $(id) {
@@ -636,6 +816,12 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   function fmt(n) {
     return n >= 1e4 ? (n / 1e3).toFixed(1) + "k" : Math.floor(n) + "";
   }
+  function fmtF(n, digits) {
+    var d = digits === void 0 ? 1 : digits;
+    var s = n.toFixed(d);
+    if (s.indexOf(".") >= 0) s = s.replace(/\.?0+$/, "");
+    return s;
+  }
   function hexA(h, a) {
     var r = parseInt(h.slice(1, 3), 16), g = parseInt(h.slice(3, 5), 16), b = parseInt(h.slice(5, 7), 16);
     return "rgba(" + r + "," + g + "," + b + "," + a + ")";
@@ -652,6 +838,27 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   }
   function shadeA(h, amt, a) {
     return shade(h, amt).replace("rgb(", "rgba(").replace(")", "," + a + ")");
+  }
+  var mem = {};
+  function storeGet(key) {
+    try {
+      var v = window.localStorage.getItem(key);
+      return v === null ? key in mem ? mem[key] : null : v;
+    } catch (e) {
+      return key in mem ? mem[key] : null;
+    }
+  }
+  function storeSet(key, val) {
+    try {
+      window.localStorage.setItem(key, val);
+    } catch (e) {
+    }
+    mem[key] = val;
+  }
+  function dailySeed() {
+    var d = /* @__PURE__ */ new Date();
+    var n = d.getUTCFullYear() * 1e4 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate();
+    return n * 2654435761 >>> 0;
   }
 
   // src/view.ts
@@ -684,6 +891,8 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     rail: '<svg viewBox="0 0 16 16"><path d="M1 13L13 3M13 3l2-2M13 3v3M10 6v3M3 15h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
     aegis: '<svg viewBox="0 0 16 16"><path d="M8 1l6 3v4c0 3.5-2.7 6-6 7-3.3-1-6-3.5-6-7V4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="7.5" r="1.6" fill="currentColor"/></svg>',
     mortar: '<svg viewBox="0 0 16 16"><path d="M3 13h10M4 13V9l3-2h4l2 2v4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 4l2-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    vulcan: '<svg viewBox="0 0 16 16"><path d="M2 8h12M4 8V5M8 8V4M12 8V5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2 11h12" stroke="currentColor" stroke-width="1.6"/></svg>',
+    pulse: '<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2.2" fill="currentColor"/><path d="M8 1v3M8 12v3M1 8h3M12 8h3" stroke="currentColor" stroke-width="1.3"/></svg>',
     mod: '<svg viewBox="0 0 16 16"><path d="M10 2l4 4-6 6-3 1-1-3 6-8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="4" cy="12" r="1.3" fill="currentColor"/></svg>',
     /* generic card-kind schematics — subroutine / firmware / corruption */
     k_skill: '<svg viewBox="0 0 16 16"><path d="M5 4L2 8l3 4M11 4l3 4-3 4M9.5 3l-3 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -697,7 +906,9 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     { id: "foundry", name: "FOUNDRY", desc: "refines matter, feeds nearby units +8%", cost: { fe: 40, cu: 10, si: 10 }, dmg: 0, rate: 0, range: 92, draw: 1, col: "#e0854e" },
     { id: "rail", name: "RAIL", desc: "long-range sniper, punches 80% of armor", cost: { fe: 20, cu: 12, si: 26 }, dmg: 60, rate: 0.5, range: 150, draw: 3, col: "#ffd23f" },
     { id: "aegis", name: "AEGIS", desc: "slow field 30% \u2014 no guns, pure drag", cost: { fe: 12, cu: 26, si: 6 }, dmg: 0, rate: 0, range: 70, draw: 1, col: "#7fd8c8" },
-    { id: "mortar", name: "MORTAR", desc: "lobbed shells, area splash", cost: { fe: 30, cu: 14, si: 12 }, dmg: 42, rate: 0.55, range: 118, draw: 2, col: "#c9a6e0" }
+    { id: "mortar", name: "MORTAR", desc: "lobbed shells, area splash", cost: { fe: 30, cu: 14, si: 12 }, dmg: 42, rate: 0.55, range: 118, draw: 2, col: "#c9a6e0" },
+    { id: "vulcan", name: "VULCAN", desc: "twin gatling \u2014 swarm shredder", cost: { fe: 28, cu: 18, si: 6 }, dmg: 4, rate: 9, range: 80, draw: 1, col: "#ff8a3d" },
+    { id: "pulse", name: "PULSE CORE", desc: "periodic radial blast, area denial", cost: { fe: 34, cu: 16, si: 14 }, dmg: 30, rate: 0.33, range: 64, draw: 2, col: "#b18cd9" }
   ];
   var MODULES = [
     { id: "flame", name: "FLAMETHROWER HEAD", forIds: ["needle"], desc: "Needle rounds ignite hosts \u2014 40% of each shot burns over 2.5s", cost: { fe: 14, cu: 16, si: 4 }, rar: 1, col: "#ff8a3d" },
@@ -710,7 +921,9 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     { id: "overvolt", name: "OVERVOLT CAPACITOR", forIds: ["needle", "arc", "rail"], desc: "+20% fire rate", cost: { fe: 8, cu: 18, si: 6 }, rar: 0, col: "#ffd23f" },
     { id: "hollow", name: "HOLLOW-POINT AMMO", forIds: ["needle"], desc: "Needle rounds punch through 40% of armor", cost: { fe: 12, cu: 20, si: 4 }, rar: 1, col: "#c9a6e0" },
     { id: "frag", name: "FRAG SHELLS", forIds: ["mortar"], desc: "Mortar splash radius +50%, splash damage +25%", cost: { fe: 16, cu: 12, si: 8 }, rar: 1, col: "#c9a6e0" },
-    { id: "static", name: "STATIC GRID", forIds: ["aegis"], desc: "Aegis field also zaps hosts for 2 + 0.5/level dps", cost: { fe: 10, cu: 20, si: 8 }, rar: 1, col: "#8fd8ff" }
+    { id: "static", name: "STATIC GRID", forIds: ["aegis"], desc: "Aegis field also zaps hosts for 2 + 0.5/level dps", cost: { fe: 10, cu: 20, si: 8 }, rar: 1, col: "#8fd8ff" },
+    { id: "tungsten", name: "TUNGSTEN BARRELS", forIds: ["vulcan"], desc: "Vulcan +25% fire rate, rounds punch 30% of armor", cost: { fe: 10, cu: 16, si: 4 }, rar: 1, col: "#ff8a3d" },
+    { id: "resonance", name: "RESONANCE CHAMBER", forIds: ["pulse"], desc: "Pulse blast radius +45% and damage +20%", cost: { fe: 12, cu: 14, si: 12 }, rar: 1, col: "#b18cd9" }
   ];
   var DECK_CARDS = [
     /* circuit boards — the only way to deploy units */
@@ -721,6 +934,8 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     { id: "board_rail", name: "RAIL BOARD", kind: "board", tower: 4, desc: "print a RAIL \u2014 long-range armor-piercing sniper", cost: CARDS[4].cost, rar: 2, exhaust: true },
     { id: "board_aegis", name: "AEGIS BOARD", kind: "board", tower: 5, desc: "print an AEGIS \u2014 30% slow field, pure drag", cost: CARDS[5].cost, rar: 1 },
     { id: "board_mortar", name: "MORTAR BOARD", kind: "board", tower: 6, desc: "print a MORTAR \u2014 lobbed shells, area splash", cost: CARDS[6].cost, rar: 1, exhaust: true },
+    { id: "board_vulcan", name: "VULCAN BOARD", kind: "board", tower: 7, desc: "print a VULCAN \u2014 twin gatling, swarm shredder", cost: CARDS[7].cost, rar: 0 },
+    { id: "board_pulse", name: "PULSE BOARD", kind: "board", tower: 8, desc: "print a PULSE CORE \u2014 periodic radial blast", cost: CARDS[8].cost, rar: 1 },
     /* subroutines — one-shot skills */
     { id: "skill_scrap", name: "SCRAP INFUSION", kind: "skill", desc: "gain 26 Fe \xB7 10 Cu \xB7 4 Si", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
     { id: "skill_hotswap", name: "HOTSWAP", kind: "skill", desc: "draw 2 cards", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
@@ -750,6 +965,16 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     { id: "skill_artillery", name: "ARTILLERY CALL", kind: "skill", desc: "3 shells strike random hostiles for 45 damage each", cost: { fe: 0, cu: 10, si: 14 }, rar: 2, exhaust: true },
     { id: "skill_deepfreeze", name: "DEEPFREEZE", kind: "skill", desc: "all hostiles slowed 60% for 6s", cost: { fe: 0, cu: 12, si: 10 }, rar: 1, exhaust: true },
     { id: "skill_recal", name: "RECALIBRATE", kind: "skill", desc: "selected unit gains +1 level, free", cost: { fe: 0, cu: 0, si: 10 }, rar: 1, exhaust: true },
+    /* battlefield subroutines — wave-2 wave control */
+    { id: "skill_gravity", name: "GRAVITY WELL", kind: "skill", desc: "drag every hostile 70px back and slow them 40% for 3s", cost: { fe: 0, cu: 10, si: 6 }, rar: 1, exhaust: true },
+    { id: "skill_nano", name: "NANO SWARM", kind: "skill", desc: "every hostile corrodes: 30 hull damage over 4s", cost: { fe: 0, cu: 10, si: 8 }, rar: 1, exhaust: true },
+    { id: "skill_breaker", name: "CIRCUIT BREAKER", kind: "skill", desc: "stun every hostile for 2s \u2014 frozen in place", cost: { fe: 0, cu: 14, si: 4 }, rar: 2, exhaust: true },
+    { id: "skill_ore", name: "ORE VEIN", kind: "skill", desc: "gain 40 Fe \xB7 20 Cu", cost: { fe: 0, cu: 0, si: 0 }, rar: 0, exhaust: true },
+    { id: "skill_patch", name: "FIELD PATCH", kind: "skill", desc: "restore every deployed unit to full integrity", cost: { fe: 10, cu: 6, si: 0 }, rar: 0, exhaust: true },
+    { id: "skill_bond", name: "SALVAGE BOND", kind: "skill", desc: "gain 6 Fe for each wave cleared this sector", cost: { fe: 0, cu: 4, si: 0 }, rar: 0 },
+    { id: "skill_wreck", name: "WRECKING BALL", kind: "skill", desc: "scrap your weakest unit for a 100% matter refund", cost: { fe: 0, cu: 6, si: 0 }, rar: 1, exhaust: true },
+    { id: "skill_assembly", name: "ASSEMBLY CALL", kind: "skill", desc: "draw up to 2 circuit boards from the draw pile", cost: { fe: 0, cu: 0, si: 6 }, rar: 1, exhaust: true },
+    { id: "skill_overcharge", name: "OVERCHARGE", kind: "skill", desc: "the next board you print deploys at level 2", cost: { fe: 0, cu: 0, si: 10 }, rar: 1, retain: true },
     /* firmware — sector-wide powers, always exhaust */
     { id: "power_lathe", name: "TUNGSTEN LATHE", kind: "power", desc: "+10% unit damage this sector", cost: { fe: 20, cu: 0, si: 8 }, rar: 1, exhaust: true },
     { id: "power_sub", name: "SUBSTATION", kind: "power", desc: "+4 grid capacity this sector", cost: { fe: 0, cu: 18, si: 0 }, rar: 0, exhaust: true },
@@ -761,12 +986,16 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     { id: "power_feedback", name: "FEEDBACK CLOCK", kind: "power", desc: "+12% unit fire rate this sector", cost: { fe: 0, cu: 16, si: 6 }, rar: 2, exhaust: true },
     { id: "power_failsafe", name: "CORE FAILSAFE", kind: "power", desc: "restore 2 core at the start of each new turn", cost: { fe: 14, cu: 5, si: 0 }, rar: 1, exhaust: true },
     { id: "power_scrubber", name: "ERROR SCRUBBER", kind: "power", desc: "curses exhaust harmlessly at turn end this sector", cost: { fe: 8, cu: 8, si: 8 }, rar: 2, exhaust: true },
+    { id: "power_reactor", name: "ARC REACTOR", kind: "power", desc: "arcs chain to +1 target this sector", cost: { fe: 12, cu: 16, si: 10 }, rar: 1, exhaust: true },
+    { id: "power_seek", name: "HOMING RIG", kind: "power", desc: "units +20% range this sector", cost: { fe: 8, cu: 14, si: 8 }, rar: 1, exhaust: true },
+    { id: "power_drone", name: "SCAVENGER DRONE", kind: "power", desc: "+12% salvage from every source this sector", cost: { fe: 14, cu: 6, si: 4 }, rar: 1, exhaust: true },
+    { id: "power_repulsor", name: "REPULSOR FIELD", kind: "power", desc: "hostiles march 8% slower this sector", cost: { fe: 0, cu: 12, si: 6 }, rar: 1, exhaust: true },
+    { id: "power_efficiency", name: "BLUEPRINT EFFICIENCY", kind: "power", desc: "circuit boards cost 10% less matter this sector", cost: { fe: 8, cu: 8, si: 8 }, rar: 2, exhaust: true },
+    { id: "power_shield", name: "SHIELD GRID", kind: "power", desc: "deployed units gain +25% integrity this sector", cost: { fe: 10, cu: 10, si: 6 }, rar: 1, exhaust: true },
     /* curses — dead draws acquired by risky technology; never offered directly */
     { id: "curse_jam", name: "SIGNAL JAM", kind: "curse", desc: "unplayable \xB7 clogs your hand until discarded", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
     { id: "curse_rust", name: "RUST DEBT", kind: "curse", desc: "unplayable \xB7 lose 8 Fe when left in hand at turn end", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
     { id: "curse_breach", name: "HULL BREACH", kind: "curse", desc: "unplayable \xB7 lose 1 core when left in hand at turn end", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
-    { id: "power_reactor", name: "ARC REACTOR", kind: "power", desc: "arcs chain to +1 target this sector", cost: { fe: 12, cu: 16, si: 10 }, rar: 1, exhaust: true },
-    { id: "power_seek", name: "HOMING RIG", kind: "power", desc: "units +20% range this sector", cost: { fe: 8, cu: 14, si: 8 }, rar: 1, exhaust: true },
     /* modules — bolt an upgrade onto one deployed unit, then exhaust */
     { id: "mod_flame", name: "FLAMETHROWER HEAD", kind: "module", module: "flame", desc: "bolt onto a NEEDLE \u2014 rounds ignite hosts: 40% of each shot burns 2.5s", cost: MODULES[0].cost, rar: 1, innate: true, exhaust: true },
     { id: "mod_tesla", name: "TESLA FRAME", kind: "module", module: "tesla", desc: "bolt onto an ARC COIL \u2014 chains +2 targets, full strength, +40% reach", cost: MODULES[1].cost, rar: 1, exhaust: true },
@@ -778,7 +1007,9 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     { id: "mod_overvolt", name: "OVERVOLT CAPACITOR", kind: "module", module: "overvolt", desc: "bolt onto a gun turret \u2014 +20% fire rate", cost: MODULES[7].cost, rar: 0, exhaust: true },
     { id: "mod_hollow", name: "HOLLOW-POINT AMMO", kind: "module", module: "hollow", desc: "bolt onto a NEEDLE \u2014 rounds punch 40% of armor", cost: MODULES[8].cost, rar: 1, exhaust: true },
     { id: "mod_frag", name: "FRAG SHELLS", kind: "module", module: "frag", desc: "bolt onto a MORTAR \u2014 +50% splash radius, +25% splash damage", cost: MODULES[9].cost, rar: 1, exhaust: true },
-    { id: "mod_static", name: "STATIC GRID", kind: "module", module: "static", desc: "bolt onto an AEGIS \u2014 field zaps hosts for 2 + 0.5/level dps", cost: MODULES[10].cost, rar: 1, exhaust: true }
+    { id: "mod_static", name: "STATIC GRID", kind: "module", module: "static", desc: "bolt onto an AEGIS \u2014 field zaps hosts for 2 + 0.5/level dps", cost: MODULES[10].cost, rar: 1, exhaust: true },
+    { id: "mod_tungsten", name: "TUNGSTEN BARRELS", kind: "module", module: "tungsten", desc: "bolt onto a VULCAN \u2014 +25% fire rate, rounds punch 30% of armor", cost: MODULES[11].cost, rar: 1, exhaust: true },
+    { id: "mod_resonance", name: "RESONANCE CHAMBER", kind: "module", module: "resonance", desc: "bolt onto a PULSE CORE \u2014 blast radius +45%, damage +20%", cost: MODULES[12].cost, rar: 1, exhaust: true }
   ];
   var STARTER_DECK = [
     "board_needle",
@@ -807,7 +1038,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     { id: "clock", name: "OVERCLOCK FIRMWARE", desc: "+10% global fire rate", rar: 2 },
     { id: "cryo", name: "CRYO COOLANT", desc: "+12% turret range", rar: 1 },
     { id: "metal", name: "METALLURGY", desc: "+18% foundry output", rar: 1 },
-    { id: "tread", name: "TRACTION TREADS", desc: "beam slow 45% \u2192 62%", rar: 2 },
+    { id: "tread", name: "TRACTION TREADS", desc: "beam slow 55% \u2192 72%", rar: 2 },
     { id: "magnet", name: "SALVAGE MAGNETS", desc: "+0.5 extra grid per capture", rar: 2 },
     { id: "plating", name: "EMERGENCY PLATING", desc: "+6 core integrity, immediately", rar: 1 },
     { id: "tungsten", name: "TUNGSTEN ROUNDS", desc: "+10% turret damage", rar: 2 },
@@ -822,7 +1053,12 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     { id: "lens", name: "ORBITAL LENS", desc: "Rail range +25%", rar: 1 },
     { id: "shock", name: "VOLT COUPLING", desc: "arcs chain to one extra target, +15% arc damage", rar: 2 },
     { id: "flak", name: "PROXIMITY FUSES", desc: "mortar splash radius +40%", rar: 1 },
-    { id: "shrine", name: "SALVAGE SHRINE", desc: "captured titans yield +4 bonus silicon", rar: 2 }
+    { id: "shrine", name: "SALVAGE SHRINE", desc: "captured titans yield +4 bonus silicon", rar: 2 },
+    { id: "anvil", name: "SELF-HEALING HULL", desc: "deployed units restore 1 integrity per second", rar: 2 },
+    { id: "harvester", name: "GRID RECLAIMER", desc: "units refund +10% matter when recycled", rar: 1 },
+    { id: "bulwark", name: "ARMORED MOUNTS", desc: "deployed units gain +40% integrity", rar: 1 },
+    { id: "catalyst", name: "PULSE CATALYST", desc: "pulse blasts fire 20% more often", rar: 2 },
+    { id: "drill", name: "BOREHEAD GATLINGS", desc: "Vulcan fire rate +15%", rar: 1 }
   ];
   var ETYPES = {
     scrap: { hp: 1, sp: 1, dmg: 1, armor: 0, reward: 1, size: 6, col: "#c9714a" },
@@ -834,7 +1070,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     phase: { hp: 1.1, sp: 0.9, dmg: 1, armor: 0, reward: 1.2, size: 6, col: "#7fa8d9" },
     carrier: { hp: 6, sp: 0.65, dmg: 3, armor: 0.1, reward: 4, size: 11, col: "#a58a6a" },
     dread: { hp: 22, sp: 0.45, dmg: 6, armor: 0.35, regen: 8e-3, reward: 12, size: 15, col: "#8a2a30" },
-    reaver: { hp: 1.6, sp: 0.72, dmg: 2, armor: 0.5, reward: 2.6, size: 8, col: "#b8e986" }
+    reaver: { hp: 1.6, sp: 0.72, dmg: 2, armor: 0.5, reward: 2.6, size: 8, col: "#b8e986" },
+    shrieker: { hp: 0.8, sp: 1.3, dmg: 1, armor: 0, reward: 1.6, size: 5, col: "#ff5f5f", explode: 40 },
+    jammer: { hp: 1.5, sp: 0.75, dmg: 2, armor: 0.15, reward: 2.4, size: 7, col: "#c78bff" },
+    overlord: { hp: 30, sp: 0.38, dmg: 8, armor: 0.4, reward: 20, size: 18, col: "#ff3b47", regen: 0.01 }
   };
   var SECTORS = [
     { name: "RUST BASIN", mix: { fe: 1.25, cu: 0.9, si: 0.8 }, tint: "#241b16", grid: "#33261f", path: "#4a382c", haz: 0 },
@@ -843,10 +1082,13 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     { name: "GRINDER'S DELTA", mix: { fe: 1.05, cu: 1.05, si: 0.95 }, tint: "#221818", grid: "#332424", path: "#4d3535", haz: 5 },
     { name: "MAGNA TRENCH", mix: { fe: 1.1, cu: 0.95, si: 1.1 }, tint: "#191a22", grid: "#272a37", path: "#3d4155", haz: 3 },
     { name: "VAULT MERIDIAN", mix: { fe: 0.9, cu: 1.15, si: 1.05 }, tint: "#221f14", grid: "#33301f", path: "#57513a", haz: 4, gild: 2.2 },
-    { name: "REAVER SLAG", mix: { fe: 1.15, cu: 0.9, si: 1 }, tint: "#171c16", grid: "#26301f", path: "#46563a", haz: 6, gild: 0.4 }
+    { name: "REAVER SLAG", mix: { fe: 1.15, cu: 0.9, si: 1 }, tint: "#171c16", grid: "#26301f", path: "#46563a", haz: 6, gild: 0.4 },
+    { name: "NULL HORIZON", mix: { fe: 0.7, cu: 0.9, si: 1.8 }, tint: "#131a20", grid: "#1d2832", path: "#33424f", haz: 3, reaver: 0.6 },
+    { name: "OBSIDIAN VEINS", mix: { fe: 1.1, cu: 1.25, si: 0.6 }, tint: "#151519", grid: "#26262e", path: "#3f3f4d", haz: 0, gild: 0.5 }
   ];
   var HAZNAMES = ["PLATED HEAVY", "SWARM DENSE", "REGEN CELLS", "PHASE SHIFTERS", "GILDED VEINS", "CARRIER BELT", "REAVER ARMOR"];
   var HAZCODE = ["PL", "SW", "RG", "PH", "GL", "CR", "RV"];
+  var HAZCOL = ["#8d9aa5", "#d8a24a", "#7ac98a", "#7fa8d9", "#ffd23f", "#a58a6a", "#b8e986"];
   var MEDALS = [
     ["firstcap", "FIRST RECLAMATION"],
     ["cap25", "SALVAGE BARON"],
@@ -858,14 +1100,37 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     ["gild5", "GOLD RUSH"],
     ["surge10", "OVERDRIVER"],
     ["calib", "MASTERWORK"],
-    ["burn10", "PYROMANIAC"]
+    ["burn10", "PYROMANIAC"],
+    ["score10k", "OVERCLOCKED"],
+    ["relic5", "HOARDER"],
+    ["noleak", "UNBREACHABLE"],
+    ["tower10", "IRON FOREST"]
   ];
+  var MEDAL_TIPS = {
+    firstcap: "capture your first hostile",
+    cap25: "capture 25 hostiles in one run",
+    titancap: "capture a TITAN intact",
+    k200: "destroy 200 hostiles in one run",
+    streak20: "chain a \xD720 salvage streak",
+    sector3: "clear 3 sectors",
+    dreadkill: "destroy a DREAD",
+    gild5: "capture 5 GILDED hostiles",
+    surge10: "fire 10 surges (card or ability)",
+    calib: "calibrate a unit to level 10",
+    burn10: "let fire finish 10 hostiles",
+    score10k: "reach 10,000 score",
+    relic5: "own 5 relics at once",
+    noleak: "clear a sector without a single leak",
+    tower10: "field 10 deployed units at once"
+  };
   var EVENTS = [
     { id: "ion", name: "ION STORM" },
     { id: "grav", name: "GRAV SHEAR" },
     { id: "rust", name: "RUST WIND" },
     { id: "solar", name: "SOLAR FLARE" },
-    { id: "frost", name: "HARD FROST" }
+    { id: "frost", name: "HARD FROST" },
+    { id: "meteor", name: "METEOR SHOWER" },
+    { id: "silicon", name: "SILICON RAIN" }
   ];
   var SPEEDS = [1, 2, 4, 8, 16, 32, 64, 100];
   var TGTS = ["first", "last", "strong", "weak", "near", "far"];
@@ -877,6 +1142,20 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     near: "NEAR",
     far: "FAR"
   };
+  var TGT_TIPS = {
+    first: "furthest along the route \u2014 closest to the core",
+    last: "nearest to the spawn gates",
+    strong: "highest current hull",
+    weak: "lowest current hull",
+    near: "closest to the unit",
+    far: "farthest from the unit"
+  };
+  var OBJECTIVES = [
+    { id: "noleak", name: "SEALED HULL", desc: "clear wave 12 with zero leaks \u2014 reward +2 grid" },
+    { id: "cap5", name: "SALVAGE PROTOCOL", desc: "capture 5 hostiles intact \u2014 reward +2 grid" },
+    { id: "early", name: "BLITZ DOCTRINE", desc: "launch wave 1 within 10s \u2014 reward +50 Fe" },
+    { id: "nofall", name: "IRON DISCIPLINE", desc: "lose no units this sector \u2014 reward +100 Fe" }
+  ];
 
   // src/sectors.ts
   var SPOT_PATH_GAP = 0.085;
@@ -1054,6 +1333,73 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (!spawnCands.length) spawnCands.push(0, 1);
     return { nodes, edges, core, spawnCands };
   }
+  function genSpiral(r) {
+    const landscape = W >= H;
+    const n = 14;
+    const nodes = [];
+    const cx = 0.5 + jittered(r, 0.04), cy = 0.5 + jittered(r, 0.04);
+    const a0 = 0.016 + r() * 8e-3;
+    const b0 = 0.028 + r() * 0.012;
+    const th0 = 0.6 + r() * 1.2;
+    const turns = 3.1 + r() * 0.7;
+    const ang = (k) => th0 + k / (n - 1) * turns * Math.PI * 2;
+    const R = (k) => a0 + b0 * (ang(k) - th0);
+    let maxR = 0;
+    for (let k = 0; k < n; k++) maxR = Math.max(maxR, R(k));
+    const fit = (landscape ? 0.44 : 0.38) / maxR;
+    for (let k = 0; k < n; k++) {
+      const th = ang(k), rad = R(k) * fit;
+      nodes.push({
+        x: clamp(cx + Math.cos(th) * rad * (landscape ? 1 : 0.85), 0.08, 0.92),
+        y: clamp(cy + Math.sin(th) * rad * (landscape ? 0.85 : 1), 0.1, 0.9),
+        px: 0,
+        py: 0,
+        kind: "junc"
+      });
+    }
+    const edges = [];
+    for (let k = 0; k < n - 1; k++) edges.push([k, k + 1]);
+    const perTurn = Math.max(3, Math.round((n - 1) / turns));
+    const have = /* @__PURE__ */ new Set();
+    const key = (a, b) => a < b ? a + "-" + b : b + "-" + a;
+    const spine = (a, b) => key(a, b);
+    for (let k = 0; k < n; k++) {
+      if (k > 0) have.add(spine(k - 1, k));
+    }
+    let chords = 0;
+    for (let k = 1; k < n - perTurn && chords < 4; k += Math.max(1, Math.floor(perTurn / 2))) {
+      const j = Math.min(n - 1, k + perTurn);
+      if (j <= k + 1 || have.has(key(k, j))) continue;
+      let crosses = 0;
+      const A = nodes[k], B = nodes[j];
+      for (let m = 0; m < n - 1; m++) {
+        if (properCross(A, B, nodes[m], nodes[m + 1])) crosses++;
+      }
+      if (crosses >= 1) {
+        have.add(key(k, j));
+        edges.push([k, j]);
+        chords++;
+      }
+    }
+    let guard = 0;
+    while (chords < 2 && guard++ < 60) {
+      const a = 1 + Math.floor(r() * (n - 3));
+      const b = a + 3 + Math.floor(r() * (n - a - 3));
+      if (b >= n || have.has(key(a, b))) continue;
+      let crosses = 0;
+      for (let m = 0; m < n - 1; m++) {
+        if (properCross(nodes[a], nodes[b], nodes[m], nodes[m + 1])) crosses++;
+      }
+      if (crosses >= 1) {
+        have.add(key(a, b));
+        edges.push([a, b]);
+        chords++;
+      }
+    }
+    const core = 0;
+    const spawnCands = [n - 1, Math.max(1, n - 5), Math.max(2, Math.floor(n / 2))];
+    return { nodes, edges, core, spawnCands };
+  }
   function genWeb(r) {
     const landscape = W >= H;
     const n = 12;
@@ -1199,13 +1545,14 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   function genSector() {
     S.sectorGen++;
     const r = mulberry32(S.seed + S.sector * 7919 >>> 0);
-    const gens = [genGrid, genRadial, genRiver, genWeb, genLoops];
+    const gens = [genGrid, genRadial, genRiver, genWeb, genLoops, genSpiral];
     const g = assemble(r, gens[Math.floor(r() * gens.length)]);
     S.nodes = g.nodes;
     S.edges = g.edges;
     S.spawns = g.spawns;
     S.coreIdx = g.core;
     S.spawnIdx = 0;
+    S.scorch = [];
     genSpots(r);
     buildGraphPx();
     S.motes = [];
@@ -1367,8 +1714,11 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   }
 
   // src/fx.ts
+  function cap() {
+    return S.settings.particles === 0 ? 120 : S.settings.particles === 2 ? 600 : 300;
+  }
   function burst(x, y, col, n) {
-    if (S.parts.length > 300) return;
+    if (S.parts.length > cap()) return;
     for (var i = 0; i < n; i++) {
       var a = Math.random() * 6.283, sp = 30 + Math.random() * 80;
       S.parts.push({
@@ -1383,7 +1733,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     }
   }
   function ringBurst(x, y, col, n, speed) {
-    if (S.parts.length > 300) return;
+    if (S.parts.length > cap()) return;
     for (var i = 0; i < n; i++) {
       var a = i / n * 6.283;
       S.parts.push({
@@ -1398,7 +1748,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     }
   }
   function sparks(x, y, col, n) {
-    if (S.parts.length > 300) return;
+    if (S.parts.length > cap()) return;
     for (var i = 0; i < n; i++) {
       S.parts.push({
         x: x + (Math.random() - 0.5) * 8,
@@ -1412,7 +1762,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     }
   }
   function debris(x, y, col, n) {
-    if (S.parts.length > 300) return;
+    if (S.parts.length > cap()) return;
     for (var i = 0; i < n; i++) {
       S.parts.push({
         x: x + (Math.random() - 0.5) * 10,
@@ -1426,70 +1776,34 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     }
   }
   function float(x, y, txt, col) {
+    if (S.floats.length > 80) S.floats.shift();
     S.floats.push({ x, y, txt, col, t: 1.1 });
   }
   function bigFloat(x, y, txt, col) {
+    if (S.floats.length > 80) S.floats.shift();
     S.floats.push({ x, y, txt, col, t: 1.6 });
   }
   function shockwave(x, y, col, maxR) {
     S.rings.push({ x, y, r: 3, max: maxR, col });
   }
   function shake(amount) {
+    if (!S.settings.shake) return;
     S.shake = Math.min(10, S.shake + amount);
   }
-
-  // src/economy.ts
-  function capZone() {
-    return S.relics.scan ? 0.36 : 0.3;
-  }
-  function gridCap() {
-    var g = S.gridMax;
-    if (S.relics.fusion) {
-      for (var i = 0; i < S.towers.length; i++) {
-        if (CARDS[S.towers[i].i].id === "foundry") g += 1;
-      }
+  function dust(x, y) {
+    if (S.parts.length > cap()) return;
+    for (var i = 0; i < 6; i++) {
+      var a = Math.random() * 6.283;
+      S.parts.push({
+        x,
+        y: y + 4,
+        vx: Math.cos(a) * (8 + Math.random() * 14),
+        vy: -6 - Math.random() * 10,
+        life: 0.4 + Math.random() * 0.3,
+        col: "#8f9aa0",
+        grav: 26
+      });
     }
-    return g;
-  }
-  function sector() {
-    return SECTORS[S.sector % SECTORS.length];
-  }
-  function canAfford(c) {
-    return RKEYS.every(function(k) {
-      return S.res[k] >= (c[k] || 0);
-    });
-  }
-  function spend(c) {
-    RKEYS.forEach(function(k) {
-      S.res[k] -= c[k] || 0;
-    });
-  }
-  function usedGrid() {
-    var g = 0;
-    S.towers.forEach(function(t) {
-      g += CARDS[t.i].draw + 0.3 * (t.lvl - 1);
-    });
-    return g;
-  }
-  function scavMult() {
-    return S.relics.scav ? 1.12 : 1;
-  }
-  function gainRes(b, x, y) {
-    RKEYS.forEach(function(k) {
-      S.res[k] += b[k] || 0;
-    });
-    S.stat.salvaged += (b.fe || 0) + (b.cu || 0) + (b.si || 0);
-    if (x !== void 0 && y !== void 0) {
-      var bits = [];
-      if (b.fe >= 0.5) bits.push("+" + b.fe.toFixed(1) + "Fe");
-      if (b.cu >= 0.5) bits.push("+" + b.cu.toFixed(1) + "Cu");
-      if (b.si >= 0.3) bits.push("+" + b.si.toFixed(1) + "Si");
-      if (bits.length) float(x, y, bits.join(" "), "#e0b184");
-    }
-  }
-  function upCost(t) {
-    var b = CARDS[t.i].cost, m = 0.75 * Math.pow(1.28, t.lvl - 1);
-    return { fe: Math.ceil(b.fe * m), cu: Math.ceil(b.cu * m), si: Math.ceil(b.si * m) };
   }
 
   // src/audio.ts
@@ -1502,7 +1816,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       try {
         this.ac = new (window.AudioContext || window.webkitAudioContext)();
         this.g = this.ac.createGain();
-        this.g.gain.value = 0.14;
+        this.g.gain.value = 0.14 * S.settings.vol;
         this.g.connect(this.ac.destination);
       } catch (e) {
       }
@@ -1537,6 +1851,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       if (fast && S.speed > 6) return;
       if (this.ac && this.ac.state === "suspended") this.ac.resume();
       if (this.ac && this.ac.state !== "running") return;
+      if (this.muted) return;
       switch (name) {
         case "shoot":
           this.t("square", 920, 240, 0.06, 0.5);
@@ -1571,6 +1886,18 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
           this.n(0.06, 0.3);
           this.t("triangle", 540, 760, 0.12, 0.4);
           break;
+        case "repair":
+          this.t("triangle", 260, 700, 0.14, 0.5);
+          this.n(0.05, 0.25);
+          break;
+        case "stun":
+          this.t("square", 1200, 300, 0.1, 0.4);
+          this.t("square", 900, 250, 0.09, 0.3);
+          break;
+        case "meteor":
+          this.t("sawtooth", 900, 90, 0.3, 0.35);
+          this.n(0.12, 0.4);
+          break;
         case "leak":
           this.t("sine", 110, 55, 0.3, 0.9);
           this.n(0.15, 0.5);
@@ -1599,6 +1926,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
           this.t("sine", 520, 780, 0.16, 0.55);
           this.t("triangle", 1040, 1560, 0.2, 0.3);
           break;
+        case "medal":
+          this.t("triangle", 660, 990, 0.12, 0.5);
+          this.t("triangle", 990, 1480, 0.18, 0.4);
+          break;
         case "fanfare":
           this.t("sawtooth", 196, 196, 0.3, 0.5);
           var f = this;
@@ -1618,9 +1949,28 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     $(id).classList.add("open");
     S.modalOpen = true;
     Snd.init();
+    var first = $(id).querySelector("button");
+    if (first) {
+      try {
+        first.focus({ preventScroll: true });
+      } catch (e) {
+      }
+    }
   }
   function closeModal(id) {
     $(id).classList.remove("open");
+    S.modalOpen = document.querySelector(".modal.open") ? true : false;
+  }
+  function closeTopModal() {
+    var list = Array.prototype.slice.call(document.querySelectorAll(".modal.open"));
+    var top = list[list.length - 1];
+    if (!top) return;
+    if (top.id === "endModal") return;
+    if (top.id === "confirmModal") {
+      confirmNo();
+      return;
+    }
+    top.classList.remove("open");
     S.modalOpen = document.querySelector(".modal.open") ? true : false;
   }
   document.querySelectorAll("[data-close]").forEach(function(b) {
@@ -1628,6 +1978,261 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       closeModal(b.getAttribute("data-close"));
     });
   });
+  function askConfirm(title, msg, okLabel, danger, onOk) {
+    S.pendingConfirm = { title, msg, okLabel, danger, onOk };
+    renderConfirm();
+    openModal("confirmModal");
+  }
+  function renderConfirm() {
+    var c = S.pendingConfirm;
+    if (!c) return;
+    $("confirmTitle").textContent = c.title;
+    $("confirmMsg").textContent = c.msg;
+    var ok = $("confirmOk");
+    ok.textContent = c.okLabel;
+    ok.classList.toggle("danger", c.danger);
+  }
+  function confirmYes() {
+    var c = S.pendingConfirm;
+    S.pendingConfirm = null;
+    closeModal("confirmModal");
+    if (c) c.onOk();
+  }
+  function confirmNo() {
+    S.pendingConfirm = null;
+    closeModal("confirmModal");
+  }
+
+  // src/persist.ts
+  var SAVE_KEY = "fz_save_v2";
+  var SET_KEY = "fz_set_v2";
+  var HIST_KEY = "fz_hist_v2";
+  var BEST_KEY = "fz_best_v2";
+  function loadSettings() {
+    var raw = storeGet(SET_KEY);
+    if (!raw) return null;
+    try {
+      var st2 = JSON.parse(raw);
+      if (st2 && typeof st2 === "object" && typeof st2.vol === "number") return st2;
+    } catch (e) {
+    }
+    return null;
+  }
+  function saveSettings() {
+    try {
+      storeSet(SET_KEY, JSON.stringify(S.settings));
+    } catch (e) {
+    }
+  }
+  function saveRun() {
+    if (S.over && !S.endWin) return;
+    var towers = S.towers.map(function(t) {
+      return {
+        /* unit coords so saves survive viewport changes */
+        x: t.x / Math.max(1, W),
+        y: t.y / Math.max(1, H),
+        i: t.i,
+        lvl: t.lvl,
+        tgt: t.tgt,
+        inv: { fe: t.inv.fe, cu: t.inv.cu, si: t.inv.si },
+        mods: t.mods.slice(),
+        hp: t.hp,
+        kills: t.kills,
+        caps: t.caps,
+        dealt: t.dealt
+      };
+    });
+    var enemies = S.enemies.map(function(e) {
+      return {
+        type: e.type,
+        d: e.d,
+        hp: e.hp,
+        mhp: e.mhp,
+        sp: e.sp,
+        armor: e.armor,
+        reward: e.reward,
+        size: e.size,
+        col: e.col,
+        regen: e.regen,
+        slowT: e.slowT,
+        vet: e.vet,
+        perk: e.perk,
+        burn: e.burn,
+        burnT: e.burnT,
+        stun: e.stun,
+        gravT: e.gravT,
+        route: e.route.slice()
+      };
+    });
+    var shape = {
+      v: 2,
+      seed: S.seed,
+      sector: S.sector,
+      wave: S.wave,
+      phase: S.phase,
+      buildT: S.buildT,
+      buildMax: S.buildMax,
+      core: S.core,
+      coreMax: S.coreMax,
+      gridMax: S.gridMax,
+      res: { fe: S.res.fe, cu: S.res.cu, si: S.res.si },
+      time: S.time,
+      speed: S.speed,
+      mode: S.mode,
+      savedW: 0,
+      towers,
+      enemies,
+      deck: S.deck.map(function(c) {
+        return { uid: c.uid, id: c.id };
+      }),
+      drawPile: S.drawPile.map(function(c) {
+        return { uid: c.uid, id: c.id };
+      }),
+      hand: S.hand.map(function(c) {
+        return { uid: c.uid, id: c.id };
+      }),
+      discardPile: S.discardPile.map(function(c) {
+        return { uid: c.uid, id: c.id };
+      }),
+      exhaustPile: S.exhaustPile.map(function(c) {
+        return { uid: c.uid, id: c.id };
+      }),
+      ranks: S.ranks,
+      relics: S.relics,
+      medals: S.medals,
+      stat: S.stat,
+      streak: { n: S.streak.n, t: S.streak.t },
+      cleared: S.cleared,
+      ability: S.ability,
+      score: S.score,
+      historySaved: S.historySaved,
+      mulliganUsed: S.mulliganUsed,
+      overcharge: S.overcharge,
+      objective: S.objective ? { id: S.objective.id, name: S.objective.name, desc: S.objective.desc, done: S.objective.done, track: S.objective.track } : null,
+      spawnIdx: S.spawnIdx,
+      waveCount: 0
+    };
+    shape.waveCount = S.stat.waves;
+    shape.savedW = 1;
+    try {
+      storeSet(SAVE_KEY, JSON.stringify(shape));
+    } catch (e) {
+    }
+  }
+  function hasSave() {
+    return !!storeGet(SAVE_KEY);
+  }
+  function clearSave() {
+    try {
+      window.localStorage.removeItem(SAVE_KEY);
+    } catch (e) {
+    }
+  }
+  function loadRun() {
+    var raw = storeGet(SAVE_KEY);
+    if (!raw) return false;
+    try {
+      var sh = JSON.parse(raw);
+      if (!sh || sh.v !== 2 || typeof sh.seed !== "number") return false;
+      S.seed = sh.seed >>> 0;
+      S.sector = sh.sector;
+      S.wave = sh.wave;
+      S.phase = sh.phase === "wave" ? "wave" : "build";
+      S.buildT = sh.buildT;
+      S.buildMax = sh.buildMax;
+      S.core = sh.core;
+      S.coreMax = sh.coreMax;
+      S.gridMax = sh.gridMax;
+      S.res = { fe: sh.res.fe, cu: sh.res.cu, si: sh.res.si };
+      S.time = sh.time || 0;
+      S.speed = sh.speed || 1;
+      S.mode = sh.mode === "capture" ? "capture" : "loot";
+      S.deck = sh.deck.map(function(c) {
+        return { uid: c.uid, id: c.id };
+      });
+      S.drawPile = sh.drawPile.map(function(c) {
+        return { uid: c.uid, id: c.id };
+      });
+      S.hand = sh.hand.map(function(c) {
+        return { uid: c.uid, id: c.id };
+      });
+      S.discardPile = sh.discardPile.map(function(c) {
+        return { uid: c.uid, id: c.id };
+      });
+      S.exhaustPile = sh.exhaustPile.map(function(c) {
+        return { uid: c.uid, id: c.id };
+      });
+      S.ranks = sh.ranks || {};
+      S.relics = sh.relics || {};
+      S.medals = sh.medals || {};
+      S.stat = sh.stat || S.stat;
+      S.streak = sh.streak || { n: 0, t: 0 };
+      S.cleared = sh.cleared || {};
+      S.ability = sh.ability || { surge: { cd: 0, until: 0 }, weld: { cd: 0 } };
+      S.score = sh.score || 0;
+      S.historySaved = !!sh.historySaved;
+      S.mulliganUsed = !!sh.mulliganUsed;
+      S.overcharge = !!sh.overcharge;
+      S.objective = sh.objective || null;
+      S.spawnIdx = sh.spawnIdx || 0;
+      S.enemies = [];
+      S.towers = sh.towers.map(function(t) {
+        var mhp = towerMhp({ i: t.i, lvl: t.lvl });
+        return {
+          x: t.x * W,
+          y: t.y * H,
+          i: t.i,
+          lvl: t.lvl,
+          cool: 0,
+          ang: -Math.PI / 2,
+          flash: 0,
+          slow: 0,
+          tgt: t.tgt,
+          inv: { fe: t.inv.fe, cu: t.inv.cu, si: t.inv.si },
+          mods: t.mods.slice(),
+          hp: Math.min(t.hp, mhp),
+          mhp,
+          kills: t.kills,
+          caps: t.caps,
+          dealt: t.dealt,
+          dropT: 0,
+          jam: 0
+        };
+      });
+      S.pendingEnemies = sh.enemies;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  function loadHistory() {
+    var raw = storeGet(HIST_KEY);
+    if (!raw) return;
+    try {
+      var h = JSON.parse(raw);
+      if (Array.isArray(h)) S.history = h.slice(0, 10);
+    } catch (e) {
+    }
+  }
+  function saveHistory() {
+    try {
+      storeSet(HIST_KEY, JSON.stringify(S.history.slice(0, 10)));
+    } catch (e) {
+    }
+  }
+  function loadBest() {
+    var raw = storeGet(BEST_KEY);
+    if (raw) {
+      var n = parseInt(raw, 10);
+      if (!isNaN(n) && n > 0) S.best = n;
+    }
+  }
+  function saveBest() {
+    try {
+      storeSet(BEST_KEY, String(S.best));
+    } catch (e) {
+    }
+  }
 
   // src/draft.ts
   function rollOffers() {
@@ -1669,6 +2274,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     return out;
   }
   function openDraft() {
+    if (S.over) return;
     S.draftOffers = rollOffers();
     var h = "";
     for (var i = 0; i < S.draftOffers.length; i++) {
@@ -1686,8 +2292,11 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         ribbon = '<span class="okind">' + KIND_LABEL[d.kind] + "</span>";
         glyph = d.kind === "board" ? GLYPHS[CARDS[d.tower].id] : GLYPHS["k_" + d.kind] || "";
         tags = flags.length ? '<div class="tags">' + flags.join("") + "</div>" : "";
-        name = d.name;
-        desc = d.desc + ". Added to your circuit deck.";
+        var owned = S.deck.filter(function(c2) {
+          return c2.id === o.id;
+        }).length;
+        name = d.name + (owned ? ' <u class="owned">\xD7' + owned + " OWNED</u>" : "");
+        desc = d.desc + ". Added to your circuit deck." + (owned ? " You already field " + owned + " copies." : "");
         pick = "\u25B8 ADD TO DECK";
       } else if (o.kind === "rank") {
         var c = CARDS.filter(function(x) {
@@ -1697,7 +2306,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         ribbon = '<span class="okind">BLUEPRINT UPGRADE</span>';
         glyph = GLYPHS[c.id];
         name = c.name + " Mk." + (S.ranks[o.id] + 2);
-        desc = "Permanent +5% damage & output for every " + c.name + " unit, current and future.";
+        desc = "Permanent +5% damage & output for every " + c.name + " unit, current and future. Now Mk." + (S.ranks[o.id] + 1) + ".";
       } else {
         var r = RELICS.filter(function(x) {
           return x.id === o.id;
@@ -1707,8 +2316,9 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         name = r.name;
         desc = r.desc;
       }
-      h += '<div class="offer" data-off="' + i + '" style="color:' + col + '">' + ribbon + '<span class="rar r' + o.rar + '">' + rn + "</span><b>" + (glyph || "") + name + "</b><p>" + desc + "</p>" + tags + '<div class="pick">' + pick + "</div></div>";
+      h += '<div class="offer" data-off="' + i + '" style="color:' + col + '">' + ribbon + '<span class="rar r' + o.rar + '">' + rn + "</span><b>" + (glyph || "") + name + "</b><p>" + desc + "</p>" + tags + '<div class="pick">' + pick + " <kbd>" + (i + 1) + "</kbd></div></div>";
     }
+    h += '<div class="offer skip" data-off="3" style="color:#8c9da4"><span class="okind">FIELD SCRAP</span><b>SKIP</b><p>Decline the cache. The fabrication rig sweeps the debris: gain 15 Fe immediately.</p><div class="pick">\u25B8 TAKE SCRAP <kbd>4</kbd></div></div>';
     $("offers").innerHTML = h;
     var nodes = $("offers").children;
     for (i = 0; i < nodes.length; i++) {
@@ -1722,6 +2332,15 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     Snd.play("draft");
   }
   function chooseDraft(i) {
+    if (i === 3) {
+      S.res.fe += 15;
+      toast("CACHE DECLINED \u2014 +15Fe SCRAP");
+      Snd.play("ui");
+      closeModal("draftModal");
+      hud(true);
+      saveRun();
+      return;
+    }
     var o = S.draftOffers[i];
     if (!o) return;
     if (o.kind === "card") {
@@ -1739,6 +2358,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         S.coreMax += 6;
         S.core += 6;
       }
+      var owned = RELICS.filter(function(r) {
+        return S.relics[r.id];
+      }).length;
+      if (owned >= 5) award("relic5");
       toast(RELICS.filter(function(r) {
         return r.id === o.id;
       })[0].name + " INSTALLED");
@@ -1746,6 +2369,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     Snd.play("upgrade");
     closeModal("draftModal");
     hud(true);
+    saveRun();
   }
 
   // src/world.ts
@@ -1795,6 +2419,11 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   }
 
   // src/reset.ts
+  function rollObjective() {
+    var r = mulberry32(S.seed + S.sector * 131 >>> 0);
+    var o = OBJECTIVES[Math.floor(r() * OBJECTIVES.length)];
+    S.objective = { id: o.id, name: o.name, desc: o.desc, done: false, track: 0 };
+  }
   function resetSector(idx) {
     S.sector = idx;
     S.wave = 0;
@@ -1804,7 +2433,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     S.coreMax = 20 + (S.relics.plating ? 6 : 0);
     S.core = S.coreMax;
     S.gridMax = 10 + (S.relics.cap ? 8 : 0);
-    S.res = { fe: 120 + idx * 6, cu: 65, si: 36 };
+    S.res = { fe: 120 + idx * 6, cu: 65 + idx * 4, si: 36 + idx * 2 };
     S.towers = [];
     S.enemies = [];
     S.shots = [];
@@ -1813,21 +2442,52 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     S.floats = [];
     S.rings = [];
     S.spawnQ = [];
+    S.spawnT = 0;
     S.over = false;
     S.selTower = null;
     S.selCard = null;
     S.event = null;
+    S.ghost = null;
+    S.inspect = null;
+    S.streak = { n: 0, t: 0 };
+    S.screenFlash = { col: "", a: 0 };
+    S.gridPulse = null;
+    S.scorch = [];
+    S.undoStack = [];
+    S.overcharge = false;
     S.ability = { surge: { cd: 0, until: 0 }, weld: { cd: 0 } };
+    rollObjective();
     sectorShuffle();
     genSector();
-    banner("SECTOR " + pad2(idx + 1), SECTORS[idx % SECTORS.length].name + " \u2014 DEPLOYED");
+    banner("SECTOR " + pad2(idx + 1), SECTORS[idx % SECTORS.length].name + " \u2014 DEPLOYED" + (S.objective ? " \xB7 OBJECTIVE: " + S.objective.name : ""));
     Snd.play("wave");
     hud(true);
   }
+  function startNewRun(seed) {
+    var st2 = S.settings;
+    var fresh = freshState(seed);
+    Object.keys(fresh).forEach(function(k) {
+      S[k] = fresh[k];
+    });
+    S.settings = st2;
+    clearSave();
+    loadHistory();
+    loadBest();
+    saveSettings();
+    initRunDeck();
+    genWorld();
+    genSector();
+    hud(true);
+    toast("NEW RUN \u2014 SEED " + S.seed);
+    Snd.play("draft");
+  }
 
   // src/worldmap.ts
-  function drawWorld() {
+  var hoverIdx = -1;
+  function drawWorld(hover) {
+    if (hover !== void 0) hoverIdx = hover;
     var r = wcv.getBoundingClientRect(), dw = r.width, dh = r.height;
+    if (!dw || !dh) return;
     wcv.width = Math.max(1, dw * dpr);
     wcv.height = Math.max(1, dh * dpr);
     wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1874,14 +2534,25 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       wctx.moveTo(ax, ay);
       wctx.lineTo(bx, by);
       wctx.stroke();
+      if (open) {
+        wctx.strokeStyle = "rgba(62,220,176,.6)";
+        wctx.lineWidth = 2;
+        wctx.setLineDash([2, 10]);
+        wctx.lineDashOffset = -(performance.now() / 40 % 12);
+        wctx.beginPath();
+        wctx.moveTo(ax, ay);
+        wctx.lineTo(bx, by);
+        wctx.stroke();
+        wctx.setLineDash([]);
+        wctx.lineDashOffset = 0;
+      }
     }
-    wctx.setLineDash([]);
     for (i = 0; i < S.worldNodes.length; i++) {
       n = S.worldNodes[i];
       var nx = n.x * dw, ny = n.y * dh, sec = SECTORS[n.idx % SECTORS.length];
       var isCur = n.idx === S.sector, done = !!S.cleared[n.idx], open = nodeOpen(i);
-      var col = done ? "#3edcb0" : open ? "#f0ece4" : "#3a4a52";
-      var tt = performance.now() / 1e3;
+      var col = done ? "#3ec9b0" : open ? "#f0ece4" : "#3a4a52";
+      var tt = S.time;
       wctx.save();
       wctx.translate(nx, ny);
       if (open && !done) {
@@ -1897,6 +2568,13 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         cg.addColorStop(1, "rgba(62,201,176,0)");
         wctx.fillStyle = cg;
         wctx.fillRect(-20, -20, 40, 40);
+      }
+      if (hoverIdx === i) {
+        wctx.strokeStyle = hexA("#ffa02f", 0.7);
+        wctx.lineWidth = 1.5;
+        wctx.beginPath();
+        wctx.arc(0, 0, 16, 0, 7);
+        wctx.stroke();
       }
       if (isCur) {
         wctx.strokeStyle = "#ffb83a";
@@ -1938,7 +2616,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         wctx.lineTo(-6, -12);
         wctx.stroke();
       }
-      wctx.fillStyle = "#697a80";
+      wctx.fillStyle = HAZCOL[sec.haz] || "#697a80";
       wctx.fillText(HAZCODE[sec.haz] || "?", 14, -8);
       wctx.restore();
     }
@@ -1962,7 +2640,8 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       Snd.play("error");
       return;
     }
-    $("nodeInfo").textContent = "SECTOR " + pad2(idx + 1) + " \xB7 " + sec.name + " \xB7 " + HAZNAMES[sec.haz] + " \xB7 click again to deploy";
+    var wavesCleared = S.cleared[idx] ? " \xB7 cleared (waves escalate on revisit)" : " \xB7 12 waves to clear";
+    $("nodeInfo").textContent = "SECTOR " + pad2(idx + 1) + " \xB7 " + sec.name + " \xB7 " + HAZNAMES[sec.haz] + wavesCleared + " \xB7 click again to deploy";
     Snd.play("ui");
     if (S.worldPick === idx) {
       closeModal("mapModal");
@@ -1973,35 +2652,64 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   }
   function openMap() {
     S.worldPick = -1;
+    hoverIdx = -1;
     openModal("mapModal");
     requestAnimationFrame(function() {
-      requestAnimationFrame(drawWorld);
+      requestAnimationFrame(function() {
+        drawWorld(-1);
+      });
     });
   }
 
   // src/end.ts
   function showEnd(win) {
+    if (S.endStatsShown && S.over) return;
     S.over = true;
     S.endWin = !!win;
+    S.endStatsShown = true;
+    clearSave();
+    if (!S.historySaved) {
+      S.historySaved = true;
+      var d = /* @__PURE__ */ new Date();
+      S.history.unshift({
+        seed: S.seed,
+        win,
+        sector: S.sector,
+        wave: S.wave,
+        score: S.score,
+        kills: S.stat.kills,
+        captures: S.stat.captures,
+        date: d.getMonth() + 1 + "/" + d.getDate() + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes())
+      });
+      S.history = S.history.slice(0, 10);
+      saveHistory();
+    }
+    saveBest();
     $("endTitle").textContent = win ? "FRONT SECURED" : "CORE OFFLINE";
     $("endTitle").style.color = win ? "#3ec9b0" : "#e5484d";
     $("endSub").textContent = win ? "ALL 12 SECTORS CLEARED" : "SECTOR " + pad2(S.sector + 1) + " LOST";
-    $("endStats").innerHTML = 'waves survived <b style="color:var(--amber)">' + S.stat.waves + '</b> \xB7 kills <b style="color:var(--copper)">' + S.stat.kills + '</b> \xB7 captures <b style="color:var(--teal)">' + S.stat.captures + '</b> \xB7 leaks <b style="color:var(--red)">' + S.stat.leaks + '</b> \xB7 matter salvaged <b style="color:var(--gold)">' + fmt(S.stat.salvaged) + '</b><br>commendations: <b style="color:var(--teal)">' + (MEDALS.filter(function(m) {
+    var relicCount = RELICS.filter(function(r) {
+      return S.relics[r.id];
+    }).length;
+    $("endStats").innerHTML = 'seed <b style="color:var(--amber)">' + S.seed + '</b> \xB7 score <b style="color:var(--gold)">' + fmt(S.score) + "</b> (best " + fmt(S.best) + ')<br>waves survived <b style="color:var(--amber)">' + S.stat.waves + '</b> \xB7 kills <b style="color:var(--copper)">' + S.stat.kills + '</b> \xB7 captures <b style="color:var(--teal)">' + S.stat.captures + '</b> \xB7 leaks <b style="color:var(--red)">' + S.stat.leaks + '</b> \xB7 matter salvaged <b style="color:var(--gold)">' + fmt(S.stat.salvaged) + "</b> \xB7 relics " + relicCount + '<br>commendations: <b style="color:var(--teal)">' + (MEDALS.filter(function(m) {
       return S.medals[m[0]];
     }).map(function(m) {
       return m[1];
     }).join(" \xB7 ") || "none yet") + "</b><br><br>" + (win ? "The salvage front is yours. Rebuild and push an endless escalation, or open the route network." : "Rebuild keeps your circuit deck, blueprint ranks, relics and cleared routes. Matter resets; exhausted cards return.");
     $("endRebuild").textContent = win ? "ENDLESS ESCALATION" : "REBUILD SECTOR";
     openModal("endModal");
+    hud(true);
   }
   $("endRebuild").addEventListener("pointerdown", function() {
     closeModal("endModal");
     if (S.endWin) {
       S.over = false;
+      S.endStatsShown = false;
       hud(true);
       return;
     }
     S.over = false;
+    S.endStatsShown = false;
     resetSector(S.sector);
   });
   $("endMap").addEventListener("pointerdown", function() {
@@ -2014,7 +2722,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     return (34 + 11 * w) * Math.pow(1.058, w - 1);
   }
   function waveTag(w) {
-    return w % 12 === 0 ? "ASSAULT" : w % 8 === 0 ? "TITAN" : w % 5 === 0 ? "RUSH" : "";
+    return w % 24 === 0 ? "SIEGE" : w % 12 === 0 ? "ASSAULT" : w % 8 === 0 ? "TITAN" : w % 5 === 0 ? "RUSH" : "";
   }
   function compFor(w) {
     var r = mulberry32(S.seed * 31 + w * 101 + S.sector * 7 >>> 0);
@@ -2026,6 +2734,8 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (w >= 5) {
       types.push("swarm");
       wts.push(2 + w * 0.2);
+      types.push("shrieker");
+      wts.push(0.8 + w * 0.12);
     }
     if (w >= 9) {
       types.push("regen");
@@ -2046,6 +2756,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (w >= 6) {
       types.push("reaver");
       wts.push(0.6 + w * 0.05 + (sector().reaver || 0));
+    }
+    if (w >= 8) {
+      types.push("jammer");
+      wts.push(0.8 + w * 0.06);
     }
     var haz = sector().haz;
     if (haz === 0 && w >= 3) wts[types.indexOf("plated")] *= 2;
@@ -2076,8 +2790,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       for (i = 0; i < tn; i++) out.push("titan");
     }
     if (w % 12 === 0) out.push("dread");
+    if (w % 24 === 0) out.push("overlord");
     return out;
   }
+  var PERKS = ["fast", "tough", "regen"];
   function spawnEnemy(type) {
     var e = ETYPES[type];
     var gate = S.spawns[S.spawnIdx % S.spawns.length];
@@ -2086,21 +2802,27 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     var rp = routePolyline(route);
     var diag = Math.hypot(W, H);
     var spScale = clamp(rp.len / (diag * 0.85), 0.7, 1.5);
-    var hp = waveHP(S.wave) * e.hp * (0.9 + mulberry32((S.time * 1e3 | 0) ^ type.length ^ S.enemies.length)() * 0.2);
-    var vet = type !== "titan" && type !== "dread" && Math.random() < Math.min(0.25, 0.03 + S.wave * 8e-3);
+    var jr = mulberry32(S.seed + S.spawnIdx * 4051 >>> 0);
+    var hp = waveHP(S.wave) * e.hp * (0.9 + jr() * 0.2);
+    var vet = type !== "titan" && type !== "dread" && type !== "overlord" && Math.random() < Math.min(0.25, 0.03 + S.wave * 8e-3);
+    var perk = vet ? PERKS[Math.floor(jr() * PERKS.length)] : void 0;
     if (vet) hp *= 1.6;
+    if (perk === "tough") hp *= 1.25;
+    var sp = (26 + 0.5 * S.wave) * e.sp * spScale;
+    if (perk === "fast") sp *= 1.35;
     S.enemies.push({
       type,
       vet,
+      perk,
       d: -14,
       hp,
       mhp: hp,
-      sp: (26 + 0.5 * S.wave) * e.sp * spScale,
+      sp,
       armor: e.armor,
       reward: e.reward * (vet ? 1.7 : 1),
       size: e.size + (vet ? 2 : 0),
       col: e.col,
-      regen: e.regen || 0,
+      regen: (e.regen || 0) + (perk === "regen" ? 0.01 : 0),
       slow: 0,
       slowT: 0,
       frozen: false,
@@ -2108,6 +2830,9 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       burn: 0,
       burnT: 0,
       beamT: -1,
+      stun: 0,
+      gravT: 0,
+      bossT: 0,
       x: rp.pts[0].x,
       y: rp.pts[0].y,
       ang: 0,
@@ -2116,9 +2841,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       routePx: rp.pts,
       routeLen: rp.len
     });
+    S.rings.push({ x: rp.pts[0].x, y: rp.pts[0].y, r: 2, max: 14, col: "#e5484d" });
   }
   function launchWave() {
-    if (S.phase !== "build" || S.over) return;
+    if (S.phase !== "build" || S.over || S.modalOpen) return;
     if (S.buildT > 4) {
       var bonus = S.buildT * (S.relics.ledger ? 1.6 : 0.8);
       S.res.fe += bonus;
@@ -2134,6 +2860,12 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (tag === "RUSH") S.spawnInt *= 0.5;
     var er = mulberry32((S.seed ^ S.wave * 2654435769) >>> 0);
     S.event = er() < 0.4 ? EVENTS[Math.floor(er() * EVENTS.length)] : null;
+    if (S.objective && S.objective.id === "early" && S.wave === 1 && S.buildT > 8) {
+      S.objective.done = true;
+      S.res.fe += 50;
+      addScore(200);
+      toast("OBJECTIVE BLITZ DOCTRINE COMPLETE \u2014 +50Fe");
+    }
     var cp = S.nodes[S.coreIdx];
     shockwave(cp.px, cp.py, "#ffb83a", 50);
     shake(2);
@@ -2145,6 +2877,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     );
     Snd.play("wave");
     hud(true);
+    saveRun();
   }
   function endWave() {
     S.phase = "build";
@@ -2153,6 +2886,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     S.event = null;
     S.gridMax += 2;
     S.stat.waves++;
+    addScore(50 * S.wave);
     var cp2 = S.nodes[S.coreIdx];
     shockwave(cp2.px, cp2.py, "#3edcb0", 40);
     S.screenFlash = { col: "#3edcb0", a: 0.05 };
@@ -2166,29 +2900,64 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       return;
     }
     if (S.relics.repair) S.core = Math.min(S.coreMax, S.core + 1);
-    if (S.wave % 12 === 0 && !S.cleared[S.sector]) {
-      S.cleared[S.sector] = true;
-      gainRes({ fe: 80 + S.wave * 6, cu: 30 + S.wave * 2, si: 12 + S.wave });
-      shockwave(cp2.px, cp2.py, "#3edcb0", 80);
-      ringBurst(cp2.px, cp2.py, "#3edcb0", 24, 60);
-      shake(5);
-      S.screenFlash = { col: "#3edcb0", a: 0.15 };
-      banner("SECTOR CLEARED", "ROUTE NETWORK EXPANDED");
-      Snd.play("fanfare");
-      if (Object.keys(S.cleared).length >= 3) award("sector3");
-      if (Object.keys(S.cleared).length >= 12 && !S.victoryShown) {
-        S.victoryShown = true;
-        setTimeout(function() {
-          showEnd(true);
-        }, 900);
+    if (S.wave % 12 === 0) {
+      if (!S.cleared[S.sector]) {
+        S.cleared[S.sector] = true;
+        gainRes({ fe: 80 + S.wave * 6, cu: 30 + S.wave * 2, si: 12 + S.wave });
+        addScore(250 * (S.sector + 1));
+        shockwave(cp2.px, cp2.py, "#3edcb0", 80);
+        ringBurst(cp2.px, cp2.py, "#3edcb0", 24, 60);
+        shake(5);
+        S.screenFlash = { col: "#3edcb0", a: 0.15 };
+        banner("SECTOR CLEARED", "ROUTE NETWORK EXPANDED");
+        Snd.play("fanfare");
+        if (Object.keys(S.cleared).length >= 3) award("sector3");
+        if (Object.keys(S.cleared).length >= 12 && !S.victoryShown) {
+          S.victoryShown = true;
+          setTimeout(function() {
+            showEnd(true);
+          }, 900);
+        }
+      }
+      if (S.objective && !S.objective.done) {
+        var o = S.objective;
+        var ok = false;
+        if (o.id === "noleak" && o.track === 0) ok = true;
+        if (o.id === "cap5" && o.track >= 5) ok = true;
+        if (o.id === "nofall" && o.track === 0) ok = true;
+        if (ok) {
+          o.done = true;
+          if (o.id === "noleak") {
+            S.gridMax += 2;
+            award("noleak");
+          }
+          if (o.id === "cap5") S.gridMax += 2;
+          if (o.id === "nofall") S.res.fe += 100;
+          toast("OBJECTIVE " + o.name + " COMPLETE \u2014 BONUS PAID");
+          Snd.play("fanfare");
+          addScore(200);
+        } else {
+          toast("OBJECTIVE " + o.name + " FAILED \u2014 BETTER LUCK NEXT SECTOR");
+        }
       }
     }
     if (S.wave % 2 === 0) openDraft();
     hud(true);
+    saveRun();
   }
-  function killEnemy(e, captured) {
+  function killEnemy(e, captured, by) {
     if (e.dead) return;
     e.dead = true;
+    if (S.scorch.length < 120) {
+      S.scorch.push({ x: e.x, y: e.y, seed: (S.scorch.length * 31 + S.wave) % 100 });
+    }
+    if (by) {
+      by.kills++;
+      if (captured) by.caps++;
+    }
+    if (!S.stat.byType[e.type]) S.stat.byType[e.type] = 0;
+    S.stat.byType[e.type]++;
+    if (S.objective && S.objective.id === "cap5" && captured) S.objective.track++;
     var mix = sector().mix, sc = scavMult(), mult = captured ? 2.5 : 1;
     var now = S.time;
     if (now - S.streak.t < 2.2) S.streak.n++;
@@ -2198,6 +2967,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (S.streak.n >= 10 && S.streak.n % 10 === 0) {
       bigFloat(e.x, e.y - 18, "STREAK \xD7" + S.streak.n, "#ffd84a");
       Snd.play("draft");
+      addScore(20);
     }
     var rw = (e.reward || 1) * (1 + Math.min(S.relics.tithe ? 40 : 25, S.streak.n) * 0.01);
     var b = {
@@ -2205,6 +2975,9 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       cu: e.mhp * 0.011 * rw * mix.cu * sc * mult,
       si: e.mhp * 45e-4 * rw * mix.si * sc * mult
     };
+    if (S.event && S.event.id === "silicon") b.si *= 1.3;
+    var scoreGain = captured ? 25 : 10;
+    scoreGain += Math.round(e.reward * (captured ? 5 : 2));
     if (captured) {
       if (e.type === "titan") b.si += 1 + (S.relics.shrine ? 4 : 0);
       S.gridMax += S.relics.magnet ? 0.9 : 0.4;
@@ -2226,7 +2999,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       S.stat.kills++;
       if (S.stat.kills >= 200) award("k200");
       if (e.type === "dread") award("dreadkill");
-      if (e.type === "dread" || e.type === "titan") {
+      if (e.type === "dread" || e.type === "titan" || e.type === "overlord") {
         shake(5);
         S.screenFlash = { col: "#f04a50", a: 0.06 };
         shockwave(e.x, e.y, "#f04a50", 50);
@@ -2262,14 +3035,48 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
           sw2.ang = p2.ang;
         }
       }
+      if (e.type === "shrieker") {
+        var radius = ETYPES.shrieker.explode || 40;
+        S.towers.forEach(function(t) {
+          if (Math.hypot(t.x - e.x, t.y - e.y) <= radius) {
+            var dt2 = 2 * (S.wave >= 10 ? 1.5 : 1);
+            damageTower(t, dt2, "#ff5f5f");
+          }
+        });
+        S.rings.push({ x: e.x, y: e.y, r: 4, max: radius, col: "#ff5f5f" });
+        shake(2);
+      }
+      if (e.type === "overlord" && !captured) {
+        var pool = RELICS.filter(function(r) {
+          return !S.relics[r.id];
+        });
+        if (pool.length) {
+          var relic = pool[Math.floor(Math.random() * pool.length)];
+          S.relics[relic.id] = true;
+          if (relic.id === "cap") S.gridMax += 8;
+          if (relic.id === "plating") {
+            S.coreMax += 6;
+            S.core += 6;
+          }
+          var owned = RELICS.filter(function(r) {
+            return S.relics[r.id];
+          }).length;
+          if (owned >= 5) award("relic5");
+          toast("ANNIHILATOR DROPPED RELIC \xB7 " + relic.name);
+          Snd.play("fanfare");
+        }
+      }
     }
     gainRes(b, e.x, e.y);
+    addScore(scoreGain);
+    if (scoreGain >= 100) scoreFloat(e.x, e.y, scoreGain);
     Snd.play("boom", true);
   }
   function leak(e) {
     e.dead = true;
     S.core -= ETYPES[e.type].dmg;
     S.stat.leaks++;
+    if (S.objective && S.objective.id === "noleak") S.objective.track++;
     shake(6);
     S.screenFlash = { col: "#f04a50", a: 0.12 };
     shockwave(e.x, e.y, "#f04a50", 40);
@@ -2313,6 +3120,15 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     }
     return a;
   }
+  var KIND_ORDER = { board: 0, skill: 1, power: 2, module: 3, curse: 4 };
+  function sortHand() {
+    if (!S.settings.handSort) return;
+    S.hand.sort(function(a, b) {
+      var da = defOf(a), db = defOf(b);
+      var k = KIND_ORDER[da.kind] - KIND_ORDER[db.kind];
+      return k !== 0 ? k : da.name < db.name ? -1 : da.name > db.name ? 1 : 0;
+    });
+  }
   function initRunDeck() {
     S.deck = STARTER_DECK.map(function(id) {
       return { uid: uidC++, id };
@@ -2334,10 +3150,14 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     S.exhaustPile = [];
     S.drawPile = shuffleInPlace(S.deck.slice());
     S.selCard = null;
+    S.overcharge = false;
+    S.mulliganUsed = false;
+    S.undoStack = [];
     for (var i = S.drawPile.length - 1; i >= 0 && S.hand.length < handSize(); i--) {
       if (defOf(S.drawPile[i]).innate) S.hand.push(S.drawPile.splice(i, 1)[0]);
     }
     drawCards(handSize() - S.hand.length);
+    sortHand();
   }
   function drawCards(n) {
     var drawn = 0;
@@ -2351,6 +3171,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       S.hand.push(S.drawPile.pop());
       drawn++;
     }
+    if (S.settings.handSort) sortHand();
     return drawn;
   }
   function startTurn() {
@@ -2423,9 +3244,15 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     var d = defOf(ci);
     return isTargetedSkill(d) ? d : null;
   }
+  function effCost(c) {
+    var m = boardCostMult();
+    if (m === 1) return c;
+    return { fe: Math.ceil(c.fe * m), cu: Math.ceil(c.cu * m), si: Math.ceil(c.si * m) };
+  }
   function canPlayDef(d) {
     if (d.kind === "curse") return { ok: false, why: "CURSES CANNOT BE PLAYED \u2014 DISCARD OR PURGE IT" };
-    if (!canAfford(d.cost)) return { ok: false, why: "INSUFFICIENT MATTER" };
+    var cost = d.kind === "board" ? effCost(d.cost) : d.cost;
+    if (!canAfford(cost)) return { ok: false, why: "INSUFFICIENT MATTER" };
     if (d.kind === "board") {
       var c = CARDS[d.tower];
       if (usedGrid() + c.draw > gridCap()) return { ok: false, why: "GRID CAPACITY EXCEEDED" };
@@ -2437,6 +3264,12 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       return defOf(ci).kind === "curse";
     })) {
       return { ok: false, why: "NO CURSE IN HAND" };
+    }
+    if (d.id === "skill_wreck" && !S.towers.length) return { ok: false, why: "NO DEPLOYED UNITS" };
+    if (d.id === "skill_patch" && !S.towers.some(function(t) {
+      return t.hp < t.mhp;
+    })) {
+      return { ok: false, why: "UNITS AT FULL INTEGRITY" };
     }
     return { ok: true };
   }
@@ -2458,6 +3291,13 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (d.kind === "power") {
       S.powers[d.id] = (S.powers[d.id] || 0) + 1;
       if (d.id === "power_sub") S.gridMax += 4;
+      if (d.id === "power_shield") {
+        for (i = 0; i < S.towers.length; i++) {
+          var st2 = S.towers[i];
+          st2.mhp = towerMhp(st2);
+          st2.hp = Math.min(st2.hp + 5, st2.mhp);
+        }
+      }
       S.rings.push({ x: cp.x, y: cp.y, r: 6, max: 52, col: "#ffd23f" });
       float(cp.x, cp.y - 18, d.name + " INSTALLED", "#ffd23f");
       resolveAfterPlay(handIdx);
@@ -2720,6 +3560,113 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         Snd.play("weld");
         msg += " \u2014 ALL HOSTILES SLOWED 60% FOR 6s";
         break;
+      case "skill_gravity": {
+        var gripped = 0;
+        for (i = 0; i < S.enemies.length; i++) {
+          var gv = S.enemies[i];
+          if (gv.dead) continue;
+          gv.d = Math.max(-14, gv.d - 70);
+          gv.gravT = 3;
+          gripped++;
+        }
+        S.rings.push({ x: cp.x, y: cp.y, r: 8, max: 88, col: "#b18cd9" });
+        Snd.play("beam");
+        msg += gripped ? " \u2014 " + gripped + " HOSTILES DRAGGED & SLOWED 3s" : " \u2014 NOTHING IN THE FIELD (EXHAUSTED)";
+        break;
+      }
+      case "skill_nano": {
+        var corroded = 0;
+        for (i = 0; i < S.enemies.length; i++) {
+          var no = S.enemies[i];
+          if (no.dead) continue;
+          no.burn = Math.max(no.burn, 7.5);
+          no.burnT = Math.max(no.burnT, 4);
+          corroded++;
+        }
+        S.rings.push({ x: cp.x, y: cp.y, r: 8, max: 70, col: "#7ac98a" });
+        Snd.play("beam");
+        msg += corroded ? " \u2014 NANO SWARM DEVOURING " + corroded + " HOSTILES" : " \u2014 NOTHING TO CORRODE (EXHAUSTED)";
+        break;
+      }
+      case "skill_breaker": {
+        var stunned = 0;
+        for (i = 0; i < S.enemies.length; i++) {
+          var br = S.enemies[i];
+          if (br.dead) continue;
+          br.stun = 2;
+          br.flash = 0.12;
+          stunned++;
+        }
+        S.rings.push({ x: cp.x, y: cp.y, r: 8, max: 76, col: "#ffd23f" });
+        Snd.play("arc");
+        msg += stunned ? " \u2014 " + stunned + " HOSTILES STUNNED 2s" : " \u2014 NOTHING TO STUN (EXHAUSTED)";
+        break;
+      }
+      case "skill_ore":
+        gainRes({ fe: 40, cu: 20, si: 0 }, cp.x, cp.y - 10);
+        msg += " \u2014 +40Fe +20Cu";
+        break;
+      case "skill_patch": {
+        var patched = 0;
+        for (i = 0; i < S.towers.length; i++) {
+          var pt = S.towers[i];
+          if (pt.hp < pt.mhp) {
+            pt.hp = pt.mhp;
+            patched++;
+            burst(pt.x, pt.y, "#3ec9b0", 5);
+          }
+        }
+        Snd.play("weld");
+        msg += " \u2014 " + patched + " UNIT" + (patched === 1 ? "" : "S") + " RESTORED TO FULL INTEGRITY";
+        break;
+      }
+      case "skill_bond": {
+        var pay = 6 * S.wave;
+        gainRes({ fe: pay, cu: 0, si: 0 }, cp.x, cp.y - 10);
+        msg += " \u2014 BOND PAID +" + pay + "Fe";
+        break;
+      }
+      case "skill_wreck": {
+        var weak = S.towers[0];
+        for (i = 1; i < S.towers.length; i++) {
+          var wc = S.towers[i];
+          if (wc.lvl < weak.lvl || wc.lvl === weak.lvl && wc.hp < weak.hp) weak = wc;
+        }
+        var refund = { fe: weak.inv.fe, cu: weak.inv.cu, si: weak.inv.si };
+        S.towers = S.towers.filter(function(x) {
+          return x !== weak;
+        });
+        S.beams = S.beams.filter(function(b) {
+          return b.tw !== weak;
+        });
+        if (S.selTower === weak) S.selTower = null;
+        gainRes(refund, weak.x, weak.y);
+        burst(weak.x, weak.y, "#8fa0a6", 12);
+        Snd.play("boom", true);
+        msg += " \u2014 " + CARDS[weak.i].name + " SCRAPPED \xB7 FULL REFUND";
+        break;
+      }
+      case "skill_assembly": {
+        var boards = [];
+        for (i = S.drawPile.length - 1; i >= 0 && boards.length < 2; i--) {
+          if (defOf(S.drawPile[i]).kind === "board") {
+            boards.push(S.drawPile.splice(i, 1)[0]);
+          }
+        }
+        boards.forEach(function(b) {
+          if (S.hand.length < HAND_CAP) S.hand.push(b);
+          else S.discardPile.push(b);
+        });
+        Snd.play("draft");
+        msg += " \u2014 " + boards.length + " BOARD" + (boards.length === 1 ? "" : "S") + " FABRICATED TO HAND";
+        break;
+      }
+      case "skill_overcharge":
+        S.overcharge = true;
+        S.rings.push({ x: cp.x, y: cp.y, r: 5, max: 40, col: "#ffd23f" });
+        Snd.play("upgrade");
+        msg += " \u2014 NEXT BOARD PRINTS AT LEVEL 2";
+        break;
       default:
         break;
     }
@@ -2794,17 +3741,45 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     Snd.play("upgrade");
     return d.name + " \u2014 " + CARDS[t.i].name + " +1 LEVEL";
   }
+  function freeMulligan() {
+    if (S.mulliganUsed) return "MULLIGAN ALREADY USED THIS SECTOR";
+    if (S.phase !== "build") return "MULLIGAN ONLY IN THE FABRICATION WINDOW";
+    S.mulliganUsed = true;
+    var tossed = 0;
+    for (var i = S.hand.length - 1; i >= 0; i--) {
+      var d = defOf(S.hand[i]);
+      if (d.ethereal) S.exhaustPile.push(S.hand.splice(i, 1)[0]);
+      else S.discardPile.push(S.hand.splice(i, 1)[0]);
+      tossed++;
+    }
+    var got = drawCards(handSize());
+    S.selCard = null;
+    Snd.play("draft");
+    return "MULLIGAN \u2014 TOSSED " + tossed + " \xB7 DREW " + got;
+  }
 
   // src/hud.ts
   var toastTimer = void 0;
+  var toastBusy = false;
+  var toastQueue = [];
   function toast(msg) {
+    toastQueue.push(msg);
+    if (toastQueue.length > 3) toastQueue.splice(0, toastQueue.length - 3);
+    pumpToast();
+  }
+  function pumpToast() {
+    if (toastBusy || !toastQueue.length) return;
+    toastBusy = true;
+    var msg = toastQueue.shift();
     var e = $("toast");
     e.textContent = msg;
     e.classList.add("show");
-    if (toastTimer !== void 0) clearTimeout(toastTimer);
+    var dur = Math.min(3e3, 1200 + msg.length * 14);
     toastTimer = window.setTimeout(function() {
       e.classList.remove("show");
-    }, 1400);
+      toastBusy = false;
+      window.setTimeout(pumpToast, 130);
+    }, dur);
   }
   function banner(a, b) {
     var e = $("banner");
@@ -2821,26 +3796,68 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     })[0];
     if (m) {
       toast("COMMENDATION \xB7 " + m[1]);
-      Snd.play("draft");
+      Snd.play("medal");
+      S.notif++;
     }
+  }
+  var lastFe = "";
+  var lastCu = "";
+  var lastSi = "";
+  var lastW = "";
+  var lastCore = "";
+  var lastScore = "";
+  function pulse(el) {
+    el.classList.remove("pulse");
+    void el.offsetWidth;
+    el.classList.add("pulse");
   }
   function hud(force) {
     if (force) {
       renderCards();
       renderUnit();
     }
-    $("vFe").textContent = fmt(S.res.fe);
-    $("vCu").textContent = fmt(S.res.cu);
-    $("vSi").textContent = fmt(S.res.si);
-    $("vW").textContent = usedGrid().toFixed(1) + "/" + Math.floor(gridCap() * 10) / 10;
-    $("vCore").textContent = S.core + "";
+    var fe = fmt(S.res.fe), cu = fmt(S.res.cu), si = fmt(S.res.si);
+    if (fe !== lastFe) {
+      $("vFe").textContent = fe;
+      pulse($("vFe").parentElement);
+      lastFe = fe;
+    }
+    if (cu !== lastCu) {
+      $("vCu").textContent = cu;
+      pulse($("vCu").parentElement);
+      lastCu = cu;
+    }
+    if (si !== lastSi) {
+      $("vSi").textContent = si;
+      pulse($("vSi").parentElement);
+      lastSi = si;
+    }
+    var wstr = usedGrid().toFixed(1) + "/" + Math.floor(gridCap() * 10) / 10;
+    if (wstr !== lastW) {
+      $("vW").textContent = wstr;
+      $("vW").parentElement.classList.toggle("warn", usedGrid() >= gridCap() * 0.9);
+      lastW = wstr;
+    }
+    if (S.core + "" !== lastCore) {
+      $("vCore").textContent = S.core + "";
+      $("vCore").parentElement.classList.toggle("danger", S.core <= S.coreMax * 0.35);
+      lastCore = S.core + "";
+    }
+    var scoreStr = fmt(S.score);
+    if (scoreStr !== lastScore) {
+      $("vScore").textContent = scoreStr;
+      $("vScore").parentElement.setAttribute("title", "BEST " + fmt(S.best));
+      pulse($("vScore").parentElement);
+      lastScore = scoreStr;
+    }
     $("vWave").textContent = S.wave + "/12" + (S.wave > 12 ? " \u221E" : "");
     var pb = $("phaseBig"), ps = $("phaseSub");
     if (S.phase === "build") {
       pb.textContent = "FABRICATION";
       pb.className = "";
-      ps.textContent = "window " + Math.max(0, S.buildT).toFixed(1) + "s \u2014 build, refine, prepare";
-      $("startSub").textContent = nextWaveStr() + " \xB7 " + Math.max(0, S.buildT).toFixed(1) + "s";
+      var pv = wavePreview();
+      ps.textContent = "window " + Math.max(0, S.buildT).toFixed(1) + "s \u2014 build, refine, prepare \xB7 " + pv.lines.join(" \xB7 ");
+      $("startSub").textContent = nextWaveStr() + " \xB7 " + Math.max(0, S.buildT).toFixed(1) + "s \xB7 " + "\u2605".repeat(pv.threat) + "\u2606".repeat(5 - pv.threat);
       $("startBtn").classList.remove("armed");
       $("startBtn").classList.toggle("hot", S.buildT < 5);
       $("startBtn").firstChild.textContent = "START WAVE";
@@ -2858,17 +3875,31 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       $("timefill").classList.remove("low");
     }
     $("spdVal").textContent = S.speed + "\xD7";
+    $("spdVal").classList.toggle("turbo", S.speed >= 100);
     $("modeBtn").textContent = "DOCTRINE: " + S.mode.toUpperCase();
     $("modeBtn").classList.toggle("on", S.mode === "capture");
+    $("pauseBtn").textContent = S.paused ? "\u25B6 RESUME" : "\u275A\u275A PAUSE";
+    var oc = $("objChip");
+    if (S.objective) {
+      oc.style.display = "block";
+      oc.textContent = (S.objective.done ? "\u2713 " : "\u25C7 ") + S.objective.name + " \u2014 " + S.objective.desc;
+      oc.classList.toggle("done", S.objective.done);
+    } else {
+      oc.style.display = "none";
+    }
+    var mb = $("mulliganBtn");
+    mb.style.display = S.phase === "build" && S.wave === 0 && !S.mulliganUsed && !S.modalOpen ? "inline-block" : "none";
     var sg = S.ability.surge, wl = S.ability.weld;
     $("surgeCd").textContent = S.time < sg.until ? "ACTIVE " + Math.ceil(sg.until - S.time) + "s" : S.time < sg.cd ? "RECHARGE " + Math.ceil(sg.cd - S.time) + "s" : "READY \xB7 40Fe";
     $("abilSurge").classList.toggle("cooling", S.time < sg.cd && S.time >= sg.until);
-    $("abilSurge").classList.toggle("ready", S.time >= sg.cd);
+    $("abilSurge").classList.toggle("ready", S.time >= sg.cd && S.res.fe >= 40);
+    $("abilSurge").classList.toggle("poor", S.time >= sg.cd && S.res.fe < 40);
     $("weldCd").textContent = S.core >= S.coreMax ? "CORE FULL" : S.time < wl.cd ? "RECHARGE " + Math.ceil(wl.cd - S.time) + "s" : "READY \xB7 30Fe 15Cu";
     $("abilWeld").classList.toggle("cooling", S.time < wl.cd);
     $("abilWeld").classList.toggle("ready", S.time >= wl.cd && S.core < S.coreMax);
+    $("abilWeld").classList.toggle("poor", S.time >= wl.cd && (S.res.fe < 30 || S.res.cu < 15));
     var sec = sector();
-    $("sectorName").textContent = "SECTOR " + pad2(S.sector + 1) + " \xB7 " + sec.name;
+    $("sectorName").textContent = "SECTOR " + pad2(S.sector + 1) + " \xB7 " + sec.name + (S.speed >= 100 ? " \xB7 TURBO" : "");
     var dom = "Fe";
     if (sec.mix.cu > sec.mix.fe && sec.mix.cu >= sec.mix.si) dom = "Cu";
     if (sec.mix.si > sec.mix.fe && sec.mix.si > sec.mix.cu) dom = "Si";
@@ -2876,18 +3907,21 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     var hasSel = S.selCard != null;
     $("discardCard").classList.toggle("on", hasSel);
     $("recycleCard").classList.toggle("on", hasSel);
+    $("medBtn").classList.toggle("new", S.notif > 0);
+    $("medBtn").setAttribute("title", "Commendations \u2014 " + Object.keys(S.medals).length + "/" + MEDALS.length + " earned");
     var sig = handSignature();
     if (sig !== handSig) {
       handSig = sig;
       renderCards();
     }
+    renderUnit();
   }
   var handSig = "";
   function handSignature() {
     return S.hand.map(function(ci) {
       var d = defOf(ci);
       return (canPlayDef(d).ok ? "1" : "0") + (S.res.fe >= d.cost.fe ? "" : "f") + (S.res.cu >= d.cost.cu ? "" : "c") + (S.res.si >= d.cost.si ? "" : "s");
-    }).join("|") + "\xB7" + S.hand.length + "\xB7" + S.selCard;
+    }).join("|") + "\xB7" + S.hand.length + "\xB7" + S.selCard + "\xB7" + S.selTower;
   }
   var TAG_TIP = {
     INNATE: "guaranteed in the sector\u2019s opening hand",
@@ -2928,10 +3962,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       var rankTag = d.kind === "board" && S.ranks[CARDS[d.tower].id] ? '<span class="rank">Mk.' + (S.ranks[CARDS[d.tower].id] + 1) + "</span>" : "";
       var isNew = !seenUids[ci.uid];
       if (isNew) dealt++;
-      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + "</i></div>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + '<div class="hd"><strong>' + d.name + '</strong></div><div class="icon">' + glyph + "</div><p>" + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "curse" ? "UNPLAYABLE" : d.kind === "module" ? "\u25B8 TAP A UNIT TO INSTALL" : isTargetedSkill(d) ? "\u25B8 TAP A UNIT TO CAST" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
+      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + "</i></div>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + '<div class="hd"><strong>' + d.name + '</strong></div><div class="icon">' + glyph + '</div><p title="' + d.desc + '">' + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "curse" ? "UNPLAYABLE" : d.kind === "module" ? "\u25B8 TAP A UNIT TO INSTALL" : isTargetedSkill(d) ? "\u25B8 TAP A UNIT TO CAST" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
     }
     if (!S.hand.length) {
-      h = '<div id="handEmpty">HAND EMPTY \u2014 NEW CARDS DEALT NEXT FABRICATION WINDOW</div>';
+      h = '<div id="handEmpty">HAND EMPTY \u2014 NEW CARDS DEALT NEXT FABRICATION WINDOW \xB7 [D] LEDGER</div>';
     }
     seenUids = {};
     S.hand.forEach(function(ci2) {
@@ -3010,7 +4044,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (d.retain) flags.push("RET");
     if (d.innate) flags.push("INN");
     if (d.consume) flags.push("CON");
-    return '<span class="mini" style="color:' + col + '" title="' + d.desc + '"><b>' + d.name + "</b>" + (n > 1 ? "<u>\xD7" + n + "</u>" : "") + "<i>" + KIND_LABEL[d.kind] + (flags.length ? " \xB7 " + flags.join("/") : "") + "</i></span>";
+    return '<span class="mini" style="color:' + col + '" title="' + d.name + " \u2014 " + d.desc + '"><b>' + d.name + "</b>" + (n > 1 ? "<u>\xD7" + n + "</u>" : "") + "<i>" + KIND_LABEL[d.kind] + (flags.length ? " \xB7 " + flags.join("/") : "") + "</i></span>";
   }
   function pileSection(title, list) {
     var cnt = {}, order = [];
@@ -3029,7 +4063,12 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     }).join("") : '<span class="pileEmpty">EMPTY</span>') + "</div></div>";
   }
   function openDeckModal() {
-    $("deckList").innerHTML = pileSection("HAND", S.hand) + pileSection("DRAW PILE", S.drawPile) + pileSection("DISCARD PILE", S.discardPile) + pileSection("EXHAUSTED THIS SECTOR", S.exhaustPile) + pileSection("FULL DECK", S.deck);
+    var kinds = { board: 0, skill: 0, power: 0, module: 0, curse: 0 };
+    S.deck.forEach(function(ci) {
+      kinds[defOf(ci).kind]++;
+    });
+    var summary = "boards " + kinds.board + " \xB7 skills " + kinds.skill + " \xB7 firmware " + kinds.power + " \xB7 modules " + kinds.module + " \xB7 corruptions " + kinds.curse + (S.exhaustPile.length ? " \xB7 exhausted cards return next sector" : "");
+    $("deckList").innerHTML = pileSection("HAND", S.hand) + pileSection("DRAW PILE", S.drawPile) + pileSection("DISCARD PILE", S.discardPile) + pileSection("EXHAUSTED THIS SECTOR", S.exhaustPile) + pileSection("FULL DECK", S.deck) + '<div><h4>COMPOSITION</h4><div class="pileRow"><span class="mini" style="color:var(--dim)"><b>LEDGER</b><i>' + summary + "</i></span></div></div>";
     openModal("deckModal");
     Snd.play("ui");
   }
@@ -3039,6 +4078,8 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     $("tgtRow").style.display = has ? "grid" : "none";
     var md = selModule();
     var rk = selTargetedSkill();
+    $("sellAllBtn").style.display = has ? "" : "none";
+    $("upAllBtn").style.display = has ? "" : "none";
     if (!t || !has) {
       $("unitHead").textContent = "NO UNIT SELECTED";
       $("unitStats").textContent = md ? "MODULE READY \u2014 SELECT A COMPATIBLE UNIT TO INSTALL" : rk ? "RECALIBRATE READY \u2014 TAP A UNIT TO +1 LEVEL" : "tap near a unit \u2014 nearest one is grabbed \xB7 tap again to release";
@@ -3049,10 +4090,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       $("recVal").textContent = "\u2014";
       return;
     }
-    var c = CARDS[t.i], st = stats(t), uc = upCost(t);
+    var c = CARDS[t.i], st2 = stats(t), uc = upCost(t);
     var modHtml = t.mods.map(function(id) {
       var m = modById(id);
-      return '<em style="color:' + m.col + '">' + m.name + "</em>";
+      return '<em style="color:' + m.col + '" title="' + m.desc + '">' + m.name + "</em>";
     }).join(" \xB7 ");
     $("unitMods").innerHTML = t.mods.length ? "<b>MODS</b> " + modHtml : "";
     var compat = !!(md && md.forIds.indexOf(c.id) >= 0);
@@ -3072,23 +4113,205 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       $("recalBtn").querySelector("span").textContent = "RECALIBRATE " + c.name.toUpperCase();
       $("recalBtn").querySelector("small").textContent = canAfford(rk.cost) ? "\u25B8 tap field unit or press here" : "INSUFFICIENT MATTER";
     }
-    $("unitHead").textContent = c.name + " \xB7 L" + t.lvl + (S.ranks[c.id] ? " Mk." + (S.ranks[c.id] + 1) : "") + (st.stars ? " \xB7 " + "\u2605".repeat(Math.min(st.stars, 5)) + (st.stars > 5 ? "+" + (st.stars - 5) : "") : "");
+    $("unitHead").textContent = c.name + " \xB7 L" + t.lvl + (S.ranks[c.id] ? " Mk." + (S.ranks[c.id] + 1) : "") + (st2.stars ? " \xB7 " + "\u2605".repeat(Math.min(st2.stars, 5)) + (st2.stars > 5 ? "+" + (st2.stars - 5) : "") : "");
+    var extra = " \xB7 int " + Math.ceil(t.hp) + "/" + t.mhp + (t.kills ? " \xB7 " + t.kills + " kills" : "") + (t.caps ? " \xB7 " + t.caps + " caps" : "") + (t.dealt >= 100 ? " \xB7 dealt " + fmt(t.dealt) : "");
     if (c.id === "foundry") {
       var o = foundryOut(t);
-      $("unitStats").textContent = "refines " + o.fe.toFixed(2) + "Fe " + o.cu.toFixed(2) + "Cu " + o.si.toFixed(2) + "Si /s \xB7 aura +8% rate";
+      $("unitStats").textContent = "refines " + o.fe.toFixed(2) + "Fe " + o.cu.toFixed(2) + "Cu " + o.si.toFixed(2) + "Si /s \xB7 aura +8% rate" + extra;
     } else if (c.id === "aegis") {
-      $("unitStats").textContent = "slow field " + Math.round(Math.min(50, 30 + 2 * (t.lvl - 1))) + "% \xB7 rng " + Math.round(st.range) + (hasMod(t, "static") ? " \xB7 zaps " + (2 + 0.5 * (t.lvl - 1)).toFixed(1) + "/s" : "") + " \xB7 grid " + (c.draw + 0.3 * (t.lvl - 1)).toFixed(1);
+      var slowPct = Math.round(Math.min(50, (hasMod(t, "cryo") ? 45 : 30) + 2 * (t.lvl - 1)));
+      $("unitStats").textContent = "slow field " + slowPct + "% \xB7 rng " + Math.round(st2.range) + (hasMod(t, "static") ? " \xB7 zaps " + (2 + 0.5 * (t.lvl - 1)).toFixed(1) + "/s" : "") + " \xB7 grid " + (c.draw + 0.3 * (t.lvl - 1)).toFixed(1) + extra;
+    } else if (c.id === "pulse") {
+      $("unitStats").textContent = "blast " + Math.round(st2.dmg) + " \xB7 every " + (1 / st2.rate).toFixed(1) + "s \xB7 rng " + Math.round(st2.range) + " \xB7 grid " + (c.draw + 0.3 * (t.lvl - 1)).toFixed(1) + extra;
     } else {
-      $("unitStats").textContent = "dps " + (st.dmg * st.rate).toFixed(1) + " \xB7 rng " + Math.round(st.range) + " \xB7 grid " + (c.draw + 0.3 * (t.lvl - 1)).toFixed(1) + " \xB7 tgt " + TGT_LABEL[t.tgt];
+      $("unitStats").textContent = "dps " + (st2.dmg * st2.rate).toFixed(1) + " \xB7 rng " + Math.round(st2.range) + " \xB7 grid " + (c.draw + 0.3 * (t.lvl - 1)).toFixed(1) + " \xB7 tgt " + TGT_LABEL[t.tgt] + extra;
     }
     var bs = $("tgtRow").children;
-    for (var k = 0; k < bs.length; k++) bs[k].classList.toggle("on", bs[k].dataset.tgt === t.tgt);
+    for (var k = 0; k < bs.length; k++) {
+      var be = bs[k];
+      be.classList.toggle("on", be.dataset.tgt === t.tgt);
+      be.setAttribute("title", TGT_TIPS[be.dataset.tgt] || "");
+    }
     $("upCost").textContent = uc.fe + "Fe " + uc.cu + "Cu " + uc.si + "Si";
     $("recVal").textContent = "+" + Math.floor(t.inv.fe * 0.7) + "Fe +" + Math.floor(t.inv.cu * 0.7) + "Cu +" + Math.floor(t.inv.si * 0.7) + "Si";
+    var same = S.towers.filter(function(x) {
+      return x.i === t.i;
+    });
+    $("sellAllBtn").querySelector("span").textContent = "SELL ALL " + c.name.toUpperCase() + " \xD7" + same.length;
+    $("sellAllBtn").querySelector("small").textContent = same.length > 1 ? "70% invested matter back" : "single unit \u2014 use RECYCLE";
+    $("upAllBtn").querySelector("span").textContent = "UPGRADE ALL \xD7" + same.length;
+    $("upAllBtn").querySelector("small").textContent = "one level each, while affordable";
+  }
+  function openMedals() {
+    S.notif = 0;
+    var got = 0;
+    var h = MEDALS.map(function(m) {
+      var own = !!S.medals[m[0]];
+      if (own) got++;
+      return '<div class="medal' + (own ? " own" : "") + '" title="' + (MEDAL_TIPS[m[0]] || "") + '"><b>' + m[1] + "</b><i>" + (own ? "EARNED" : MEDAL_TIPS[m[0]] || "\u2014") + "</i></div>";
+    }).join("");
+    $("medalList").innerHTML = h;
+    $("medalCount").textContent = got + "/" + MEDALS.length + " COMMENDATIONS";
+    openModal("medalsModal");
+    Snd.play("ui");
+  }
+  function openStats() {
+    renderHistoryTab();
+    openModal("statsModal");
+    Snd.play("ui");
+  }
+  function renderHistoryTab() {
+    var rows = S.history.length ? S.history.map(function(r) {
+      return "<tr><td>" + (r.win ? "\u2713 CLEARED" : "\u2715 LOST") + "</td><td>SEED " + r.seed + "</td><td>wave " + r.wave + "</td><td>score " + fmt(r.score) + "</td><td>" + r.kills + " kills</td><td>" + r.date + "</td></tr>";
+    }).join("") : '<tr><td colspan="6">NO RUNS RECORDED YET \u2014 GO BREAK SOMETHING</td></tr>';
+    $("histBody").innerHTML = rows;
+    var secs = Object.keys(S.cleared).length;
+    $("histInfo").innerHTML = 'CURRENT RUN \xB7 seed <b style="color:var(--amber)">' + S.seed + "</b> \xB7 wave " + S.wave + ' \xB7 score <b style="color:var(--gold)">' + fmt(S.score) + "</b> (best " + fmt(S.best) + ") \xB7 sectors " + secs + "/12 \xB7 kills " + S.stat.kills + " \xB7 captures " + S.stat.captures + " \xB7 leaks " + S.stat.leaks + " \xB7 towers lost " + S.stat.towerLoss + " \xB7 salvaged " + fmt(S.stat.salvaged);
+  }
+  function renderRelicsTab() {
+    var owned = RELICS.filter(function(r) {
+      return S.relics[r.id];
+    });
+    var h = owned.length ? owned.map(function(r) {
+      return '<span class="mini" style="color:#ffa02f" title="' + r.desc + '"><b>' + r.name + "</b><i>RELIC</i></span>";
+    }).join("") : '<span class="pileEmpty">NO RELICS INSTALLED</span>';
+    $("relicList").innerHTML = h + '<p style="margin-top:8px">' + owned.length + "/" + RELICS.length + " recovered. Relics drop from salvage drafts and slain ANNIHILATORS.</p>";
+  }
+  function renderCodexTab() {
+    var ch = CARDS.map(function(c, idx) {
+      var boardDef = null;
+      for (var k = 0; k < DECK_CARDS.length; k++) {
+        if (DECK_CARDS[k].kind === "board" && DECK_CARDS[k].tower === idx) {
+          boardDef = DECK_CARDS[k];
+          break;
+        }
+      }
+      var owned = boardDef ? S.deck.filter(function(x) {
+        return x.id === boardDef.id;
+      }).length : 0;
+      var dps = c.dmg && c.rate ? Math.round(c.dmg * c.rate) : 0;
+      var rank = S.ranks[c.id] || 0;
+      var stat = dps ? "DPS " + dps : c.id === "aegis" ? "SLOW 30%" : c.id === "foundry" ? "REFINERY" : c.id === "pulse" ? "BLAST" : "\u2014";
+      return '<span class="mini" style="color:' + c.col + '" title="' + c.desc + '">' + GLYPHS[c.id] + "<b>" + c.name + "</b><i>Mk." + (rank + 1) + " \xB7 " + stat + (owned ? " \xB7 deck \xD7" + owned : "") + "</i></span>";
+    }).join("");
+    var eh = Object.keys(ETYPES).map(function(k) {
+      var e = ETYPES[k];
+      return '<span class="mini" style="color:' + e.col + '"><b>' + k.toUpperCase() + "</b><i>HP\xD7" + e.hp + " \xB7 SPD " + e.sp + (e.armor ? " \xB7 ARM " + Math.round(e.armor * 100) + "%" : "") + (e.regen ? " \xB7 REGEN" : "") + " \xB7 leaks " + e.dmg + "</i></span>";
+    }).join("");
+    $("codexTowers").innerHTML = ch;
+    $("codexEnemies").innerHTML = eh;
+  }
+  function statsTab(tab) {
+    Array.prototype.forEach.call($("statsTabs").children, function(b) {
+      b.classList.toggle("on", b.dataset.tab === tab);
+    });
+    $("tabHistory").style.display = tab === "history" ? "block" : "none";
+    $("tabRelics").style.display = tab === "relics" ? "block" : "none";
+    $("tabCodex").style.display = tab === "codex" ? "block" : "none";
+    if (tab === "history") renderHistoryTab();
+    if (tab === "relics") renderRelicsTab();
+    if (tab === "codex") renderCodexTab();
+  }
+  function openSettings() {
+    var st2 = S.settings;
+    $("setVol").value = String(Math.round(st2.vol * 10));
+    $("setShake").checked = st2.shake;
+    $("setPart").value = String(st2.particles);
+    $("setScan").checked = st2.scanlines;
+    $("setAuto").checked = st2.autopause;
+    $("setScale").value = String(st2.uiScale);
+    $("setConfirm").checked = st2.confirmRecycle;
+    $("setCB").checked = st2.colorblind;
+    $("setHC").checked = st2.contrast;
+    $("setDmg").checked = st2.dmgNumbers;
+    $("setSort").checked = st2.handSort;
+    $("setSeed").textContent = "CURRENT SEED " + S.seed + " \xB7 BEST SCORE " + fmt(S.best);
+    openModal("settingsModal");
+    Snd.play("ui");
+  }
+  function applySettingsBody() {
+    var b = document.body;
+    b.classList.toggle("cb", S.settings.colorblind);
+    b.classList.toggle("hc", S.settings.contrast);
+    b.classList.toggle("noline", !S.settings.scanlines);
+    b.style.fontSize = 100 * S.settings.uiScale + "%";
+  }
+
+  // src/economy.ts
+  function capZone() {
+    return S.relics.scan ? 0.36 : 0.3;
+  }
+  function gridCap() {
+    var g = S.gridMax;
+    if (S.relics.fusion) {
+      for (var i = 0; i < S.towers.length; i++) {
+        if (CARDS[S.towers[i].i].id === "foundry") g += 1;
+      }
+    }
+    return g;
+  }
+  function sector() {
+    return SECTORS[S.sector % SECTORS.length];
+  }
+  function canAfford(c) {
+    return RKEYS.every(function(k) {
+      return S.res[k] >= (c[k] || 0);
+    });
+  }
+  function spend(c) {
+    RKEYS.forEach(function(k) {
+      S.res[k] -= c[k] || 0;
+    });
+  }
+  function usedGrid() {
+    var g = 0;
+    S.towers.forEach(function(t) {
+      g += CARDS[t.i].draw + 0.3 * (t.lvl - 1);
+    });
+    return g;
+  }
+  function scavMult() {
+    var m = S.relics.scav ? 1.12 : 1;
+    if (S.powers.power_drone) m *= 1.12;
+    return m;
+  }
+  function boardCostMult() {
+    return S.powers.power_efficiency ? 0.9 : 1;
+  }
+  function towerMhp(t) {
+    var m = 20 + 10 * (t.lvl - 1);
+    if (S.relics.bulwark) m *= 1.4;
+    if (S.powers.power_shield) m *= 1.25;
+    return Math.round(m);
+  }
+  function gainRes(b, x, y) {
+    RKEYS.forEach(function(k) {
+      S.res[k] += b[k] || 0;
+    });
+    S.stat.salvaged += (b.fe || 0) + (b.cu || 0) + (b.si || 0);
+    if (x !== void 0 && y !== void 0) {
+      var bits = [];
+      if (b.fe >= 0.5) bits.push("+" + fmtF(b.fe) + "Fe");
+      if (b.cu >= 0.5) bits.push("+" + fmtF(b.cu) + "Cu");
+      if (b.si >= 0.3) bits.push("+" + fmtF(b.si) + "Si");
+      if (bits.length) float(x, y, bits.join(" "), "#e0b184");
+    }
+  }
+  function upCost(t) {
+    var b = CARDS[t.i].cost, m = 0.75 * Math.pow(1.28, t.lvl - 1);
+    return { fe: Math.ceil(b.fe * m), cu: Math.ceil(b.cu * m), si: Math.ceil(b.si * m) };
+  }
+  function addScore(n) {
+    S.score += n;
+    if (S.score > S.best) S.best = S.score;
+    if (S.score >= 1e4) award("score10k");
+  }
+  function scoreFloat(x, y, n) {
+    float(x, y - 20, "+" + n + " SCORE", "#ffd23f");
   }
 
   // src/towers.ts
-  function supplyAt(t) {
+  function supplyAt2(t) {
     var n = 0;
     S.towers.forEach(function(o) {
       if (o !== t && CARDS[o.i].id === "foundry" && Math.hypot(o.x - t.x, o.y - t.y) <= 92) n++;
@@ -3105,24 +4328,36 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     });
     return 1 + 0.08 * Math.min(3, n);
   }
+  function vetMult(t) {
+    return 1 + 0.02 * Math.min(5, Math.floor((t.kills || 0) / 10));
+  }
   function stats(t) {
     var c = CARDS[t.i], L = t.lvl - 1, rank = Math.pow(1.05, S.ranks[c.id] || 0);
     var sm = Math.pow(1.05, Math.floor(L / 5));
-    var dmg = c.dmg * Math.pow(1.16, L) * rank * sm * (S.relics.tungsten ? 1.1 : 1) * powerDmgMult();
-    var rate = c.rate * Math.pow(1.05, L) * sm * (S.relics.clock ? 1.1 : 1) * supplyAt(t) * powerRateMult();
+    var dmg = c.dmg * Math.pow(1.16, L) * rank * sm * (S.relics.tungsten ? 1.1 : 1) * powerDmgMult() * vetMult(t);
+    var rate = c.rate * Math.pow(1.05, L) * sm * (S.relics.clock ? 1.1 : 1) * supplyAt2(t) * powerRateMult();
     if (c.id === "needle" && S.relics.twin) rate *= 1.2;
+    if (c.id === "vulcan" && S.relics.drill) rate *= 1.15;
     if (S.time < S.ability.surge.until) rate *= 1.5;
     if (c.id === "arc" && S.event && S.event.id === "ion") dmg *= 1.4;
     if (c.id === "arc" && S.relics.shock) dmg *= 1.15;
     if (S.event && S.event.id === "solar") dmg *= 1.15;
     if (hasMod(t, "overvolt")) rate *= 1.2;
     if (hasMod(t, "railcoil")) dmg *= 1.25;
+    if (hasMod(t, "tungsten")) rate *= 1.25;
+    if (hasMod(t, "resonance")) dmg *= 1.2;
+    if (c.id === "pulse" && S.relics.catalyst) rate *= 1.2;
     if (c.id !== "foundry" && c.id !== "aegis") dmg *= foundryDmgBoost(t);
     var range = c.range * (1 + 0.04 * L) * (S.relics.cryo ? 1.12 : 1) * powerRangeMult();
     if (c.id === "rail" && S.relics.lens) range *= 1.25;
     if (hasMod(t, "scope")) range *= 1.35;
     if (hasMod(t, "cryo")) range *= 1.25;
+    if (hasMod(t, "resonance")) range *= 1.45;
     if (S.powers.power_seek) range *= 1.2;
+    var mhp = towerMhp(t);
+    if (mhp > t.mhp) t.hp += mhp - t.mhp;
+    t.mhp = mhp;
+    t.hp = Math.min(t.hp, t.mhp);
     return { dmg, rate, range, stars: Math.floor(L / 5) };
   }
   function foundryOut(t) {
@@ -3131,12 +4366,12 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (hasMod(t, "smelter")) m *= 1.6;
     return { fe: 0.34 * m, cu: 0.12 * m, si: 0.05 * m };
   }
-  function pickTarget(t, st) {
+  function pickTarget(t, st2) {
     var c = CARDS[t.i], list = [], j, e;
     for (j = 0; j < S.enemies.length; j++) {
       e = S.enemies[j];
       if (e.dead) continue;
-      if (Math.hypot(e.x - t.x, e.y - t.y) > st.range) continue;
+      if (Math.hypot(e.x - t.x, e.y - t.y) > st2.range) continue;
       if (c.id === "harvest" && S.mode === "capture" && e.hp / e.mhp > capZone()) continue;
       list.push(e);
     }
@@ -3183,6 +4418,24 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       return cnt[tp] + "\xD7" + tp.toUpperCase();
     }).join(" ");
   }
+  function wavePreview() {
+    var out = [];
+    for (var w = S.wave + 1; w <= S.wave + 2; w++) {
+      var comp = compFor(w), cnt = {}, order = [];
+      comp.forEach(function(tp) {
+        if (cnt[tp] === void 0) {
+          cnt[tp] = 0;
+          order.push(tp);
+        }
+        cnt[tp]++;
+      });
+      out.push("W" + (w < 10 ? "0" : "") + w + " \u25B8 " + order.map(function(tp) {
+        return cnt[tp] + "\xD7" + tp.toUpperCase();
+      }).join(" "));
+    }
+    var threat = Math.min(5, Math.max(1, Math.round((S.wave + 1) / 3)));
+    return { lines: out, threat };
+  }
   function canPlace(x, y) {
     if (x < 14 || y < 14 || x > W - 14 || y > H - 14) return false;
     if (distToRoutePx(x, y) < 25) return false;
@@ -3190,6 +4443,9 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       if (Math.hypot(S.towers[i].x - x, S.towers[i].y - y) < 24) return false;
     }
     return true;
+  }
+  function towerCard(t) {
+    return CARDS[t.i];
   }
   function placeTower(x, y) {
     var c = selBoard();
@@ -3200,7 +4456,8 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     }
     var handIdx = S.selCard;
     var d = defOf(S.hand[handIdx]);
-    if (!canAfford(d.cost)) {
+    var cost = effCost(d.cost);
+    if (!canAfford(cost)) {
       toast("INSUFFICIENT MATTER");
       Snd.play("error");
       return;
@@ -3215,31 +4472,51 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       Snd.play("error");
       return;
     }
-    spend(d.cost);
+    spend(cost);
+    var lvl = 1, bonus = "";
+    if (S.overcharge) {
+      lvl = 2;
+      S.overcharge = false;
+      bonus = " \xB7 OVERCHARGED L2";
+    }
+    var mhp = towerMhp({ i: d.tower, lvl });
     var t = {
       x,
       y,
       i: d.tower,
-      lvl: 1,
+      lvl,
       cool: 0,
       ang: -Math.PI / 2,
       flash: 0,
       slow: 0,
       tgt: "first",
-      inv: { fe: d.cost.fe, cu: d.cost.cu, si: d.cost.si },
-      mods: []
+      inv: { fe: cost.fe, cu: cost.cu, si: cost.si },
+      mods: [],
+      hp: mhp,
+      mhp,
+      kills: 0,
+      caps: 0,
+      dealt: 0,
+      dropT: 0.28,
+      jam: 0
     };
     S.towers.push(t);
     S.selTower = t;
+    var ci = S.hand[handIdx];
+    var pile = d.exhaust ? "exhaust" : "discard";
     resolveAfterPlay(handIdx);
+    if (S.phase === "build") S.undoStack.push({ t, ci, from: pile });
     for (var k = 0; k < S.hand.length; k++) {
       if (S.hand[k].id === d.id) {
         S.selCard = k;
         break;
       }
     }
-    toast(d.name + (d.consume ? " \u2014 CONSUMED FROM DECK" : d.exhaust ? " \u2014 EXHAUSTED THIS SECTOR" : " \u2192 DISCARD PILE"));
+    S.stat.maxTowers = Math.max(S.stat.maxTowers, S.towers.length);
+    if (S.towers.length >= 10) award("tower10");
+    toast(d.name + (d.consume ? " \u2014 CONSUMED FROM DECK" : d.exhaust ? " \u2014 EXHAUSTED THIS SECTOR" : " \u2192 DISCARD PILE") + bonus);
     burst(x, y, "#8fa0a6", 8);
+    dust(x, y);
     Snd.play("place");
     hud(true);
   }
@@ -3291,6 +4568,107 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     Snd.play("upgrade");
     hud(true);
   }
+  function damageTower(t, dmg, col) {
+    if (S.towers.indexOf(t) < 0) return;
+    t.hp -= dmg;
+    if (S.settings.dmgNumbers) float(t.x, t.y - 14, "-" + dmg + " INTEGRITY", col);
+    if (t.hp <= 0) {
+      var refund = {
+        fe: Math.floor(t.inv.fe * 0.5),
+        cu: Math.floor(t.inv.cu * 0.5),
+        si: Math.floor(t.inv.si * 0.5)
+      };
+      S.towers = S.towers.filter(function(x) {
+        return x !== t;
+      });
+      S.beams = S.beams.filter(function(b) {
+        return b.tw !== t;
+      });
+      S.undoStack = S.undoStack.filter(function(u) {
+        return u.t !== t;
+      });
+      if (S.selTower === t) S.selTower = null;
+      S.stat.towerLoss++;
+      if (S.objective && S.objective.id === "nofall") S.objective.track++;
+      gainRes(refund, t.x, t.y);
+      debris(t.x, t.y, "#8fa0a6", 14);
+      S.rings.push({ x: t.x, y: t.y, r: 4, max: 40, col: "#f04a50" });
+      toast(CARDS[t.i].name + " DESTROYED \u2014 50% MATTER RECOVERED");
+      Snd.play("boom", true);
+      hud(true);
+    }
+  }
+  function undoPlace() {
+    if (!S.undoStack.length) return "NOTHING TO UNDO";
+    var u = S.undoStack.pop();
+    if (S.towers.indexOf(u.t) < 0) return "NOTHING TO UNDO";
+    S.towers = S.towers.filter(function(x) {
+      return x !== u.t;
+    });
+    S.beams = S.beams.filter(function(b) {
+      return b.tw !== u.t;
+    });
+    if (S.selTower === u.t) S.selTower = null;
+    var pile = u.from === "exhaust" ? S.exhaustPile : S.discardPile;
+    var idx = pile.indexOf(u.ci);
+    if (idx >= 0) pile.splice(idx, 1);
+    if (S.hand.length < 10) S.hand.push(u.ci);
+    else S.discardPile.push(u.ci);
+    gainRes(u.t.inv, u.t.x, u.t.y);
+    burst(u.t.x, u.t.y, "#8fa0a6", 8);
+    Snd.play("ui");
+    return CARDS[u.t.i].name + " UNDONE \u2014 FULL REFUND";
+  }
+  function sellAllOf(i) {
+    var matches = S.towers.filter(function(t) {
+      return t.i === i;
+    });
+    if (!matches.length) return "NO " + CARDS[i].name + " UNITS DEPLOYED";
+    var total = { fe: 0, cu: 0, si: 0 };
+    matches.forEach(function(t) {
+      var mult = 0.7 + (S.relics.harvester ? 0.1 : 0);
+      total.fe += Math.floor(t.inv.fe * mult);
+      total.cu += Math.floor(t.inv.cu * mult);
+      total.si += Math.floor(t.inv.si * mult);
+    });
+    S.towers = S.towers.filter(function(t) {
+      return t.i !== i;
+    });
+    S.beams = S.beams.filter(function(b) {
+      return S.towers.indexOf(b.tw) >= 0;
+    });
+    S.undoStack = S.undoStack.filter(function(u) {
+      return S.towers.indexOf(u.t) >= 0;
+    });
+    S.selTower = null;
+    gainRes(total, W / 2, H / 2);
+    Snd.play("boom", true);
+    return matches.length + "\xD7 " + CARDS[i].name + " SCRAPPED \u2014 MATTER RECOVERED";
+  }
+  function upgradeAllOf(i) {
+    var matches = S.towers.filter(function(t2) {
+      return t2.i === i;
+    });
+    if (!matches.length) return "NO " + CARDS[i].name + " UNITS DEPLOYED";
+    var done = 0, spentAny = false;
+    for (var k = 0; k < matches.length; k++) {
+      var t = matches[k];
+      var uc = upCost(t);
+      if (!canAfford(uc)) break;
+      if (usedGrid() + 0.3 > gridCap()) break;
+      spend(uc);
+      RKEYS.forEach(function(key) {
+        t.inv[key] += uc[key];
+      });
+      t.lvl++;
+      done++;
+      spentAny = true;
+    }
+    if (!spentAny) return "INSUFFICIENT MATTER FOR " + CARDS[i].name + " UPGRADES";
+    Snd.play("upgrade");
+    if (done === 1) burst(matches[0].x, matches[0].y, "#ffd84a", 8);
+    return done + "\xD7 " + CARDS[i].name + " UPGRADED +1 LEVEL";
+  }
 
   // src/input.ts
   function canvasPos(ev) {
@@ -3305,6 +4683,19 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       if (d < bd) {
         bd = d;
         best = t;
+      }
+    }
+    return best;
+  }
+  function enemyNear(p, r) {
+    var best = null, bd = r;
+    for (var i = 0; i < S.enemies.length; i++) {
+      var e = S.enemies[i];
+      if (e.dead) continue;
+      var d = Math.hypot(e.x - p.x, e.y - p.y);
+      if (d < bd) {
+        bd = d;
+        best = e;
       }
     }
     return best;
@@ -3360,6 +4751,15 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       placing = false;
       S.ghost = updGhost(p);
       return;
+    }
+    if (S.selCard == null) {
+      var enHit = enemyNear(p, 14);
+      if (enHit) {
+        S.inspect = enHit === S.inspect ? null : enHit;
+        S.inspectT = 2.5;
+        Snd.play("ui");
+        return;
+      }
     }
     placing = true;
     if (!selBoard() && !towerNear(p, 48)) {
@@ -3418,6 +4818,22 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     Snd.init();
     pickWorld(ev);
   });
+  wcv.addEventListener("pointermove", function(ev) {
+    var r = wcv.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top;
+    var hover = -1, bd = 14;
+    for (var i = 0; i < S.worldNodes.length; i++) {
+      var n = S.worldNodes[i];
+      var d = Math.hypot(x - n.x * r.width, y - n.y * r.height);
+      if (d < bd) {
+        bd = d;
+        hover = i;
+      }
+    }
+    if (hover >= 0) drawWorld(hover);
+  });
+  wcv.addEventListener("pointerleave", function() {
+    drawWorld(-1);
+  });
   $("startBtn").addEventListener("pointerdown", function() {
     Snd.init();
     launchWave();
@@ -3433,6 +4849,12 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     Snd.init();
     S.paused = !S.paused;
     Snd.play("ui");
+    hud(true);
+  });
+  $("mulliganBtn").addEventListener("pointerdown", function() {
+    Snd.init();
+    toast(freeMulligan());
+    hud(true);
   });
   $("upBtn").addEventListener("pointerdown", function() {
     Snd.init();
@@ -3467,17 +4889,58 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     Snd.init();
     const t = S.selTower;
     if (!t || S.towers.indexOf(t) < 0) return;
-    gainRes({ fe: t.inv.fe * 0.7, cu: t.inv.cu * 0.7, si: t.inv.si * 0.7 }, t.x, t.y);
-    S.towers = S.towers.filter(function(x) {
-      return x !== t;
+    var doRecycle = function() {
+      gainRes({ fe: t.inv.fe * 0.7, cu: t.inv.cu * 0.7, si: t.inv.si * 0.7 }, t.x, t.y);
+      S.towers = S.towers.filter(function(x) {
+        return x !== t;
+      });
+      S.beams = S.beams.filter(function(b) {
+        return b.tw !== t;
+      });
+      S.undoStack = S.undoStack.filter(function(u) {
+        return u.t !== t;
+      });
+      S.selTower = null;
+      burst(t.x, t.y, "#8fa0a6", 10);
+      Snd.play("boom", true);
+      toast("70% MATTER RECOVERED");
+      hud(true);
+    };
+    if (S.settings.confirmRecycle) {
+      askConfirm("RECYCLE " + towerCard(t).name + " L" + t.lvl + "?", "The unit is dismantled for 70% of invested matter. Modules and upgrades are lost.", "RECYCLE", true, doRecycle);
+    } else {
+      doRecycle();
+    }
+  });
+  $("sellAllBtn").addEventListener("pointerdown", function() {
+    Snd.init();
+    const t = S.selTower;
+    if (!t || S.towers.indexOf(t) < 0) {
+      Snd.play("error");
+      return;
+    }
+    var n = S.towers.filter(function(x) {
+      return x.i === t.i;
+    }).length;
+    if (n <= 1) {
+      toast("ONLY ONE DEPLOYED \u2014 USE RECYCLE");
+      Snd.play("error");
+      return;
+    }
+    var i = t.i;
+    askConfirm("SCRAP " + n + "\xD7 " + CARDS[i].name + "?", "All deployed copies are dismantled for 70% of invested matter. Units, modules and upgrades are lost.", "SCRAP ALL", true, function() {
+      toast(sellAllOf(i));
+      hud(true);
     });
-    S.beams = S.beams.filter(function(b) {
-      return b.tw !== t;
-    });
-    S.selTower = null;
-    burst(t.x, t.y, "#8fa0a6", 10);
-    Snd.play("boom", true);
-    toast("70% MATTER RECOVERED");
+  });
+  $("upAllBtn").addEventListener("pointerdown", function() {
+    Snd.init();
+    const t = S.selTower;
+    if (!t || S.towers.indexOf(t) < 0) {
+      Snd.play("error");
+      return;
+    }
+    toast(upgradeAllOf(t.i));
     hud(true);
   });
   $("modBtn").addEventListener("pointerdown", function() {
@@ -3515,15 +4978,29 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   });
   $("recycleCard").addEventListener("pointerdown", function() {
     Snd.init();
-    var msg = recycleSelCard();
-    if (!msg) {
+    if (S.selCard == null) {
       toast("SELECT A CARD FIRST");
       Snd.play("error");
       return;
     }
-    toast(msg);
-    Snd.play("upgrade");
-    hud(true);
+    var doTear = function() {
+      var msg = recycleSelCard();
+      if (!msg) {
+        toast("SELECT A CARD FIRST");
+        Snd.play("error");
+        return;
+      }
+      toast(msg);
+      Snd.play("upgrade");
+      hud(true);
+    };
+    if (S.settings.confirmRecycle) {
+      var ci = S.hand[S.selCard];
+      var nm = ci ? defOf(ci).name : "CARD";
+      askConfirm("TEAR " + nm + " FROM THE DECK?", "Permanent removal \u2014 the card is gone for the whole run. You get a 50% matter refund.", "TEAR IT OUT", true, doTear);
+    } else {
+      doTear();
+    }
   });
   Array.prototype.forEach.call($("tgtRow").children, function(b) {
     b.addEventListener("pointerdown", function(ev) {
@@ -3565,6 +5042,18 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   $("helpBtn").addEventListener("pointerdown", function() {
     Snd.init();
     openModal("helpModal");
+  });
+  $("medBtn").addEventListener("pointerdown", function() {
+    Snd.init();
+    openMedals();
+  });
+  $("statBtn").addEventListener("pointerdown", function() {
+    Snd.init();
+    openStats();
+  });
+  $("setBtn").addEventListener("pointerdown", function() {
+    Snd.init();
+    openSettings();
   });
   $("sndBtn").addEventListener("pointerdown", function() {
     Snd.init();
@@ -3621,10 +5110,17 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     S.res.cu -= 15;
     a.cd = S.time + 60;
     S.core = Math.min(S.coreMax, S.core + 3);
+    var weldedUnits = 0;
+    S.towers.forEach(function(t) {
+      if (t.hp < t.mhp) {
+        t.hp = Math.min(t.mhp, t.hp + 4);
+        weldedUnits++;
+      }
+    });
     S.screenFlash = { col: "#3edcb0", a: 0.06 };
     var cp = S.nodes[S.coreIdx];
-    float(cp.px, cp.py - 16, "+3 CORE", "#3edcb0");
-    S.rings.push({ x: cp.px, y: cp.py, r: 4, max: 36, col: "#3edcb0" });
+    float(cp.px, cp.py - 16, "+3 CORE" + (weldedUnits ? " \xB7 +4 INT \xD7" + weldedUnits : ""), "#3ec9b0");
+    S.rings.push({ x: cp.x, y: cp.py, r: 4, max: 36, col: "#3ec9b0" });
     Snd.play("weld");
     hud(true);
   });
@@ -3634,8 +5130,117 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       openDeckModal();
     });
   });
+  function bindSetting(elId, fn) {
+    var el = $(elId);
+    if (!el) return;
+    el.addEventListener("input", function() {
+      fn(el.value);
+      saveSettings();
+      applySettingsBody();
+      hud(true);
+    });
+    el.addEventListener("change", function() {
+      fn(el.value);
+      saveSettings();
+      applySettingsBody();
+      hud(true);
+    });
+  }
+  bindSetting("setVol", function(v) {
+    S.settings.vol = Math.max(0, Math.min(1, +v / 10));
+    if (Snd.g) Snd.g.gain.value = 0.14 * S.settings.vol;
+  });
+  bindSetting("setShake", function(v) {
+    S.settings.shake = v === "on";
+  });
+  bindSetting("setPart", function(v) {
+    S.settings.particles = Math.max(0, Math.min(2, +v));
+  });
+  bindSetting("setScan", function(v) {
+    S.settings.scanlines = v === "on";
+  });
+  bindSetting("setAuto", function(v) {
+    S.settings.autopause = v === "on";
+  });
+  bindSetting("setScale", function(v) {
+    S.settings.uiScale = +v;
+  });
+  bindSetting("setConfirm", function(v) {
+    S.settings.confirmRecycle = v === "on";
+  });
+  bindSetting("setCB", function(v) {
+    S.settings.colorblind = v === "on";
+  });
+  bindSetting("setHC", function(v) {
+    S.settings.contrast = v === "on";
+  });
+  bindSetting("setDmg", function(v) {
+    S.settings.dmgNumbers = v === "on";
+  });
+  bindSetting("setSort", function(v) {
+    S.settings.handSort = v === "on";
+  });
+  $("setDaily").addEventListener("pointerdown", function() {
+    Snd.init();
+    askConfirm("START DAILY SEED?", "Abandon the current run and deploy on the deterministic daily route. Deck, ranks and relics reset.", "DAILY RUN", false, function() {
+      closeModal("settingsModal");
+      startNewRun(dailySeed());
+    });
+  });
+  $("setReroll").addEventListener("pointerdown", function() {
+    Snd.init();
+    askConfirm("ABANDON CURRENT RUN?", "A fresh route is generated with a new random seed. All progress is lost.", "REROLL SEED", true, function() {
+      closeModal("settingsModal");
+      startNewRun((Date.now() ^ 390057) >>> 0);
+    });
+  });
+  $("confirmOk").addEventListener("pointerdown", function() {
+    Snd.init();
+    confirmYes();
+  });
+  $("confirmNo").addEventListener("pointerdown", function() {
+    Snd.init();
+    confirmNo();
+  });
+  Array.prototype.forEach.call($("statsTabs").children, function(b) {
+    b.addEventListener("pointerdown", function() {
+      Snd.init();
+      statsTab(b.dataset.tab);
+    });
+  });
+  $("retreatBtn").addEventListener("pointerdown", function() {
+    Snd.init();
+    askConfirm("RETREAT TO THE ROUTE NETWORK?", "Sector progress is lost (waves replay from 1) \u2014 your circuit deck, ranks, relics and cleared routes are kept.", "RETREAT", true, function() {
+      closeModal("mapModal");
+      openMap();
+      toast("RETREATED \u2014 SECTOR PROGRESS DISCARDED");
+    });
+  });
+  function typingFocus() {
+    var el = document.activeElement;
+    if (!el) return false;
+    var tag = (el.tagName || "").toLowerCase();
+    return tag === "input" || tag === "textarea" || tag === "select";
+  }
   addEventListener("keydown", function(ev) {
     Snd.init();
+    if (ev.key === "Escape") {
+      if (S.modalOpen) {
+        closeTopModal();
+        return;
+      }
+      S.selCard = null;
+      S.selTower = null;
+      hud(true);
+      return;
+    }
+    if (S.modalOpen) {
+      if (ev.key >= "1" && ev.key <= "4" && $("draftModal").classList.contains("open")) {
+        chooseDraft(+ev.key - 1);
+      }
+      return;
+    }
+    if (typingFocus()) return;
     if (ev.key >= "1" && ev.key <= "9") {
       var hi = +ev.key - 1;
       if (!S.hand[hi]) {
@@ -3661,7 +5266,24 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     else if (ev.key === "-") $("spdDn").click();
     else if (ev.key === "u" || ev.key === "U") $("upBtn").click();
     else if (ev.key === "x" || ev.key === "X") $("recBtn").click();
-    else if (ev.key === "t" || ev.key === "T") {
+    else if (ev.key === "z" || ev.key === "Z") {
+      toast(undoPlace());
+      hud(true);
+    } else if (ev.key === "c" || ev.key === "C") {
+      var tc = S.selTower;
+      if (tc && S.towers.indexOf(tc) >= 0) {
+        var n = 0;
+        S.towers.forEach(function(o) {
+          if (o !== tc && CARDS[o.i].id === CARDS[tc.i].id) {
+            o.tgt = tc.tgt;
+            n++;
+          }
+        });
+        toast(n ? "DOCTRINE COPIED TO " + n + " " + CARDS[tc.i].name + " UNIT" + (n > 1 ? "S" : "") : "NO SISTER UNITS TO COPY TO");
+        Snd.play("ui");
+        hud(true);
+      }
+    } else if (ev.key === "t" || ev.key === "T") {
       var t2 = S.selTower;
       if (t2 && S.towers.indexOf(t2) >= 0) {
         t2.tgt = TGTS[(TGTS.indexOf(t2.tgt) + 1) % TGTS.length];
@@ -3676,10 +5298,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         Snd.play("ui");
         hud(true);
       }
-    } else if (ev.key === "Escape") {
-      S.selCard = null;
-      S.selTower = null;
-      hud(true);
+    } else if (ev.key === "r" || ev.key === "R") {
+      askConfirm("RETREAT TO THE ROUTE NETWORK?", "Sector progress is lost \u2014 deck, ranks, relics and cleared routes are kept.", "RETREAT", true, function() {
+        openMap();
+      });
     }
   });
 
@@ -3810,6 +5432,34 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       }
     }
   }
+  var scorchCv = null;
+  var scorchKey = "";
+  function bakeScorch() {
+    var key = S.sectorGen + "|" + S.scorch.length + "|" + dpr;
+    if (key === scorchKey && scorchCv) return;
+    scorchKey = key;
+    if (!scorchCv) scorchCv = document.createElement("canvas");
+    scorchCv.width = Math.max(1, Math.round(W * dpr));
+    scorchCv.height = Math.max(1, Math.round(H * dpr));
+    var c = scorchCv.getContext("2d");
+    if (!c) {
+      scorchCv = null;
+      return;
+    }
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, W, H);
+    for (var i = 0; i < S.scorch.length; i++) {
+      var m = S.scorch[i], s = m.seed;
+      c.fillStyle = "rgba(10,8,6,.28)";
+      c.beginPath();
+      c.arc(m.x, m.y, 3 + s % 5, 0, 7);
+      c.fill();
+      c.fillStyle = "rgba(10,8,6,.2)";
+      c.beginPath();
+      c.arc(m.x + (s % 7 - 3), m.y + (s % 5 - 2), 2 + s % 3, 0, 7);
+      c.fill();
+    }
+  }
   function draw() {
     var sec = sector(), i;
     ctx.fillStyle = bgFill(sec);
@@ -3867,6 +5517,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     ctx.globalAlpha = 1;
     bakeGrid(sec);
     if (gridCv) ctx.drawImage(gridCv, 0, 0, W, H);
+    if (S.scorch.length) {
+      bakeScorch();
+      if (scorchCv) ctx.drawImage(scorchCv, 0, 0, W, H);
+    }
     if (S.gridPulse && S.gridPulse.a > 0) {
       var gp = S.gridPulse;
       gp.r += 180 * (1 / 60);
@@ -3927,7 +5581,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (S.ghost && ghostBoard && !S.modalOpen) {
       var c = ghostBoard, gpx = S.ghost.sx != null ? S.ghost.sx : S.ghost.x, gpy = S.ghost.sy != null ? S.ghost.sy : S.ghost.y;
       var posOk = S.ghost.sx != null, afford = canAfford(c.cost) && usedGrid() + c.draw <= gridCap();
-      var gcol = !posOk ? "#f04a50" : afford ? "#3edcb0" : "#ffb83a";
+      var gcol = !posOk ? "#f04a50" : afford ? "#3ec9b0" : "#ffb83a";
       if (posOk && (Math.abs(gpx - S.ghost.x) > 3 || Math.abs(gpy - S.ghost.y) > 3)) {
         ctx.strokeStyle = "rgba(143,160,166,.4)";
         ctx.lineWidth = 1;
@@ -3952,6 +5606,15 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.setLineDash([]);
       ctx.lineDashOffset = 0;
       ctx.globalAlpha = 1;
+      if (!posOk) {
+        ctx.font = "bold 8px ui-monospace,Menlo,monospace";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "rgba(0,0,0,.8)";
+        ctx.fillRect(gpx - 42, gpy - 24, 84, 12);
+        ctx.fillStyle = "#f04a50";
+        ctx.fillText("NO FOUNDATION", gpx, gpy - 15);
+        ctx.textAlign = "left";
+      }
     }
     for (i = 0; i < S.towers.length; i++) drawTower(S.towers[i]);
     for (i = 0; i < S.towers.length; i++) {
@@ -3975,6 +5638,20 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         ctx.setLineDash([]);
         ctx.lineDashOffset = 0;
       }
+    }
+    for (i = 0; i < S.enemies.length; i++) {
+      var je = S.enemies[i];
+      if (je.dead || je.type !== "jammer") continue;
+      var jp = (Math.sin(S.time * 5 + je.d) + 1) / 2;
+      ctx.strokeStyle = hexA("#c78bff", 0.2 + jp * 0.18);
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 5]);
+      ctx.lineDashOffset = -S.time * 30;
+      ctx.beginPath();
+      ctx.arc(je.x, je.y, 70, 0, 7);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.lineDashOffset = 0;
     }
     if (S.selTower && S.towers.indexOf(S.selTower) >= 0) {
       var st2 = stats(S.selTower), lt = S.selTower, lc = CARDS[lt.i];
@@ -4086,6 +5763,21 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         ctx.strokeStyle = "#fffbe8";
         ctx.lineWidth = 1.1;
         ctx.stroke();
+      } else if (sh.kind === 4) {
+        var kx = (sh.x + sh.tx) / 2, ky = (sh.y + sh.ty) / 2;
+        ctx.globalAlpha = sa * 0.3;
+        ctx.strokeStyle = sh.col;
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(sh.x, sh.y);
+        ctx.quadraticCurveTo(kx + 12, ky - 6, sh.tx, sh.ty);
+        ctx.stroke();
+        ctx.globalAlpha = sa;
+        ctx.lineWidth = 2.2;
+        ctx.stroke();
+        ctx.strokeStyle = "#fff3d6";
+        ctx.lineWidth = 1;
+        ctx.stroke();
       } else {
         ctx.globalAlpha = sa * 0.3;
         ctx.strokeStyle = sh.col;
@@ -4145,6 +5837,37 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     }
     ctx.globalAlpha = 1;
     ctx.textAlign = "left";
+    if (S.inspect && !S.inspect.dead) {
+      var ie = S.inspect;
+      var ip = (Math.sin(S.time * 6) + 1) / 2;
+      ctx.strokeStyle = hexA("#eae5d8", 0.4 + ip * 0.5);
+      ctx.lineWidth = 1;
+      var isz = ie.size + 10;
+      ctx.beginPath();
+      ctx.moveTo(ie.x - isz, ie.y - isz + 5);
+      ctx.lineTo(ie.x - isz, ie.y - isz);
+      ctx.lineTo(ie.x - isz + 5, ie.y - isz);
+      ctx.moveTo(ie.x + isz - 5, ie.y - isz);
+      ctx.lineTo(ie.x + isz, ie.y - isz);
+      ctx.lineTo(ie.x + isz, ie.y - isz + 5);
+      ctx.moveTo(ie.x + isz, ie.y + isz - 5);
+      ctx.lineTo(ie.x + isz, ie.y + isz);
+      ctx.lineTo(ie.x + isz - 5, ie.y + isz);
+      ctx.moveTo(ie.x - isz + 5, ie.y + isz);
+      ctx.lineTo(ie.x - isz, ie.y + isz);
+      ctx.lineTo(ie.x - isz, ie.y + isz - 5);
+      ctx.stroke();
+      var ilbl = ie.type.toUpperCase() + " \xB7 HP " + Math.ceil(ie.hp) + "/" + Math.ceil(ie.mhp) + (ie.armor ? " \xB7 ARM " + Math.round(ie.armor * 100) + "%" : "") + (ie.regen ? " \xB7 REGEN" : "") + (ie.vet ? " \xB7 VETERAN" : "") + " \xB7 BOUNTY ~" + Math.ceil(ie.mhp * 0.032) + "Fe";
+      ctx.font = "bold 8px ui-monospace,Menlo,monospace";
+      var iw = ctx.measureText(ilbl).width;
+      var ix = clamp(ie.x, iw / 2 + 4, W - iw / 2 - 4);
+      ctx.fillStyle = "rgba(8,12,14,.85)";
+      ctx.fillRect(ix - iw / 2 - 4, ie.y - isz - 17, iw + 8, 12);
+      ctx.fillStyle = "#eae5d8";
+      ctx.fillText(ilbl, ix, ie.y - isz - 8);
+      ctx.textAlign = "left";
+    }
+    drawWeather(sec);
     ctx.restore();
     var vgk = W + "x" + H;
     if (vgk !== vgKey || !vgGrad) {
@@ -4187,6 +5910,63 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.fillText("PRESS [P] TO RESUME", W / 2, H / 2 + 30);
       ctx.textAlign = "left";
     }
+  }
+  function drawWeather(sec) {
+    if (!S.event) return;
+    var id = S.event.id, i;
+    ctx.save();
+    if (id === "ion") {
+      var fk = (Math.sin(S.time * 9) + 1) / 2;
+      ctx.globalAlpha = 0.08 + fk * 0.12;
+      ctx.fillStyle = "#bfe8ff";
+      for (i = 0; i < 3; i++) {
+        var ix2 = (S.time * 37 + i * 211) % (W + 80) - 40;
+        ctx.fillRect(ix2, 0, 26, 2);
+      }
+    } else if (id === "rust") {
+      ctx.strokeStyle = hexA("#b07040", 0.16);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (i = 0; i < 14; i++) {
+        var rx2 = (i * 97 + S.time * 30) % W;
+        var ry2 = (i * 53 + S.time * 90) % H;
+        ctx.moveTo(rx2, ry2);
+        ctx.lineTo(rx2 - 1.5, ry2 + 6);
+      }
+      ctx.stroke();
+    } else if (id === "frost") {
+      ctx.strokeStyle = hexA("#8fd8ff", 0.25);
+      ctx.lineWidth = 3;
+      ctx.strokeRect(1.5, 1.5, W - 3, H - 3);
+      ctx.globalAlpha = 0.05;
+      ctx.fillStyle = "#8fd8ff";
+      ctx.fillRect(0, 0, W, H);
+    } else if (id === "solar") {
+      var sg2 = (Math.sin(S.time * 2) + 1) / 2;
+      ctx.globalAlpha = 0.05 + sg2 * 0.03;
+      ctx.fillStyle = "#ffd23f";
+      ctx.fillRect(0, 0, W, H * 0.3);
+    } else if (id === "silicon") {
+      ctx.fillStyle = hexA("#9fd8e8", 0.3);
+      for (i = 0; i < 10; i++) {
+        var cx2 = (i * 131 + S.time * 12) % W;
+        var cy2 = (i * 89 + S.time * 40) % H;
+        ctx.fillRect(cx2, cy2, 1, 1);
+      }
+    } else if (id === "meteor") {
+      var mt = S.meteorT;
+      if (mt > 1.15) {
+        ctx.strokeStyle = hexA("#ffb83a", 0.25);
+        ctx.lineWidth = 1;
+        var mx2 = S.time * 130 % (W + 60) - 30;
+        ctx.beginPath();
+        ctx.moveTo(mx2, 0);
+        ctx.lineTo(mx2 - 10, 14);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
   }
   var roadCv = null;
   var roadKey = "";
@@ -4285,10 +6065,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   function drawSpawn() {
     for (const si of S.spawns) {
       const p = S.nodes[si];
-      var pulse = (Math.sin(S.time * 4) + 1) / 2;
+      var pulse2 = (Math.sin(S.time * 4) + 1) / 2;
       ctx.save();
       ctx.translate(p.px, p.py);
-      ctx.globalAlpha = 0.6 + pulse * 0.4;
+      ctx.globalAlpha = 0.6 + pulse2 * 0.4;
       ctx.fillStyle = rgrad(
         "gateglow",
         0,
@@ -4320,9 +6100,9 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.stroke();
       ctx.fillStyle = "#080b0d";
       ctx.fillRect(-6, -6.5, 8, 13);
-      ctx.fillStyle = hexA("#e5484d", 0.12 + pulse * 0.2);
+      ctx.fillStyle = hexA("#e5484d", 0.12 + pulse2 * 0.2);
       ctx.fillRect(-6, -6.5, 8, 13);
-      ctx.strokeStyle = hexA("#e5484d", 0.45 + pulse * 0.55);
+      ctx.strokeStyle = hexA("#e5484d", 0.45 + pulse2 * 0.55);
       ctx.lineWidth = 1.5;
       for (var k = 0; k < 2; k++) {
         ctx.beginPath();
@@ -4340,7 +6120,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     }
   }
   function drawCore() {
-    var p = S.nodes[S.coreIdx], pulse = (Math.sin(S.time * 3) + 1) / 2;
+    var p = S.nodes[S.coreIdx], pulse2 = (Math.sin(S.time * 3) + 1) / 2;
     var frac = Math.max(0, S.core / S.coreMax);
     var hot = frac > 0.4, key = hot ? "#3ec9b0" : "#e5484d";
     var urg = hot ? 1 : 2.2;
@@ -4385,7 +6165,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     ctx.arc(0, 0, 10, -Math.PI / 2, -Math.PI / 2 + frac * 6.283);
     ctx.stroke();
     ctx.lineCap = "butt";
-    ctx.fillStyle = hexA(key, 0.2 + pulse * 0.22);
+    ctx.fillStyle = hexA(key, 0.2 + pulse2 * 0.22);
     ctx.beginPath();
     ctx.arc(0, 0, 6.5, 0, 7);
     ctx.fill();
@@ -4400,12 +6180,17 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   }
   function drawTower(t) {
     var c = CARDS[t.i], sel = t === S.selTower;
+    var drop = Math.max(0, t.dropT || 0);
+    var dscale = drop > 0 ? 1 - Math.min(1, drop / 0.28) * 0.45 : 1;
+    var dalpha = drop > 0 ? 0.6 + Math.min(1, drop / 0.28) * 0.4 : 1;
     ctx.fillStyle = "rgba(0,0,0,.34)";
     ctx.beginPath();
-    ctx.ellipse(t.x + 1.5, t.y + 8, 11, 4, 0, 0, 7);
+    ctx.ellipse(t.x + 1.5, t.y + 8, 11 * dscale, 4 * dscale, 0, 0, 7);
     ctx.fill();
     ctx.save();
     ctx.translate(t.x, t.y);
+    ctx.globalAlpha = dalpha;
+    ctx.scale(dscale, dscale);
     if (sel) {
       var pu = (Math.sin(S.time * 5) + 1) / 2;
       ctx.globalAlpha = 0.08 + 0.06 * pu;
@@ -4413,11 +6198,11 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.beginPath();
       ctx.arc(0, 0, 17 + pu * 3, 0, 7);
       ctx.fill();
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = dalpha;
     }
     if (CARDS[t.i].id === "foundry") {
       var glow = (Math.sin(S.time * 5 + t.x) + 1) / 2;
-      ctx.globalAlpha = 0.6 + glow * 0.4;
+      ctx.globalAlpha = (0.6 + glow * 0.4) * dalpha;
       ctx.fillStyle = rgrad(
         "foundryheat",
         0,
@@ -4429,7 +6214,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         [[0, "rgba(224,133,78,.22)"], [1, "rgba(224,133,78,0)"]]
       );
       ctx.fillRect(-20, -18, 40, 40);
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = dalpha;
       ctx.fillStyle = "#2b373e";
       ctx.fillRect(3, -13, 4.5, 6);
       ctx.fillStyle = "#1b2429";
@@ -4483,6 +6268,47 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(0, 0, 11 + pu3 * 3, 0, 7);
+      ctx.stroke();
+    } else if (c.id === "pulse") {
+      var stp = t._st || stats(t);
+      var period = stp.rate > 0 ? 1 / stp.rate : 3;
+      var charge = clamp(1 - t.cool / period, 0, 1);
+      ctx.fillStyle = rgrad(
+        "pulsebody",
+        0,
+        0,
+        1,
+        0,
+        0,
+        11,
+        [[0, "rgba(177,140,217,.35)"], [0.6, "rgba(177,140,217,.08)"], [1, "rgba(177,140,217,0)"]]
+      );
+      ctx.fillRect(-11, -11, 22, 22);
+      ctx.fillStyle = lgrad("pulse", 0, -8, 0, 8, [[0, "#2b2535"], [1, "#17131d"]]);
+      ctx.strokeStyle = sel ? "#3ec9b0" : "#5a4a72";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, -8);
+      ctx.lineTo(7, -4);
+      ctx.lineTo(7, 4);
+      ctx.lineTo(0, 8);
+      ctx.lineTo(-7, 4);
+      ctx.lineTo(-7, -4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.strokeStyle = hexA("#b18cd9", 0.55);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, 0, 4.5, 0, 7);
+      ctx.stroke();
+      var pl2 = (Math.sin(S.time * 6) + 1) / 2;
+      ctx.fillStyle = hexA("#e8d4ff", 0.3 + pl2 * 0.5);
+      ctx.fillRect(-2, -2, 4, 4);
+      ctx.strokeStyle = hexA("#b18cd9", 0.5 + charge * 0.4);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, 8.5, -Math.PI / 2, -Math.PI / 2 + charge * 6.283);
       ctx.stroke();
     } else {
       ctx.fillStyle = lgrad("tbase", 0, -9, 0, 9, [[0, "#2b373f"], [0.55, "#1c262b"], [1, "#131a1e"]]);
@@ -4545,6 +6371,14 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         ctx.fillRect(2, -2.6, 11, 2.2);
         ctx.fillStyle = "#8f6bb8";
         ctx.fillRect(11, -3, 2, 3);
+      } else if (c.id === "vulcan") {
+        var spin = (Math.sin(S.time * 20) + 1) / 2;
+        ctx.fillRect(2, -2.4, 12, 1.8);
+        ctx.fillRect(2, 0.6, 12, 1.8);
+        ctx.fillStyle = "#8a3d18";
+        ctx.fillRect(4, -2.2, 3, 4.4);
+        ctx.fillStyle = hexA("#ffb83a", 0.4 + spin * 0.4);
+        ctx.fillRect(-5, -2, 2.5, 4);
       } else {
         ctx.fillRect(2, -1, 11, 2);
         ctx.fillStyle = "rgba(255,255,255,.16)";
@@ -4560,8 +6394,16 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         ctx.beginPath();
         ctx.arc(14, 0, 3, 0, 7);
         ctx.fill();
-        ctx.globalAlpha = 1;
+        ctx.globalAlpha = dalpha;
       }
+    }
+    ctx.restore();
+    if (t.hp < t.mhp) {
+      var tf = Math.max(0, t.hp / t.mhp);
+      ctx.fillStyle = "rgba(0,0,0,.6)";
+      ctx.fillRect(t.x - 9, t.y - 17, 18, 3);
+      ctx.fillStyle = tf > 0.5 ? "#3ec9b0" : tf > 0.25 ? "#ffd23f" : "#e5484d";
+      ctx.fillRect(t.x - 8, t.y - 16, 16 * tf, 1.5);
     }
     if (sel) {
       var pu2 = (Math.sin(S.time * 5) + 1) / 2;
@@ -4584,8 +6426,6 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
-    ctx.rotate(0);
-    ctx.restore();
     var sf = t.selF || 0;
     if (sf > 0) {
       ctx.globalAlpha = sf * 0.35;
@@ -4603,7 +6443,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.font = '600 7px "JetBrains Mono",monospace';
       ctx.fillText("L" + t.lvl, t.x + 4, t.y + 17);
     }
-    if (c.id !== "foundry" && c.id !== "aegis") {
+    if (c.id !== "foundry" && c.id !== "aegis" && c.id !== "pulse") {
       ctx.font = '700 6px "JetBrains Mono",ui-monospace,Menlo,monospace';
       ctx.textAlign = "center";
       ctx.fillStyle = t.tgt === "first" ? "#5c6d73" : "#3edcb0";
@@ -4630,11 +6470,29 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         ctx.strokeRect(mx, t.y - 21, 3, 3);
       }
     }
+    if (t.jam) {
+      var jf = (Math.sin(S.time * 10) + 1) / 2;
+      ctx.strokeStyle = hexA("#c78bff", 0.4 + jf * 0.5);
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, 13, 0, 7);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
     if (S.time < S.ability.surge.until) {
       var sg2 = (Math.sin(S.time * 8) + 1) / 2;
       ctx.strokeStyle = hexA("#ffd84a", 0.2 + 0.25 * sg2);
       ctx.lineWidth = 1.5;
       ctx.strokeRect(t.x - 10.5, t.y - 10.5, 21, 21);
+    }
+    if ((t.kills || 0) >= 10) {
+      var vk = Math.min(5, Math.floor((t.kills || 0) / 10));
+      ctx.font = '700 6px "JetBrains Mono",monospace';
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#3ec9b0";
+      ctx.fillText("V" + vk, t.x + 9, t.y - 10);
+      ctx.textAlign = "left";
     }
   }
   function drawEnemy(e) {
@@ -4764,6 +6622,73 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.strokeRect(-e.size + 1.5, -e.size * 0.7 + 1.5, e.size * 2 - 3, e.size * 1.4 - 3);
       ctx.fillStyle = "#2f4a1e";
       ctx.fillRect(-e.size + 3, -e.size * 0.7 + 3, e.size * 2 - 6, e.size * 1.4 - 6);
+    } else if (e.type === "shrieker") {
+      ctx.beginPath();
+      ctx.moveTo(e.size, 0);
+      ctx.lineTo(-e.size * 0.7, -e.size * 0.9);
+      ctx.lineTo(-e.size * 0.3, 0);
+      ctx.lineTo(-e.size * 0.7, e.size * 0.9);
+      ctx.closePath();
+      ctx.fill();
+      var shp = 0.4 + Math.sin(S.time * 12) * 0.4;
+      ctx.fillStyle = hexA("#ffe0b0", shp);
+      ctx.beginPath();
+      ctx.arc(-e.size * 0.3, 0, e.size * 0.4, 0, 7);
+      ctx.fill();
+    } else if (e.type === "jammer") {
+      ctx.beginPath();
+      for (var jk = 0; jk < 6; jk++) {
+        var ja = jk * Math.PI / 3, jhx = Math.cos(ja) * e.size, jhy = Math.sin(ja) * e.size;
+        if (jk) ctx.lineTo(jhx, jhy);
+        else ctx.moveTo(jhx, jhy);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#8a5fb8";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      var jf2 = (Math.sin(S.time * 6) + 1) / 2;
+      ctx.fillStyle = hexA("#e8d4ff", 0.4 + jf2 * 0.5);
+      ctx.fillRect(-2, -2, 4, 4);
+      ctx.fillStyle = "#6b4a96";
+      ctx.fillRect(-e.size - 2, -1, 3, 2);
+      ctx.fillRect(e.size - 1, -1, 3, 2);
+    } else if (e.type === "overlord") {
+      ctx.save();
+      ctx.scale(e.size, e.size);
+      ctx.fillStyle = rgrad(
+        "overaura",
+        0,
+        0,
+        0.4,
+        0,
+        0,
+        1.9,
+        [[0, "rgba(255,59,71,.2)"], [1, "rgba(255,59,71,0)"]]
+      );
+      ctx.fillRect(-1.9, -1.9, 3.8, 3.8);
+      ctx.restore();
+      ctx.fillStyle = e.col;
+      ctx.fillRect(-e.size, -e.size, e.size * 2, e.size * 2);
+      ctx.strokeStyle = "#6e1218";
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(-e.size + 2, -e.size + 2, e.size * 2 - 4, e.size * 2 - 4);
+      ctx.fillStyle = "#6e1218";
+      for (var ck = -1; ck <= 1; ck++) {
+        ctx.beginPath();
+        ctx.moveTo(ck * e.size * 0.8, -e.size);
+        ctx.lineTo(ck * e.size * 0.8 - 3, -e.size - 4);
+        ctx.lineTo(ck * e.size * 0.8 + 3, -e.size);
+        ctx.closePath();
+        ctx.fill();
+      }
+      var op = 0.5 + Math.sin(S.time * 3.5) * 0.4;
+      ctx.fillStyle = hexA("#ffd23f", op);
+      ctx.fillRect(-3.5, -3.5, 7, 7);
+      ctx.fillStyle = hexA("#fff6d0", op * 0.7);
+      ctx.fillRect(-1.5, -1.5, 3, 3);
+      ctx.fillStyle = "rgba(0,0,0,.4)";
+      ctx.fillRect(-4, e.size * 0.35, 8, 3);
     } else {
       ctx.fillRect(-e.size, -e.size * 0.75, e.size * 2, e.size * 1.5);
       ctx.fillStyle = "rgba(255,255,255,.12)";
@@ -4774,7 +6699,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.fillRect(e.size * 0.3, -e.size * 0.3, 1.5, 1.5);
     }
     if (e.flash > 0) {
-      ctx.globalAlpha = e.flash * 14;
+      ctx.globalAlpha = Math.min(1, e.flash * 14);
       ctx.fillStyle = "#fff";
       ctx.fillRect(-e.size, -e.size, e.size * 2, e.size * 2);
       ctx.globalAlpha = 1;
@@ -4786,13 +6711,34 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.arc(0, 0, e.size + 3, 0, 7);
       ctx.fill();
     }
+    if (e.stun > 0) {
+      var st2 = (Math.sin(S.time * 16) + 1) / 2;
+      ctx.strokeStyle = hexA("#ffd23f", 0.4 + st2 * 0.4);
+      ctx.lineWidth = 1;
+      for (var sk = 0; sk < 3; sk++) {
+        var sa2 = S.time * 10 + sk * 2.1;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(sa2) * e.size * 0.8, Math.sin(sa2) * e.size * 0.8);
+        ctx.lineTo(Math.cos(sa2 + 0.6) * (e.size + 3), Math.sin(sa2 + 0.6) * (e.size + 3));
+        ctx.stroke();
+      }
+    }
     ctx.rotate(-(e.ang || 0));
     if (capT && S.mode === "capture") {
       ctx.strokeStyle = "#3edcb0";
       ctx.globalAlpha = 0.5 + Math.sin(S.time * 8) * 0.3;
       ctx.setLineDash([2, 3]);
       ctx.beginPath();
-      ctx.arc(0, 0, e.size + 4, 0, 7);
+      if (S.settings.colorblind) {
+        var dm = e.size + 6;
+        ctx.moveTo(0, -dm);
+        ctx.lineTo(dm, 0);
+        ctx.lineTo(0, dm);
+        ctx.lineTo(-dm, 0);
+        ctx.closePath();
+      } else {
+        ctx.arc(0, 0, e.size + 4, 0, 7);
+      }
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.globalAlpha = 1;
@@ -4811,8 +6757,20 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.strokeStyle = "#ffd84a";
       ctx.lineWidth = 1.5;
       ctx.strokeRect(-e.size - 1, -e.size - 1, e.size * 2 + 2, e.size * 2 + 2);
+      if (e.perk) {
+        ctx.font = '700 6px "JetBrains Mono",monospace';
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#ffd84a";
+        ctx.fillText(e.perk === "fast" ? "F" : e.perk === "tough" ? "T" : "R", 0, -e.size - 3);
+        ctx.textAlign = "left";
+      }
     }
     var w2 = Math.max(12, e.size * 2), bh2 = 3, byy = -e.size - 8;
+    if (e.type === "overlord") {
+      w2 = e.size * 2.4;
+      bh2 = 4;
+      byy = -e.size - 10;
+    }
     var frac2 = Math.max(0, e.hp / e.mhp);
     ctx.fillStyle = "rgba(0,0,0,.62)";
     ctx.fillRect(-w2 / 2 - 1, byy - 1, w2 + 2, bh2 + 2);
@@ -4823,6 +6781,12 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     ctx.fillRect(-w2 / 2, byy, w2 * frac2, bh2);
     ctx.fillStyle = "rgba(255,255,255,.22)";
     ctx.fillRect(-w2 / 2, byy, w2 * frac2, 1);
+    if (e.armor > 0) {
+      ctx.fillStyle = "#8fa4b0";
+      for (var ak = 0; ak < 3; ak++) {
+        ctx.fillRect(-w2 / 2 + 1 + ak * 3, byy + bh2 - 1.2, 2, 1.2);
+      }
+    }
     if (S.mode === "capture") {
       var cz = capZone();
       ctx.fillStyle = "rgba(62,201,176,.22)";
@@ -4834,6 +6798,14 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   }
 
   // src/sim.ts
+  function jammed(t) {
+    for (var i = 0; i < S.enemies.length; i++) {
+      var e = S.enemies[i];
+      if (e.dead || e.type !== "jammer") continue;
+      if (Math.hypot(e.x - t.x, e.y - t.y) <= 70) return true;
+    }
+    return false;
+  }
   function fixedUpdate(dt) {
     if (S.paused || S.over || S.modalOpen) return;
     S.time += dt;
@@ -4869,7 +6841,13 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         }
       }
     }
-    for (i = 0; i < S.towers.length; i++) S.towers[i]._st = stats(S.towers[i]);
+    for (i = 0; i < S.towers.length; i++) {
+      t = S.towers[i];
+      t._st = stats(t);
+      if (t.dropT > 0) t.dropT -= dt;
+      if (S.relics.anvil && t.hp < t.mhp) t.hp = Math.min(t.mhp, t.hp + dt);
+      t.jam = jammed(t) ? 1 : 0;
+    }
     for (i = 0; i < S.enemies.length; i++) {
       var en0 = S.enemies[i];
       en0.slow = 0;
@@ -4879,13 +6857,17 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         en0.slowT -= dt;
         en0.slow = Math.max(en0.slow, 0.6);
       }
+      if (en0.gravT > 0) {
+        en0.gravT -= dt;
+        en0.slow = Math.max(en0.slow, 0.4);
+      }
     }
     var slowAmt = S.relics.tread ? 0.72 : 0.55;
     for (i = S.beams.length - 1; i >= 0; i--) {
       var bm = S.beams[i];
       t = bm.tw;
       e = bm.en;
-      var st = t._st, gone = e.dead || e.hp / e.mhp > capZone() + 0.1 || Math.hypot(e.x - t.x, e.y - t.y) > st.range + 10;
+      var st2 = t._st, gone = e.dead || e.hp / e.mhp > capZone() + 0.1 || Math.hypot(e.x - t.x, e.y - t.y) > st2.range + 10;
       if (gone) {
         S.beams.splice(i, 1);
         continue;
@@ -4893,16 +6875,41 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       e.slow = Math.max(e.slow, slowAmt);
       e.bm = 1;
       var rasp = 0.35 * (hasMod(t, "grasp") ? 1.25 : 1);
-      e.hp -= st.dmg * st.rate * rasp * dt;
+      var raspDmg = st2.dmg * st2.rate * rasp * dt;
+      e.hp -= raspDmg;
+      t.dealt += raspDmg;
       bm.t += dt / ((S.relics.lace ? 0.64 : 0.85) / (hasMod(t, "grasp") ? 1.6 : 1));
       if (e.hp <= 0) {
-        killEnemy(e, true);
+        killEnemy(e, true, t);
         S.beams.splice(i, 1);
         continue;
       }
       if (bm.t >= 1) {
-        killEnemy(e, true);
+        killEnemy(e, true, t);
         S.beams.splice(i, 1);
+      }
+    }
+    if (S.event && S.event.id === "meteor" && S.phase === "wave") {
+      S.meteorT -= dt;
+      if (S.meteorT <= 0) {
+        S.meteorT = 1.6;
+        var alive = [];
+        for (i = 0; i < S.enemies.length; i++) if (!S.enemies[i].dead) alive.push(S.enemies[i]);
+        if (alive.length) {
+          var victim = alive[Math.floor(Math.random() * alive.length)];
+          var mdmg = victim.mhp * 0.15;
+          victim.hp -= mdmg;
+          victim.flash = 0.1;
+          S.shots.push({ x: victim.x + 40, y: -12, tx: victim.x, ty: victim.y, life: 0.42, col: "#ffb83a", kind: 4 });
+          S.rings.push({ x: victim.x, y: victim.y, r: 3, max: 22, col: "#ffb83a" });
+          burst(victim.x, victim.y, "#ffb83a", 10);
+          Snd.play("boom", true);
+          if (victim.hp <= 0) killEnemy(victim, false);
+          if (S.towers.length && Math.random() < 0.1) {
+            var clip = S.towers[Math.floor(Math.random() * S.towers.length)];
+            damageTower(clip, 1, "#ffb83a");
+          }
+        }
       }
     }
     for (i = 0; i < S.towers.length; i++) {
@@ -4913,26 +6920,57 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       if (t.flash > 0) t.flash -= dt;
       if ((t.selF || 0) > 0) t.selF = (t.selF || 0) - dt * 3;
       s = t._st;
+      var jamRate = t.jam ? 0.4 : 1;
       if (c.id === "aegis") {
         var as = Math.min(0.5, (hasMod(t, "cryo") ? 0.45 : 0.3) + 0.02 * (t.lvl - 1));
+        if (t.jam) as *= 0.5;
         var zap = hasMod(t, "static") ? 2 + 0.5 * (t.lvl - 1) : 0;
         for (j = 0; j < S.enemies.length; j++) {
           e = S.enemies[j];
           if (!e.dead && Math.hypot(e.x - t.x, e.y - t.y) <= s.range) {
             e.slow = Math.max(e.slow, as);
             if (zap) {
-              e.hp -= zap * dt;
+              var zd = zap * dt;
+              e.hp -= zd;
+              t.dealt += zd;
               e.flash = Math.max(e.flash, 0.05);
+              if (e.hp <= 0) killEnemy(e, false, t);
             }
           }
         }
+        continue;
+      }
+      if (c.id === "pulse") {
+        if (t.cool > 0) continue;
+        var inBlast = false;
+        for (j = 0; j < S.enemies.length; j++) {
+          if (!S.enemies[j].dead && Math.hypot(S.enemies[j].x - t.x, S.enemies[j].y - t.y) <= s.range) {
+            inBlast = true;
+            break;
+          }
+        }
+        if (!inBlast) continue;
+        t.cool = 1 / s.rate;
+        t.flash = 0.12;
+        for (j = 0; j < S.enemies.length; j++) {
+          e = S.enemies[j];
+          if (e.dead || Math.hypot(e.x - t.x, e.y - t.y) > s.range) continue;
+          var pdmg = s.dmg * (1 - e.armor * 0.5);
+          e.hp -= pdmg;
+          t.dealt += pdmg;
+          e.flash = 0.06;
+          if (e.hp <= 0) killEnemy(e, false, t);
+        }
+        S.rings.push({ x: t.x, y: t.y, r: 4, max: s.range, col: "#b18cd9" });
+        S.screenFlash = { col: "#b18cd9", a: 0.04 };
+        Snd.play("boom", true);
         continue;
       }
       var inR = pickTarget(t, s);
       if (!inR) continue;
       t.ang = Math.atan2(inR.y - t.y, inR.x - t.x);
       if (t.cool > 0) continue;
-      t.cool = 1 / s.rate;
+      t.cool = 1 / (s.rate * jamRate);
       t.flash = 0.06;
       if (c.id === "harvest" && S.mode === "capture") {
         if (!S.beams.some(function(b) {
@@ -4946,26 +6984,34 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       if (c.id === "mortar") {
         var splR = 34 * (S.relics.flak ? 1.4 : 1) * (hasMod(t, "frag") ? 1.5 : 1);
         var splDmg = s.dmg * 0.6 * (hasMod(t, "frag") ? 1.25 : 1);
-        inR.hp -= s.dmg * (1 - inR.armor);
+        var dirDmg = s.dmg * (1 - inR.armor);
+        inR.hp -= dirDmg;
+        t.dealt += dirDmg;
         inR.flash = 0.05;
         S.shots.push({ x: t.x, y: t.y, tx: inR.x, ty: inR.y, life: 0.16, col: c.col, kind: 3 });
         for (j = 0; j < S.enemies.length; j++) {
           var e3 = S.enemies[j];
           if (e3.dead || e3 === inR) continue;
           if (Math.hypot(e3.x - inR.x, e3.y - inR.y) <= splR) {
-            e3.hp -= splDmg * (1 - e3.armor * 0.5);
+            var spd = splDmg * (1 - e3.armor * 0.5);
+            e3.hp -= spd;
+            t.dealt += spd;
             e3.flash = 0.06;
-            if (e3.hp <= 0) killEnemy(e3, false);
+            if (e3.hp <= 0) killEnemy(e3, false, t);
           }
         }
         burst(inR.x, inR.y, "#c9a6e0", 8);
         Snd.play("boom", true);
-        if (inR.hp <= 0) killEnemy(inR, false);
+        if (inR.hp <= 0) killEnemy(inR, false, t);
         continue;
       }
-      var dmg = s.dmg * (1 - inR.armor * (c.id === "arc" ? 0.35 : c.id === "rail" ? hasMod(t, "railcoil") ? 0 : 0.2 : c.id === "needle" && hasMod(t, "hollow") ? 0.4 : 1));
+      var dmg = s.dmg * (1 - inR.armor * (c.id === "arc" ? 0.35 : c.id === "rail" ? hasMod(t, "railcoil") ? 0 : 0.2 : c.id === "needle" && hasMod(t, "hollow") || c.id === "vulcan" && hasMod(t, "tungsten") ? 0.4 : 1));
       inR.hp -= dmg;
+      t.dealt += dmg;
       inR.flash = 0.05;
+      if (S.settings.dmgNumbers && dmg >= 1) {
+        float(inR.x + (Math.random() - 0.5) * 10, inR.y - inR.size - 4, Math.round(dmg) + "", "#f0ece4");
+      }
       S.shots.push({
         x: t.x,
         y: t.y,
@@ -4989,15 +7035,40 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
           var e2 = S.enemies[j];
           if (e2 === inR || e2.dead) continue;
           if (Math.hypot(e2.x - inR.x, e2.y - inR.y) < chainRng) {
-            e2.hp -= dmg * falloff;
+            var chd = dmg * falloff;
+            e2.hp -= chd;
+            t.dealt += chd;
             e2.flash = 0.05;
             chained++;
             S.shots.push({ x: inR.x, y: inR.y, tx: e2.x, ty: e2.y, life: 0.09, col: "#bdeef7", kind: 1 });
-            if (e2.hp <= 0) killEnemy(e2, false);
+            if (e2.hp <= 0) killEnemy(e2, false, t);
           }
         }
       } else Snd.play(c.id === "rail" ? "rail" : "shoot", true);
-      if (inR.hp <= 0) killEnemy(inR, false);
+      if (inR.hp <= 0) killEnemy(inR, false, t);
+    }
+    for (i = 0; i < S.enemies.length; i++) {
+      e = S.enemies[i];
+      if (e.dead || e.type !== "overlord") continue;
+      e.bossT = (e.bossT || 0) - dt;
+      if (e.bossT <= 0) {
+        e.bossT = 5;
+        if (S.enemies.length < 60) {
+          for (var k2 = 0; k2 < 2; k2++) {
+            spawnEnemy("scrap");
+            var sc = S.enemies[S.enemies.length - 1];
+            sc.route = e.route.slice();
+            sc.routePx = e.routePx;
+            sc.routeLen = e.routeLen;
+            sc.d = Math.max(0, e.d - 6);
+            var sp2 = pointOnPoly(sc.routePx, sc.routeLen, sc.d);
+            sc.x = sp2.x;
+            sc.y = sp2.y;
+            sc.ang = sp2.ang;
+          }
+          S.rings.push({ x: e.x, y: e.y, r: 6, max: 26, col: "#ff3b47" });
+        }
+      }
     }
     for (i = S.enemies.length - 1; i >= 0; i--) {
       e = S.enemies[i];
@@ -5018,7 +7089,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
           continue;
         }
       }
-      if (e.type === "phase") {
+      if (e.type === "phase" && e.stun <= 0) {
         e.ph = (e.ph || 0) + dt;
         if (e.ph >= 2.5) {
           e.ph = 0;
@@ -5026,8 +7097,13 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
           S.rings.push({ x: e.x, y: e.y, r: 2, max: 16, col: "#7fa8d9" });
         }
       }
+      if (e.stun > 0) {
+        e.stun -= dt;
+        continue;
+      }
       var slowTot = Math.min(0.9, e.slow + (e.frozen ? 0.1 : 0));
-      e.d += e.sp * (1 - slowTot) * (S.event && S.event.id === "grav" ? 0.85 : 1) * dt;
+      var repMult = S.powers.power_repulsor ? 0.92 : 1;
+      e.d += e.sp * (1 - slowTot) * (S.event && S.event.id === "grav" ? 0.85 : 1) * repMult * dt;
       var p = pointOnPoly(e.routePx, e.routeLen, e.d);
       e.x = p.x;
       e.y = p.y;
@@ -5059,9 +7135,44 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       if (S.shots[i].life <= 0) S.shots.splice(i, 1);
     }
     S.shake = Math.max(0, S.shake - dt * 14);
+    S.inspectT = Math.max(0, S.inspectT - dt);
   }
 
   // src/main.ts
+  window.__FZ = {
+    get S() {
+      return S;
+    },
+    debugDeploy: function(i, x, y) {
+      var mhp = towerMhp({ i, lvl: 1 });
+      S.towers.push({
+        x,
+        y,
+        i,
+        lvl: 1,
+        cool: 0,
+        ang: -Math.PI / 2,
+        flash: 0,
+        slow: 0,
+        tgt: "first",
+        inv: { fe: CARDS[i].cost.fe, cu: CARDS[i].cost.cu, si: CARDS[i].cost.si },
+        mods: [],
+        hp: mhp,
+        mhp,
+        kills: 0,
+        caps: 0,
+        dealt: 0,
+        dropT: 0.1,
+        jam: 0
+      });
+    },
+    debugSpawn: function(type) {
+      spawnEnemy(type);
+    },
+    saveRun,
+    loadRun,
+    clearSave
+  };
   function resize() {
     var r = cv.parentElement.getBoundingClientRect();
     var d = Math.min(window.devicePixelRatio || 1, 2);
@@ -5080,7 +7191,16 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     }
     commitSize();
   }
-  if (!S.deck.length) {
+  var st = loadSettings();
+  if (st) S.settings = st;
+  applySettingsBody();
+  loadHistory();
+  loadBest();
+  var resumed = false;
+  if (hasSave()) {
+    resumed = loadRun();
+  }
+  if (!resumed || !S.deck.length) {
     initRunDeck();
     sectorShuffle();
   }
@@ -5088,11 +7208,57 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     resize();
     genSector();
   }
+  if (S.pendingEnemies) {
+    S.pendingEnemies.forEach(function(pd) {
+      var rp = routePolyline(pd.route);
+      var p = pointOnPoly(rp.pts, rp.len, Math.max(0, pd.d));
+      S.enemies.push({
+        type: pd.type,
+        d: Math.min(pd.d, rp.len),
+        hp: pd.hp,
+        mhp: pd.mhp,
+        sp: pd.sp,
+        armor: pd.armor,
+        reward: pd.reward,
+        size: pd.size,
+        col: pd.col,
+        regen: pd.regen,
+        slow: 0,
+        slowT: pd.slowT,
+        frozen: false,
+        flash: 0,
+        burn: pd.burn,
+        burnT: pd.burnT,
+        beamT: -1,
+        stun: pd.stun,
+        gravT: pd.gravT,
+        vet: pd.vet,
+        perk: pd.perk,
+        bossT: 0,
+        x: p.x,
+        y: p.y,
+        ang: p.ang,
+        dead: false,
+        route: pd.route,
+        routePx: rp.pts,
+        routeLen: rp.len
+      });
+    });
+    S.pendingEnemies = null;
+    if (S.phase === "wave" && !S.enemies.length && !S.spawnQ.length) S.phase = "build";
+  }
+  if (resumed) toast("RUN RESUMED \u2014 SEED " + S.seed + " \xB7 WAVE " + S.wave);
   addEventListener("resize", function() {
     resize();
   });
   addEventListener("orientationchange", function() {
     setTimeout(resize, 120);
+  });
+  document.addEventListener("visibilitychange", function() {
+    if (document.hidden && S.settings.autopause && !S.over && !S.modalOpen) {
+      S.paused = true;
+      hud(true);
+    }
   });
   var last = performance.now();
   var acc = 0;

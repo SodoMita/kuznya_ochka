@@ -143,6 +143,34 @@ function bakeSky(sec: SectorDef): void {
   }
 }
 
+/* Scorch marks: baked where hostiles died this sector. */
+let scorchCv: HTMLCanvasElement | null = null;
+let scorchKey = '';
+
+function bakeScorch(): void {
+  var key = S.sectorGen + '|' + S.scorch.length + '|' + dpr;
+  if (key === scorchKey && scorchCv) return;
+  scorchKey = key;
+  if (!scorchCv) scorchCv = document.createElement('canvas');
+  scorchCv.width = Math.max(1, Math.round(W * dpr));
+  scorchCv.height = Math.max(1, Math.round(H * dpr));
+  var c = scorchCv.getContext('2d');
+  if (!c) { scorchCv = null; return; }
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  c.clearRect(0, 0, W, H);
+  for (var i = 0; i < S.scorch.length; i++) {
+    var m = S.scorch[i], s = m.seed;
+    c.fillStyle = 'rgba(10,8,6,.28)';
+    c.beginPath();
+    c.arc(m.x, m.y, 3 + (s % 5), 0, 7);
+    c.fill();
+    c.fillStyle = 'rgba(10,8,6,.2)';
+    c.beginPath();
+    c.arc(m.x + ((s % 7) - 3), m.y + ((s % 5) - 2), 2 + (s % 3), 0, 7);
+    c.fill();
+  }
+}
+
 export function draw(): void {
   var sec = sector(), i;
   ctx.fillStyle = bgFill(sec);
@@ -209,6 +237,12 @@ export function draw(): void {
   bakeGrid(sec);
   if (gridCv) ctx.drawImage(gridCv, 0, 0, W, H);
 
+  /* scorch marks — kill sites fade into the ground */
+  if (S.scorch.length) {
+    bakeScorch();
+    if (scorchCv) ctx.drawImage(scorchCv, 0, 0, W, H);
+  }
+
   /* grid pulse — expanding circle of light across grid lines */
   if (S.gridPulse && S.gridPulse.a > 0) {
     var gp = S.gridPulse;
@@ -270,7 +304,7 @@ export function draw(): void {
         gpx = S.ghost.sx != null ? S.ghost.sx : S.ghost.x,
         gpy = S.ghost.sy != null ? S.ghost.sy : S.ghost.y;
     var posOk = S.ghost.sx != null, afford = canAfford(c.cost) && usedGrid() + c.draw <= gridCap();
-    var gcol = !posOk ? '#f04a50' : (afford ? '#3edcb0' : '#ffb83a');
+    var gcol = !posOk ? '#f04a50' : (afford ? '#3ec9b0' : '#ffb83a');
     if (posOk && (Math.abs(gpx - S.ghost.x) > 3 || Math.abs(gpy - S.ghost.y) > 3)) {
       ctx.strokeStyle = 'rgba(143,160,166,.4)';
       ctx.lineWidth = 1;
@@ -295,6 +329,16 @@ export function draw(): void {
     ctx.setLineDash([]);
     ctx.lineDashOffset = 0;
     ctx.globalAlpha = 1;
+    /* why the ghost is unhappy */
+    if (!posOk) {
+      ctx.font = 'bold 8px ui-monospace,Menlo,monospace';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(0,0,0,.8)';
+      ctx.fillRect(gpx - 42, gpy - 24, 84, 12);
+      ctx.fillStyle = '#f04a50';
+      ctx.fillText('NO FOUNDATION', gpx, gpy - 15);
+      ctx.textAlign = 'left';
+    }
   }
 
   /* towers */
@@ -322,6 +366,22 @@ export function draw(): void {
       ctx.setLineDash([]);
       ctx.lineDashOffset = 0;
     }
+  }
+
+  /* jammer interference fields — hostile auras your units suffer under */
+  for (i = 0; i < S.enemies.length; i++) {
+    var je = S.enemies[i];
+    if (je.dead || je.type !== 'jammer') continue;
+    var jp = (Math.sin(S.time * 5 + je.d) + 1) / 2;
+    ctx.strokeStyle = hexA('#c78bff', .2 + jp * .18);
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 5]);
+    ctx.lineDashOffset = -S.time * 30;
+    ctx.beginPath();
+    ctx.arc(je.x, je.y, 70, 0, 7);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.lineDashOffset = 0;
   }
 
   /* selected range + ID tag */
@@ -447,6 +507,22 @@ export function draw(): void {
       ctx.strokeStyle = '#fffbe8';
       ctx.lineWidth = 1.1;
       ctx.stroke();
+    } else if (sh.kind === 4) {
+      /* meteor: falling ember streak with a smoke tail */
+      var kx = (sh.x + sh.tx) / 2, ky = (sh.y + sh.ty) / 2;
+      ctx.globalAlpha = sa * .3;
+      ctx.strokeStyle = sh.col;
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(sh.x, sh.y);
+      ctx.quadraticCurveTo(kx + 12, ky - 6, sh.tx, sh.ty);
+      ctx.stroke();
+      ctx.globalAlpha = sa;
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+      ctx.strokeStyle = '#fff3d6';
+      ctx.lineWidth = 1;
+      ctx.stroke();
     } else {
       ctx.globalAlpha = sa * .3;
       ctx.strokeStyle = sh.col;
@@ -513,6 +589,37 @@ export function draw(): void {
   }
   ctx.globalAlpha = 1;
   ctx.textAlign = 'left';
+
+  /* enemy inspection bracket — tap a hostile to read its plate */
+  if (S.inspect && !S.inspect.dead) {
+    var ie = S.inspect;
+    var ip = (Math.sin(S.time * 6) + 1) / 2;
+    ctx.strokeStyle = hexA('#eae5d8', .4 + ip * .5);
+    ctx.lineWidth = 1;
+    var isz = ie.size + 10;
+    ctx.beginPath();
+    ctx.moveTo(ie.x - isz, ie.y - isz + 5); ctx.lineTo(ie.x - isz, ie.y - isz); ctx.lineTo(ie.x - isz + 5, ie.y - isz);
+    ctx.moveTo(ie.x + isz - 5, ie.y - isz); ctx.lineTo(ie.x + isz, ie.y - isz); ctx.lineTo(ie.x + isz, ie.y - isz + 5);
+    ctx.moveTo(ie.x + isz, ie.y + isz - 5); ctx.lineTo(ie.x + isz, ie.y + isz); ctx.lineTo(ie.x + isz - 5, ie.y + isz);
+    ctx.moveTo(ie.x - isz + 5, ie.y + isz); ctx.lineTo(ie.x - isz, ie.y + isz); ctx.lineTo(ie.x - isz, ie.y + isz - 5);
+    ctx.stroke();
+    var ilbl = ie.type.toUpperCase() + ' · HP ' + Math.ceil(ie.hp) + '/' + Math.ceil(ie.mhp) +
+      (ie.armor ? ' · ARM ' + Math.round(ie.armor * 100) + '%' : '') +
+      (ie.regen ? ' · REGEN' : '') + (ie.vet ? ' · VETERAN' : '') +
+      ' · BOUNTY ~' + Math.ceil(ie.mhp * .032) + 'Fe';
+    ctx.font = 'bold 8px ui-monospace,Menlo,monospace';
+    var iw = ctx.measureText(ilbl).width;
+    var ix = clamp(ie.x, iw / 2 + 4, W - iw / 2 - 4);
+    ctx.fillStyle = 'rgba(8,12,14,.85)';
+    ctx.fillRect(ix - iw / 2 - 4, ie.y - isz - 17, iw + 8, 12);
+    ctx.fillStyle = '#eae5d8';
+    ctx.fillText(ilbl, ix, ie.y - isz - 8);
+    ctx.textAlign = 'left';
+  }
+
+  /* weather overlays */
+  drawWeather(sec);
+
   ctx.restore();
 
   /* vignette */
@@ -563,6 +670,71 @@ export function draw(): void {
     ctx.fillText('PRESS [P] TO RESUME', W / 2, H / 2 + 30);
     ctx.textAlign = 'left';
   }
+}
+
+/* Weather ambience — cheap deterministic overlays. */
+function drawWeather(sec: SectorDef): void {
+  if (!S.event) return;
+  var id = S.event.id, i;
+  ctx.save();
+  if (id === 'ion') {
+    /* blue-white flicker arcs along the top edge */
+    var fk = (Math.sin(S.time * 9) + 1) / 2;
+    ctx.globalAlpha = .08 + fk * .12;
+    ctx.fillStyle = '#bfe8ff';
+    for (i = 0; i < 3; i++) {
+      var ix2 = ((S.time * 37 + i * 211) % (W + 80)) - 40;
+      ctx.fillRect(ix2, 0, 26, 2);
+    }
+  } else if (id === 'rust') {
+    /* falling rust streaks */
+    ctx.strokeStyle = hexA('#b07040', .16);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (i = 0; i < 14; i++) {
+      var rx2 = (i * 97 + S.time * 30) % W;
+      var ry2 = (i * 53 + S.time * 90) % H;
+      ctx.moveTo(rx2, ry2);
+      ctx.lineTo(rx2 - 1.5, ry2 + 6);
+    }
+    ctx.stroke();
+  } else if (id === 'frost') {
+    /* cold rim around the frame */
+    ctx.strokeStyle = hexA('#8fd8ff', .25);
+    ctx.lineWidth = 3;
+    ctx.strokeRect(1.5, 1.5, W - 3, H - 3);
+    ctx.globalAlpha = .05;
+    ctx.fillStyle = '#8fd8ff';
+    ctx.fillRect(0, 0, W, H);
+  } else if (id === 'solar') {
+    /* warm lens glow from the top */
+    var sg2 = (Math.sin(S.time * 2) + 1) / 2;
+    ctx.globalAlpha = .05 + sg2 * .03;
+    ctx.fillStyle = '#ffd23f';
+    ctx.fillRect(0, 0, W, H * .3);
+  } else if (id === 'silicon') {
+    /* cyan chip-dust drift */
+    ctx.fillStyle = hexA('#9fd8e8', .3);
+    for (i = 0; i < 10; i++) {
+      var cx2 = (i * 131 + S.time * 12) % W;
+      var cy2 = (i * 89 + S.time * 40) % H;
+      ctx.fillRect(cx2, cy2, 1, 1);
+    }
+  } else if (id === 'meteor') {
+    /* brief meteor streaks before each strike */
+    var mt = S.meteorT;
+    if (mt > 1.15) {
+      ctx.strokeStyle = hexA('#ffb83a', .25);
+      ctx.lineWidth = 1;
+      var mx2 = ((S.time * 130) % (W + 60)) - 30;
+      ctx.beginPath();
+      ctx.moveTo(mx2, 0);
+      ctx.lineTo(mx2 - 10, 14);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1;
 }
 
 /* The road network is static for a given sector + viewport, but it takes seven
@@ -817,13 +989,19 @@ function drawCore(): void {
 
 function drawTower(t: Tower): void {
   var c = CARDS[t.i], sel = t === S.selTower;
+  /* drop-in placement animation */
+  var drop = Math.max(0, t.dropT || 0);
+  var dscale = drop > 0 ? 1 - Math.min(1, drop / .28) * .45 : 1;
+  var dalpha = drop > 0 ? .6 + Math.min(1, drop / .28) * .4 : 1;
   /* contact shadow — grounds the unit on the terrain */
   ctx.fillStyle = 'rgba(0,0,0,.34)';
   ctx.beginPath();
-  ctx.ellipse(t.x + 1.5, t.y + 8, 11, 4, 0, 0, 7);
+  ctx.ellipse(t.x + 1.5, t.y + 8, 11 * dscale, 4 * dscale, 0, 0, 7);
   ctx.fill();
   ctx.save();
   ctx.translate(t.x, t.y);
+  ctx.globalAlpha = dalpha;
+  ctx.scale(dscale, dscale);
   if (sel) {
     var pu = (Math.sin(S.time * 5) + 1) / 2;
     /* selection halo */
@@ -832,16 +1010,16 @@ function drawTower(t: Tower): void {
     ctx.beginPath();
     ctx.arc(0, 0, 17 + pu * 3, 0, 7);
     ctx.fill();
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = dalpha;
   }
   if (CARDS[t.i].id === 'foundry') {
     var glow = (Math.sin(S.time * 5 + t.x) + 1) / 2;
     /* furnace heat spill on the ground */
-    ctx.globalAlpha = .6 + glow * .4;
+    ctx.globalAlpha = (.6 + glow * .4) * dalpha;
     ctx.fillStyle = rgrad('foundryheat', 0, 2, 2, 0, 2, 20,
       [[0, 'rgba(224,133,78,.22)'], [1, 'rgba(224,133,78,0)']]);
     ctx.fillRect(-20, -18, 40, 40);
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = dalpha;
     /* chimney behind the housing */
     ctx.fillStyle = '#2b373e';
     ctx.fillRect(3, -13, 4.5, 6);
@@ -903,6 +1081,42 @@ function drawTower(t: Tower): void {
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(0, 0, 11 + pu3 * 3, 0, 7);
+    ctx.stroke();
+  } else if (c.id === 'pulse') {
+    /* pulse core: stationary violet resonator with a charge-up ring */
+    var stp = t._st || stats(t);
+    var period = stp.rate > 0 ? 1 / stp.rate : 3;
+    var charge = clamp(1 - (t.cool / period), 0, 1);
+    ctx.fillStyle = rgrad('pulsebody', 0, 0, 1, 0, 0, 11,
+      [[0, 'rgba(177,140,217,.35)'], [.6, 'rgba(177,140,217,.08)'], [1, 'rgba(177,140,217,0)']]);
+    ctx.fillRect(-11, -11, 22, 22);
+    ctx.fillStyle = lgrad('pulse', 0, -8, 0, 8, [[0, '#2b2535'], [1, '#17131d']]);
+    ctx.strokeStyle = sel ? '#3ec9b0' : '#5a4a72';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, -8);
+    ctx.lineTo(7, -4);
+    ctx.lineTo(7, 4);
+    ctx.lineTo(0, 8);
+    ctx.lineTo(-7, 4);
+    ctx.lineTo(-7, -4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    /* resonator coil */
+    ctx.strokeStyle = hexA('#b18cd9', .55);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(0, 0, 4.5, 0, 7);
+    ctx.stroke();
+    var pl2 = (Math.sin(S.time * 6) + 1) / 2;
+    ctx.fillStyle = hexA('#e8d4ff', .3 + pl2 * .5);
+    ctx.fillRect(-2, -2, 4, 4);
+    /* charge-up arc */
+    ctx.strokeStyle = hexA('#b18cd9', .5 + charge * .4);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, 8.5, -Math.PI / 2, -Math.PI / 2 + charge * 6.283);
     ctx.stroke();
   } else {
     /* armoured base plate with a top-lit metal gradient */
@@ -971,6 +1185,15 @@ function drawTower(t: Tower): void {
       ctx.fillRect(2, -2.6, 11, 2.2);
       ctx.fillStyle = '#8f6bb8';
       ctx.fillRect(11, -3, 2, 3);
+    } else if (c.id === 'vulcan') {
+      /* twin gatling barrels with a spinning drum hint */
+      var spin = (Math.sin(S.time * 20) + 1) / 2;
+      ctx.fillRect(2, -2.4, 12, 1.8);
+      ctx.fillRect(2, .6, 12, 1.8);
+      ctx.fillStyle = '#8a3d18';
+      ctx.fillRect(4, -2.2, 3, 4.4);
+      ctx.fillStyle = hexA('#ffb83a', .4 + spin * .4);
+      ctx.fillRect(-5, -2, 2.5, 4);
     } else {
       ctx.fillRect(2, -1, 11, 2);
       ctx.fillStyle = 'rgba(255,255,255,.16)';
@@ -979,6 +1202,7 @@ function drawTower(t: Tower): void {
     if (t.flash > 0) {
       /* muzzle flash: hot core + colored bloom + recoil-lit barrel */
       ctx.globalAlpha = Math.min(1, t.flash * 12);
+      /* (clamped — pulse/breaker flashes can peak above 1.0 raw) */
       ctx.fillStyle = hexA(c.col, .55);
       ctx.beginPath();
       ctx.arc(14, 0, 6, 0, 7);
@@ -987,9 +1211,20 @@ function drawTower(t: Tower): void {
       ctx.beginPath();
       ctx.arc(14, 0, 3, 0, 7);
       ctx.fill();
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = dalpha;
     }
   }
+  ctx.restore();
+
+  /* integrity bar — only while damaged */
+  if (t.hp < t.mhp) {
+    var tf = Math.max(0, t.hp / t.mhp);
+    ctx.fillStyle = 'rgba(0,0,0,.6)';
+    ctx.fillRect(t.x - 9, t.y - 17, 18, 3);
+    ctx.fillStyle = tf > .5 ? '#3ec9b0' : tf > .25 ? '#ffd23f' : '#e5484d';
+    ctx.fillRect(t.x - 8, t.y - 16, 16 * tf, 1.5);
+  }
+
   if (sel) {
     var pu2 = (Math.sin(S.time * 5) + 1) / 2;
     ctx.strokeStyle = '#3edcb0';
@@ -1011,8 +1246,6 @@ function drawTower(t: Tower): void {
     ctx.stroke();
     ctx.globalAlpha = 1;
   }
-  ctx.rotate(0);
-  ctx.restore();
   var sf = t.selF || 0;
   if (sf > 0) {
     ctx.globalAlpha = sf * .35;
@@ -1032,7 +1265,7 @@ function drawTower(t: Tower): void {
     ctx.fillText('L' + t.lvl, t.x + 4, t.y + 17);
   }
   /* targeting badge */
-  if (c.id !== 'foundry' && c.id !== 'aegis') {
+  if (c.id !== 'foundry' && c.id !== 'aegis' && c.id !== 'pulse') {
     ctx.font = '700 6px "JetBrains Mono",ui-monospace,Menlo,monospace';
     ctx.textAlign = 'center';
     ctx.fillStyle = t.tgt === 'first' ? '#5c6d73' : '#3edcb0';
@@ -1061,12 +1294,32 @@ function drawTower(t: Tower): void {
       ctx.strokeRect(mx, t.y - 21, 3, 3);
     }
   }
+  /* jammed indicator — hostile interference, rate quartered */
+  if (t.jam) {
+    var jf = (Math.sin(S.time * 10) + 1) / 2;
+    ctx.strokeStyle = hexA('#c78bff', .4 + jf * .5);
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, 13, 0, 7);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
   /* surge overdrive frame */
   if (S.time < S.ability.surge.until) {
     var sg2 = (Math.sin(S.time * 8) + 1) / 2;
     ctx.strokeStyle = hexA('#ffd84a', .2 + .25 * sg2);
     ctx.lineWidth = 1.5;
     ctx.strokeRect(t.x - 10.5, t.y - 10.5, 21, 21);
+  }
+  /* veterancy badge */
+  if ((t.kills || 0) >= 10) {
+    var vk = Math.min(5, Math.floor((t.kills || 0) / 10));
+    ctx.font = '700 6px "JetBrains Mono",monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#3ec9b0';
+    ctx.fillText('V' + vk, t.x + 9, t.y - 10);
+    ctx.textAlign = 'left';
   }
 }
 
@@ -1196,6 +1449,70 @@ function drawEnemy(e: Enemy): void {
     ctx.strokeRect(-e.size + 1.5, -e.size * .7 + 1.5, e.size * 2 - 3, e.size * 1.4 - 3);
     ctx.fillStyle = '#2f4a1e';
     ctx.fillRect(-e.size + 3, -e.size * .7 + 3, e.size * 2 - 6, e.size * 1.4 - 6);
+  } else if (e.type === 'shrieker') {
+    /* dart-shaped kamikaze with a hot charge */
+    ctx.beginPath();
+    ctx.moveTo(e.size, 0);
+    ctx.lineTo(-e.size * .7, -e.size * .9);
+    ctx.lineTo(-e.size * .3, 0);
+    ctx.lineTo(-e.size * .7, e.size * .9);
+    ctx.closePath();
+    ctx.fill();
+    var shp = .4 + Math.sin(S.time * 12) * .4;
+    ctx.fillStyle = hexA('#ffe0b0', shp);
+    ctx.beginPath();
+    ctx.arc(-e.size * .3, 0, e.size * .4, 0, 7);
+    ctx.fill();
+  } else if (e.type === 'jammer') {
+    /* hex dish radiating interference */
+    ctx.beginPath();
+    for (var jk = 0; jk < 6; jk++) {
+      var ja = jk * Math.PI / 3, jhx = Math.cos(ja) * e.size, jhy = Math.sin(ja) * e.size;
+      if (jk) ctx.lineTo(jhx, jhy); else ctx.moveTo(jhx, jhy);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#8a5fb8';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    var jf2 = (Math.sin(S.time * 6) + 1) / 2;
+    ctx.fillStyle = hexA('#e8d4ff', .4 + jf2 * .5);
+    ctx.fillRect(-2, -2, 4, 4);
+    /* dish prongs */
+    ctx.fillStyle = '#6b4a96';
+    ctx.fillRect(-e.size - 2, -1, 3, 2);
+    ctx.fillRect(e.size - 1, -1, 3, 2);
+  } else if (e.type === 'overlord') {
+    /* siege walker — huge armored hulk with a crown reactor */
+    ctx.save();
+    ctx.scale(e.size, e.size);
+    ctx.fillStyle = rgrad('overaura', 0, 0, .4, 0, 0, 1.9,
+      [[0, 'rgba(255,59,71,.2)'], [1, 'rgba(255,59,71,0)']]);
+    ctx.fillRect(-1.9, -1.9, 3.8, 3.8);
+    ctx.restore();
+    ctx.fillStyle = e.col;
+    ctx.fillRect(-e.size, -e.size, e.size * 2, e.size * 2);
+    ctx.strokeStyle = '#6e1218';
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(-e.size + 2, -e.size + 2, e.size * 2 - 4, e.size * 2 - 4);
+    /* crown spikes */
+    ctx.fillStyle = '#6e1218';
+    for (var ck = -1; ck <= 1; ck++) {
+      ctx.beginPath();
+      ctx.moveTo(ck * e.size * .8, -e.size);
+      ctx.lineTo(ck * e.size * .8 - 3, -e.size - 4);
+      ctx.lineTo(ck * e.size * .8 + 3, -e.size);
+      ctx.closePath();
+      ctx.fill();
+    }
+    var op = .5 + Math.sin(S.time * 3.5) * .4;
+    ctx.fillStyle = hexA('#ffd23f', op);
+    ctx.fillRect(-3.5, -3.5, 7, 7);
+    ctx.fillStyle = hexA('#fff6d0', op * .7);
+    ctx.fillRect(-1.5, -1.5, 3, 3);
+    /* escort hatch */
+    ctx.fillStyle = 'rgba(0,0,0,.4)';
+    ctx.fillRect(-4, e.size * .35, 8, 3);
   } else {
     /* scraplet — basic enemy with subtle detail */
     ctx.fillRect(-e.size, -e.size * .75, e.size * 2, e.size * 1.5);
@@ -1209,7 +1526,7 @@ function drawEnemy(e: Enemy): void {
   }
 
   if (e.flash > 0) {
-    ctx.globalAlpha = e.flash * 14;
+    ctx.globalAlpha = Math.min(1, e.flash * 14);
     ctx.fillStyle = '#fff';
     ctx.fillRect(-e.size, -e.size, e.size * 2, e.size * 2);
     ctx.globalAlpha = 1;
@@ -1222,6 +1539,19 @@ function drawEnemy(e: Enemy): void {
     ctx.arc(0, 0, e.size + 3, 0, 7);
     ctx.fill();
   }
+  /* stun sparkles */
+  if (e.stun > 0) {
+    var st2 = (Math.sin(S.time * 16) + 1) / 2;
+    ctx.strokeStyle = hexA('#ffd23f', .4 + st2 * .4);
+    ctx.lineWidth = 1;
+    for (var sk = 0; sk < 3; sk++) {
+      var sa2 = S.time * 10 + sk * 2.1;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(sa2) * e.size * .8, Math.sin(sa2) * e.size * .8);
+      ctx.lineTo(Math.cos(sa2 + .6) * (e.size + 3), Math.sin(sa2 + .6) * (e.size + 3));
+      ctx.stroke();
+    }
+  }
   ctx.rotate(-(e.ang || 0));
 
   /* capture-eligible marker */
@@ -1230,7 +1560,17 @@ function drawEnemy(e: Enemy): void {
     ctx.globalAlpha = .5 + Math.sin(S.time * 8) * .3;
     ctx.setLineDash([2, 3]);
     ctx.beginPath();
-    ctx.arc(0, 0, e.size + 4, 0, 7);
+    if (S.settings.colorblind) {
+      /* colorblind mode: diamond marker reads without hue */
+      var dm = e.size + 6;
+      ctx.moveTo(0, -dm);
+      ctx.lineTo(dm, 0);
+      ctx.lineTo(0, dm);
+      ctx.lineTo(-dm, 0);
+      ctx.closePath();
+    } else {
+      ctx.arc(0, 0, e.size + 4, 0, 7);
+    }
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.globalAlpha = 1;
@@ -1250,9 +1590,18 @@ function drawEnemy(e: Enemy): void {
     ctx.strokeStyle = '#ffd84a';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(-e.size - 1, -e.size - 1, e.size * 2 + 2, e.size * 2 + 2);
+    /* perk letter */
+    if (e.perk) {
+      ctx.font = '700 6px "JetBrains Mono",monospace';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffd84a';
+      ctx.fillText(e.perk === 'fast' ? 'F' : e.perk === 'tough' ? 'T' : 'R', 0, -e.size - 3);
+      ctx.textAlign = 'left';
+    }
   }
   /* hp bar — framed, with a capture-zone overlay in capture doctrine */
   var w2 = Math.max(12, e.size * 2), bh2 = 3, byy = -e.size - 8;
+  if (e.type === 'overlord') { w2 = e.size * 2.4; bh2 = 4; byy = -e.size - 10; }
   var frac2 = Math.max(0, e.hp / e.mhp);
   ctx.fillStyle = 'rgba(0,0,0,.62)';
   ctx.fillRect(-w2 / 2 - 1, byy - 1, w2 + 2, bh2 + 2);
@@ -1263,6 +1612,13 @@ function drawEnemy(e: Enemy): void {
   ctx.fillRect(-w2 / 2, byy, w2 * frac2, bh2);
   ctx.fillStyle = 'rgba(255,255,255,.22)';         /* gloss on the fill */
   ctx.fillRect(-w2 / 2, byy, w2 * frac2, 1);
+  /* armor notches on the hull bar */
+  if (e.armor > 0) {
+    ctx.fillStyle = '#8fa4b0';
+    for (var ak = 0; ak < 3; ak++) {
+      ctx.fillRect(-w2 / 2 + 1 + ak * 3, byy + bh2 - 1.2, 2, 1.2);
+    }
+  }
   if (S.mode === 'capture') {
     var cz = capZone();
     ctx.fillStyle = 'rgba(62,201,176,.22)';

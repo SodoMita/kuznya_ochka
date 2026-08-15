@@ -253,16 +253,6 @@ button:focus-visible{outline:1px solid var(--teal);outline-offset:1px}
 #unitStats{font-size:8px;color:var(--dim);letter-spacing:.4px;line-height:1.45}
 #upBtn{border-color:#7a5b22;background:linear-gradient(#3f3316,#2b2310);color:var(--gold)}
 #upBtn:hover{border-color:var(--gold);background:linear-gradient(#4a3c1a,#332a13);box-shadow:var(--bevel),0 0 10px #ffd23f2e}
-/* --- merged: selectors unique to the gameplay branch --- */
-#deckList{display:flex;flex-direction:column;gap:10px}
-#deckList h4{font-family:var(--disp);font-size:12px;letter-spacing:1px;margin:0;font-weight:400;color:var(--teal)}
-#deckList h4 span{color:var(--dim);font-family:var(--mono);font-size:8px;letter-spacing:1px}
-.pileRow{display:flex;flex-wrap:wrap;gap:4px}
-.mini{border:1px solid var(--line2);border-left:3px solid currentColor;background:#151d21;padding:3px 6px;font-size:8px;letter-spacing:.4px;cursor:help}
-.mini b{color:var(--ink);font-weight:400;font-family:var(--disp);letter-spacing:.5px}
-.mini u{text-decoration:none;color:var(--gold);font-weight:700;margin-left:4px}
-.mini i{font-style:normal;color:var(--dim);font-size:7px;margin-left:4px}
-.pileEmpty{font-size:8px;color:var(--dim);letter-spacing:1px;border:1px dashed var(--line2);padding:3px 8px}
 #unitMods{font-size:7px;letter-spacing:.6px;color:var(--dim);line-height:1.5;min-height:0}
 #unitMods b{color:var(--gold);margin-right:3px}
 #unitMods em{font-style:normal;white-space:nowrap}
@@ -315,7 +305,6 @@ button:focus-visible{outline:1px solid var(--teal);outline-offset:1px}
 .offer p{font-size:8px;margin:0;color:var(--dim);line-height:1.45}
 .offer .pick{margin-top:8px;font-size:7px;letter-spacing:2px;color:var(--amber);opacity:0;transition:.15s}
 .offer .okind{display:block;font-size:6px;letter-spacing:1.5px;margin:0 -8px 7px;padding:2px 8px 1px;color:#0f1517;background:currentColor;clip-path:polygon(0 0,100% 0,100% 40%,88% 100%,0 100%)}
-.offer:hover.rarwrap, .offer:hover{border-color:var(--amber)}
 .offer b svg{flex:0 0 14px;height:14px;filter:drop-shadow(0 0 3px currentColor)}
 .offer .tags{margin-top:5px;font-size:6px;letter-spacing:.8px;line-height:1.7}
 .offer .tags em{font-style:normal;margin-right:3px;white-space:nowrap;border:1px solid currentColor;padding:0 2px}
@@ -350,6 +339,81 @@ h3.sec{font-family:var(--disp);font-size:13px;letter-spacing:1px;color:var(--tea
 .endbtns button.ghost{background:linear-gradient(#28343b,#1c252a);border-color:var(--line);color:var(--ink);box-shadow:var(--bevel)}
 kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gold);font-size:9px;background:#0e1417;
   box-shadow:0 1px 0 #0008}
+/* ---------- NEW SYSTEMS (score, objectives, medals, settings, archive) ---------- */
+.chip.score{color:var(--gold)}.chip.score b{color:var(--gold)}
+.chip.pulse{animation:chipPulse .5s var(--ease)}
+@keyframes chipPulse{0%{transform:scale(1.12);filter:brightness(1.8)}100%{transform:scale(1);filter:none}}
+.chip.warn{border-color:#8a6a2a}.chip.warn b{color:var(--amber)}
+.chip.danger{border-color:#8a3232}.chip.danger b{color:var(--red);animation:hot 1s infinite}
+#spdVal.turbo{color:var(--red);text-shadow:0 0 10px #e5484d66}
+#medBtn.new{position:relative;border-color:var(--gold);animation:abilready 1.6s ease-in-out infinite}
+#medBtn.new::after{content:'•';position:absolute;top:-4px;right:-3px;color:var(--gold);font-size:11px;text-shadow:0 0 6px #ffd23f}
+#objChip{display:none;position:absolute;right:11px;top:34px;max-width:240px;text-align:right;
+  font-size:8px;letter-spacing:1px;color:var(--dim);pointer-events:none;z-index:4;
+  text-shadow:0 1px 3px #000c;border-left:2px solid var(--teal);padding-left:8px}
+#objChip.done{color:var(--teal);border-left-color:var(--gold)}
+#mulliganBtn{display:none;border:1px dashed var(--teal);border-radius:var(--rad);
+  background:#0e1c1a;color:var(--teal);font-size:8px;letter-spacing:1px;padding:4px 8px;cursor:pointer}
+#mulliganBtn:hover{background:#14302c;box-shadow:0 0 10px #3ec9b026}
+#abils button.poor{opacity:.55;filter:grayscale(.6)}
+#sellAllBtn,#upAllBtn{border:1px solid var(--line);border-radius:var(--rad);background:linear-gradient(#232e34,#1a2328);
+  color:var(--dim);font-size:8.5px;letter-spacing:1px;padding:5px 4px;cursor:pointer;box-shadow:var(--bevel);
+  transition:border-color .12s,color .12s,background .12s}
+#sellAllBtn small,#upAllBtn small{display:block;font-size:7px;color:var(--dim2);margin-top:2px}
+#sellAllBtn:hover{border-color:var(--red);color:var(--red)}
+#upAllBtn:hover{border-color:var(--gold);color:var(--gold)}
+#upBtn.broke,#recBtn.broke{opacity:.45;filter:grayscale(.6)}
+/* medals gallery */
+#medalCount{font-size:9px;letter-spacing:2px;color:var(--teal);margin-bottom:10px}
+#medalList{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.medal{border:1px solid var(--line2);border-radius:var(--rad);background:linear-gradient(#151d21,#101619);
+  padding:8px 10px;opacity:.45;filter:grayscale(.8)}
+.medal b{display:block;font-family:var(--disp);font-size:12px;letter-spacing:.5px;color:var(--ink);font-weight:400}
+.medal i{font-style:normal;font-size:8px;color:var(--dim2);letter-spacing:.5px}
+.medal.own{opacity:1;filter:none;border-color:var(--teal-d);box-shadow:0 0 12px #3ec9b020}
+.medal.own b{color:var(--teal);text-shadow:0 0 10px #3ec9b044}
+/* archive tabs */
+#statsTabs{display:flex;gap:5px;margin-bottom:10px}
+#statsTabs button{border:1px solid var(--line2);border-radius:var(--rad);background:linear-gradient(#1a2328,#131a1e);
+  color:var(--dim);font-size:9px;letter-spacing:1.5px;padding:6px 12px;cursor:pointer;transition:.12s}
+#statsTabs button:hover{color:var(--ink);border-color:var(--teal)}
+#statsTabs button.on{border-color:var(--teal);color:var(--teal);background:#122a27}
+#histInfo{font-size:9px;color:var(--dim);letter-spacing:.5px;line-height:1.6;margin-bottom:8px;border-left:2px solid var(--teal-d);padding-left:8px}
+#histBody td{font-size:9px}
+#relicList,#codexTowers,#codexEnemies{display:flex;flex-wrap:wrap;gap:5px}
+/* settings */
+.setRow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line2);font-size:10px;color:var(--ink)}
+.setRow label{flex:1;letter-spacing:.5px}
+.setRow small{display:block;font-size:7.5px;color:var(--dim2);letter-spacing:.5px}
+.setRow input[type=checkbox]{accent-color:var(--teal);width:16px;height:16px}
+.setRow input[type=range]{width:110px;accent-color:var(--teal)}
+#setSeed{font-size:9px;color:var(--amber);letter-spacing:1px;margin:8px 0}
+.setBtns{display:flex;gap:8px;margin-top:12px}
+.setBtns button{flex:1;border:1px solid var(--line);border-radius:var(--rad);background:linear-gradient(#28343b,#1c252a);
+  color:var(--ink);font-size:10px;letter-spacing:1px;padding:9px;cursor:pointer;transition:.12s}
+.setBtns button:hover{border-color:var(--amber);color:var(--amber)}
+.setBtns button.danger:hover{border-color:var(--red);color:var(--red)}
+/* confirm dialog */
+#confirmModal .panel{width:min(400px,100%)}
+#confirmMsg{font-size:11px;color:#b3bec2;line-height:1.6;margin:10px 0 16px}
+#confirmOk{flex:1;border:1px solid #ffb648;border-radius:var(--rad);background:linear-gradient(#ffc061,#ef9a26 55%,#d9801a);
+  color:#241603;font-family:var(--disp);font-size:14px;letter-spacing:1px;padding:9px;cursor:pointer}
+#confirmOk.danger{background:linear-gradient(#e0675f,#c03b34 60%,#a02c26);border-color:#ff9a94;color:#2a0705}
+#confirmNo{flex:1;border:1px solid var(--line);border-radius:var(--rad);background:linear-gradient(#28343b,#1c252a);
+  color:var(--ink);font-size:11px;letter-spacing:1px;padding:9px;cursor:pointer}
+#confirmNo:hover{border-color:var(--dim)}
+/* draft skip + owned counts */
+.offer.skip{opacity:.8}
+.offer .owned{text-decoration:none;color:var(--steel);font-size:8px;margin-left:4px}
+/* accessibility themes */
+body.cb{--copper:#d97742;--amber:#ffb020;--steel:#7fb8e8;--teal:#4fd8a8;--gold:#ffe066;--red:#ff7070;--violet:#d09ae8}
+body.hc{--ink:#ffffff;--dim:#b8c6cc;--dim2:#8fa0a7;--line:#4a5a62;--line2:#3a474e;--panel:#1d292f}
+body.hc #app::after{opacity:.8}
+body.noline #app::after{display:none}
+/* retreat */
+#retreatBtn{border:1px solid var(--line);border-radius:var(--rad);background:linear-gradient(#2a2020,#1f1616);
+  color:var(--dim);font-size:9px;letter-spacing:1px;padding:6px 10px;cursor:pointer;margin-top:10px}
+#retreatBtn:hover{border-color:var(--red);color:var(--red)}
 /* ---------- REDUCED MOTION ---------- */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
@@ -397,11 +461,15 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       <div class="chip pw"><b id="vW">0/10</b><i>GRID</i></div>
       <div class="chip core"><b id="vCore">20</b><i>CORE</i></div>
       <div class="chip wv"><b id="vWave">0/12</b><i>WAVE</i></div>
+      <div class="chip score"><b id="vScore">0</b><i>SCORE</i></div>
     </div>
     <div id="hbtns">
-      <button id="mapBtn" title="World route">MAP</button>
-      <button id="sndBtn" title="Sound">SND</button>
-      <button id="helpBtn" title="Field manual">?</button>
+      <button id="mapBtn" title="World route" aria-label="World route map">MAP</button>
+      <button id="medBtn" title="Commendations" aria-label="Commendation medals">★</button>
+      <button id="statBtn" title="Run archive — history, relics, codex" aria-label="Run archive">≡</button>
+      <button id="sndBtn" title="Sound" aria-label="Toggle sound">SND</button>
+      <button id="setBtn" title="Settings" aria-label="Settings">⚙</button>
+      <button id="helpBtn" title="Field manual" aria-label="Field manual">?</button>
     </div>
   </header>
   <section id="stageWrap">
@@ -413,8 +481,9 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     <div id="hint">SELECT A CARD [1-9] · BOARDS: TAP FIELD · MODULES/RECALIBRATE: TAP A UNIT · SKILLS: TAP AGAIN · [D] DECK · ✕/♻ TOSS A SELECTED CARD · [SPACE] LAUNCH</div>
     <div id="abils">
       <button id="abilSurge" title="All units +50% fire rate for 8s — costs 40 Fe">SURGE<small id="surgeCd">READY · 40Fe</small></button>
-      <button id="abilWeld" title="Restore 3 core integrity — costs 30 Fe 15 Cu">WELD<small id="weldCd">READY · 30Fe 15Cu</small></button>
+      <button id="abilWeld" title="Restore 3 core integrity and patch all units — costs 30 Fe 15 Cu">WELD<small id="weldCd">READY · 30Fe 15Cu</small></button>
     </div>
+    <div id="objChip"></div>
   </section>
   <section id="deck">
     <div id="deckL">
@@ -438,6 +507,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         <button id="pileExh" title="Exhausted this sector (D)">EXHAUST <b id="vExh">0</b></button>
         <button id="discardCard" title="Discard the selected card into the discard pile">✕ DISCARD</button>
         <button id="recycleCard" title="Permanently remove the selected card from your deck for 50% matter">♻ RECYCLE</button>
+        <button id="mulliganBtn" title="One free hand redraw per sector — first fabrication window only">⇄ MULLIGAN</button>
         <span id="pileInfo">HAND 0/10 · DECK 10</span>
       </div>
     </div>
@@ -459,6 +529,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         <div class="row2">
           <button id="upBtn" class="sq">UPGRADE<small id="upCost">—</small></button>
           <button id="recBtn" class="sq warn">RECYCLE<small id="recVal" style="display:block;font-size:7px;color:#8f9aa0;margin-top:3px">—</small></button>
+        </div>
+        <div class="row2">
+          <button id="sellAllBtn" style="display:none"><span>SELL ALL</span><small>—</small></button>
+          <button id="upAllBtn" style="display:none"><span>UPGRADE ALL</span><small>—</small></button>
         </div>
       </div>
     </div>
@@ -487,6 +561,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       <div class="sub">12 PROCEDURAL SECTORS · CLEAR WAVE 12 TO OPEN ADJACENT ROUTES</div>
       <canvas id="worldCv"></canvas>
       <div id="nodeInfo">select a sector to inspect · bars show local salvage mix (Fe/Cu/Si)</div>
+      <button id="retreatBtn">⟲ RETREAT — ABANDON SECTOR, KEEP THE DECK</button>
     </div>
   </div>
   <div class="modal" id="helpModal">
@@ -495,7 +570,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       <h2>FIELD MANUAL</h2>
       <div class="sub">ECONOMY · DOCTRINE · BALANCE LEDGER</div>
       <h3 class="sec">OBJECTIVE</h3>
-      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, seven blueprints, ten hostile classes, twenty-one relics, eleven modules, two field abilities. Survive wave 12 to clear a sector and open the world route.</p>
+      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, nine blueprints, thirteen hostile classes, twenty-six relics, thirteen modules, two field abilities. Survive wave 12 to clear a sector and open the world route. Every sector also carries a <b style="color:var(--teal)">bonus objective</b> (top-right chip): sealed hull, capture quotas, blitz launches or zero unit losses — paid in bonus grid, matter and score. Runs auto-save and resume; score feeds the archive.</p>
       <h3 class="sec">THE CIRCUIT DECK</h3>
       <p>You fight with a <b style="color:var(--teal)">deck of cards</b>, drawn Slay-the-Spire style. Your run starts with 10 cards; salvage caches add more. Each fabrication window is a <b>turn</b>: your old hand is discarded and you draw 5 (Autoloader: +1). Playing a card costs matter, not energy — your resources are the mana pool.</p>
       <p><b style="color:var(--steel)">CIRCUIT BOARDS</b> are the only way to build: select one and tap the field to print its unit — the board is consumed into the discard pile and cycles back on reshuffle. <b style="color:var(--teal)">SUBROUTINES</b> are one-shot skills, including hand-control circuits that discard weak cards or recycle cards from discard. <b style="color:var(--gold)">FIRMWARE</b> installs a sector-wide modifier and always exhausts. <b style="color:#b18cd9">CORRUPTIONS</b> are unplayable curse cards: risky black-box technology adds them permanently, while CLEAN ROOM can purge them.</p>
@@ -511,9 +586,14 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       <p>Every combat unit carries its own targeting order: <b>1ST</b> furthest along the route · <b>LST</b> closest to your gate · <b>MAX</b> strongest hull · <b>MIN</b> weakest hull · <b>NEAR</b> / <b>FAR</b> by distance from the unit. The active doctrine is badged above each unit — select one and use the chips in the unit panel or <kbd>T</kbd> to cycle. <kbd>E</kbd> cycles selection through deployed units, right-click cancels a placement.</p>
       <h3 class="sec">THREAT INDEX</h3>
       <p><b style="color:#c9714a">SCRAPLET</b> fodder · <b style="color:#8d9aa5">PLATED</b> 25% armor, leaks 2 · <b style="color:#d8a24a">SWARM</b> fast, fragile, many · <b style="color:#7ac98a">REGEN</b> rebuilds 1.2% hull/s — fight the capture zone · <b style="color:#ffd23f">GILDED</b> fast loot-piñata worth ×3, capture priority · <b style="color:#7fa8d9">PHASE</b> blinks +36px every 2.5s, telegraphs before jumping · <b style="color:#b8e986">REAVER</b> heavy 50%-armor linebreaker, drops rich salvage · <b style="color:#e5484d">TITAN</b> every 8th wave, armored, leaks 5, bonus Silicon on capture. Every 5th wave is a RUSH (double spawn rate), every 12th an ASSAULT.</p>
-      <p><b style="color:#a58a6a">CARRIER</b> leaks 3 and splits into three swarmlets when destroyed (capture it intact to deny the split) · <b style="color:#8a2a30">DREAD</b> leads every 12th wave — armored, regenerating, leaking 6. Any spawn can roll <b style="color:#ffd23f">VETERAN</b>: +60% hull, +70% bounty, gold frame.</p>
+      <p><b style="color:#a58a6a">CARRIER</b> leaks 3 and splits into three swarmlets when destroyed (capture it intact to deny the split) · <b style="color:#8a2a30">DREAD</b> leads every 12th wave — armored, regenerating, leaking 6. Any spawn can roll <b style="color:#ffd23f">VETERAN</b>: +60% hull, +70% bounty, gold frame — veterans also carry a perk (F fast · T tough · R regen).</p>
+      <p>New threats: <b style="color:#ff5f5f">SHRIEKER</b> dart-kamikazes detonate on death and shred nearby unit integrity · <b style="color:#c78bff">JAMMER</b> dishes quarter the fire rate of every unit within 70px until destroyed · <b style="color:#ff3b47">ANNIHILATOR</b> siege-walkers lead every 24th wave (SIEGE), leak 8, birth scrap escorts and drop a relic when slain. Tap any hostile to pin its readout.</p>
+      <h3 class="sec">UNIT INTEGRITY</h3>
+      <p>Units carry their own hull: <b>20 + 10 per level</b> (boosted by ARMORED MOUNTS and SHIELD GRID). Shrieker blasts and stray meteors chew it away; zero integrity scraps the unit for a 50% refund. <b>WELD</b> now splashes +4 integrity onto every unit, FIELD PATCH restores all, upgrades heal the level-up delta, and the SELF-HEALING HULL relic ticks +1/s. Veterans: units track kills — every 10 kills earns +2% damage (V1–V5 badge, max +10%).</p>
       <h3 class="sec">FIELD ABILITIES &amp; WEATHER</h3>
-      <p><b style="color:var(--gold)">SURGE</b> (40 Fe, 45s recharge): every unit fires 50% faster for 8s — golden overdrive frames show who's boosted. <b style="color:var(--teal)">WELD</b> (30 Fe 15 Cu, 60s): +3 core integrity. Waves can roll weather: <b>ION STORM</b> +40% arc damage · <b>GRAV SHEAR</b> hostiles −15% speed · <b>RUST WIND</b> foundries +40% · <b>SOLAR FLARE</b> all units +15% damage · <b>HARD FROST</b> hostiles −10% speed (frost frames). Units calibrate every 5 levels (★), gaining +5% damage and rate per star.</p>
+      <p><b style="color:var(--gold)">SURGE</b> (40 Fe, 45s recharge): every unit fires 50% faster for 8s — golden overdrive frames show who's boosted. <b style="color:var(--teal)">WELD</b> (30 Fe 15 Cu, 60s): +3 core integrity and +4 unit integrity on every deployed unit. Waves can roll weather: <b>ION STORM</b> +40% arc damage · <b>GRAV SHEAR</b> hostiles −15% speed · <b>RUST WIND</b> foundries +40% · <b>SOLAR FLARE</b> all units +15% damage · <b>HARD FROST</b> hostiles −10% speed (frost frames) · <b>METEOR SHOWER</b> sky-fire strikes random hostiles (rare stray hits on your units) · <b>SILICON RAIN</b> +30% silicon salvage. Units calibrate every 5 levels (★), gaining +5% damage and rate per star.</p>
+      <h3 class="sec">NEW CIRCUITRY</h3>
+      <p>Blueprints <b style="color:#ff8a3d">VULCAN</b> (twin gatling, swarm shredder) and <b style="color:#b18cd9">PULSE CORE</b> (periodic radial blast) join the board pool with their own modules (TUNGSTEN BARRELS, RESONANCE CHAMBER). New subroutines: <b>GRAVITY WELL</b> drags and slows everything · <b>NANO SWARM</b> corrodes all hostiles over time · <b>CIRCUIT BREAKER</b> stuns the whole field 2s · <b>FIELD PATCH</b> repairs units · <b>WRECKING BALL</b> scraps your weakest unit for a full refund · <b>ASSEMBLY CALL</b> fetches boards from the draw pile · <b>OVERCHARGE</b> makes the next board print at L2 · <b>ORE VEIN</b> / <b>SALVAGE BOND</b> print matter. Firmware: <b>SCAVENGER DRONE</b> +12% salvage, <b>REPULSOR FIELD</b> −8% hostile speed, <b>BLUEPRINT EFFICIENCY</b> −10% board cost, <b>SHIELD GRID</b> +25% unit integrity. Drafts add a <b>SKIP</b> option (+15 Fe), and each sector grants one free <b>MULLIGAN</b> (⇄) in its first fabrication window.</p>
       <h3 class="sec">BALANCE LEDGER</h3>
       <table class="bal">
         <tr><td>Wave HP</td><td>(34+11w) × 1.058^(w−1) — compounds forever</td></tr>
@@ -531,7 +611,74 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         <tr><td>Simulation</td><td>fixed 60Hz ticks, identical at 1× and 100×, runs live between waves</td></tr>
       </table>
       <h3 class="sec">CONTROLS</h3>
-      <p><kbd>1-9</kbd> select hand card (press again to run a subroutine) · <kbd>D</kbd> circuit ledger · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect · with a board selected, drag &amp; release on the field to print — invalid spots snap to the nearest foundation. Select a card, then use ✕ DISCARD / ♻ RECYCLE to thin your hand or deck.</p>
+      <p><kbd>1-9</kbd> select hand card (press again to run a subroutine) · <kbd>D</kbd> circuit ledger · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>Z</kbd> undo last placement (full refund) · <kbd>C</kbd> copy the selected unit's doctrine to its sisters · <kbd>R</kbd> retreat to the route network · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect or close a modal · with a board selected, drag &amp; release on the field to print — invalid spots snap to the nearest foundation. Tap a hostile to pin its readout; select a card, then use ✕ DISCARD / ♻ RECYCLE to thin your hand or deck.</p>
+    </div>
+  </div>
+  <div class="modal" id="medalsModal">
+    <div class="panel">
+      <button class="close" data-close="medalsModal">CLOSE</button>
+      <h2>COMMENDATIONS</h2>
+      <div class="sub" id="medalCount">0/15 EARNED</div>
+      <div id="medalList"></div>
+    </div>
+  </div>
+  <div class="modal" id="statsModal">
+    <div class="panel">
+      <button class="close" data-close="statsModal">CLOSE</button>
+      <h2>RUN ARCHIVE</h2>
+      <div class="sub">HISTORY · RELICS · BLUEPRINT &amp; HOSTILE CODEX</div>
+      <div id="statsTabs">
+        <button data-tab="history">HISTORY</button>
+        <button data-tab="relics">RELICS</button>
+        <button data-tab="codex">CODEX</button>
+      </div>
+      <div id="tabHistory">
+        <div id="histInfo"></div>
+        <table class="bal">
+          <thead><tr><td>OUTCOME</td><td>SEED</td><td>WAVE</td><td>SCORE</td><td>KILLS</td><td>WHEN</td></tr></thead>
+          <tbody id="histBody"></tbody>
+        </table>
+      </div>
+      <div id="tabRelics" style="display:none"><div id="relicList"></div></div>
+      <div id="tabCodex" style="display:none">
+        <h3 class="sec">BLUEPRINTS</h3>
+        <div id="codexTowers"></div>
+        <h3 class="sec">HOSTILES</h3>
+        <div id="codexEnemies"></div>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="settingsModal">
+    <div class="panel">
+      <button class="close" data-close="settingsModal">CLOSE</button>
+      <h2>FORGE SETTINGS</h2>
+      <div class="sub">PREFERENCES ARE SAVED ON THIS DEVICE</div>
+      <div id="setSeed">CURRENT SEED —</div>
+      <div class="setRow"><label>MASTER VOLUME<small id="setVolLbl">0 — 10</small></label><input type="range" id="setVol" min="0" max="10" step="1"></div>
+      <div class="setRow"><label>SCREEN SHAKE<small>explosions and impacts kick the camera</small></label><input type="checkbox" id="setShake" value="on"></div>
+      <div class="setRow"><label>PARTICLE DENSITY<small>0 low · 1 normal · 2 heavy</small></label><input type="range" id="setPart" min="0" max="2" step="1"></div>
+      <div class="setRow"><label>SCANLINES<small>CRT texture over the shell</small></label><input type="checkbox" id="setScan" value="on"></div>
+      <div class="setRow"><label>AUTO-PAUSE<small>pause when the tab loses focus</small></label><input type="checkbox" id="setAuto" value="on"></div>
+      <div class="setRow"><label>UI SCALE<small>1 · 1.15 · 1.3</small></label><input type="range" id="setScale" min="1" max="1.3" step="0.15"></div>
+      <div class="setRow"><label>CONFIRM RECYCLING<small>confirm before cards are torn from the deck</small></label><input type="checkbox" id="setConfirm" value="on"></div>
+      <div class="setRow"><label>COLORBLIND MODE<small>shape-coded capture markers, safe palette</small></label><input type="checkbox" id="setCB" value="on"></div>
+      <div class="setRow"><label>HIGH CONTRAST<small>brighter ink, stronger outlines</small></label><input type="checkbox" id="setHC" value="on"></div>
+      <div class="setRow"><label>DAMAGE NUMBERS<small>floating digits on every hit</small></label><input type="checkbox" id="setDmg" value="on"></div>
+      <div class="setRow"><label>AUTO-SORT HAND<small>boards first, then skills, powers, modules, curses</small></label><input type="checkbox" id="setSort" value="on"></div>
+      <div class="setBtns">
+        <button id="setDaily">DAILY SEED</button>
+        <button id="setReroll" class="danger">NEW RUN · REROLL</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="confirmModal">
+    <div class="panel">
+      <h2 id="confirmTitle">CONFIRM</h2>
+      <p id="confirmMsg"></p>
+      <div class="endbtns">
+        <button id="confirmOk">CONFIRM</button>
+        <button id="confirmNo" class="ghost">CANCEL</button>
+      </div>
     </div>
   </div>
   <div class="modal" id="endModal">

@@ -9,7 +9,7 @@
 import { S } from './state';
 import { DECK_CARDS, CARDS, STARTER_DECK, MODULES } from './data';
 import type { CardInst, DeckCardDef, Card, ModuleDef, Enemy, Cost, Tower } from './types';
-import { canAfford, spend, gainRes, usedGrid, gridCap } from './economy';
+import { canAfford, spend, gainRes, usedGrid, gridCap, boardCostMult, towerMhp } from './economy';
 import { burst, float } from './fx';
 import { Snd } from './audio';
 import { killEnemy } from './enemies';
@@ -46,7 +46,18 @@ function shuffleInPlace<T>(a: T[]): T[] {
   return a;
 }
 
-/** Build the run's starting 10-card deck. Call once at boot. */
+/** Optional hand auto-sort: boards → skills → powers → modules → curses. */
+const KIND_ORDER: Record<string, number> = { board: 0, skill: 1, power: 2, module: 3, curse: 4 };
+function sortHand(): void {
+  if (!S.settings.handSort) return;
+  S.hand.sort(function (a, b) {
+    var da = defOf(a), db = defOf(b);
+    var k = (KIND_ORDER[da.kind] - KIND_ORDER[db.kind]);
+    return k !== 0 ? k : (da.name < db.name ? -1 : da.name > db.name ? 1 : 0);
+  });
+}
+
+/** Build the run's starting 11-card deck. Call once at boot. */
 export function initRunDeck(): void {
   S.deck = STARTER_DECK.map(function (id) { return { uid: uidC++, id: id }; });
 }
@@ -74,11 +85,15 @@ export function sectorShuffle(): void {
   S.exhaustPile = [];
   S.drawPile = shuffleInPlace(S.deck.slice());
   S.selCard = null;
+  S.overcharge = false;
+  S.mulliganUsed = false;
+  S.undoStack = [];
   /* innate cards jump to the opening hand */
   for (var i = S.drawPile.length - 1; i >= 0 && S.hand.length < handSize(); i--) {
     if (defOf(S.drawPile[i]).innate) S.hand.push(S.drawPile.splice(i, 1)[0]);
   }
   drawCards(handSize() - S.hand.length);
+  sortHand();
 }
 
 /** Draw n cards; reshuffles the discard pile when the draw pile runs dry. */
@@ -94,6 +109,7 @@ export function drawCards(n: number): number {
     S.hand.push(S.drawPile.pop()!);
     drawn++;
   }
+  if (S.settings.handSort) sortHand();
   return drawn;
 }
 
@@ -181,9 +197,17 @@ export function selTargetedSkill(): DeckCardDef | null {
   return isTargetedSkill(d) ? d : null;
 }
 
+/** Effective matter cost of a board (BLUEPRINT EFFICIENCY discount). */
+export function effCost(c: Cost): Cost {
+  var m = boardCostMult();
+  if (m === 1) return c;
+  return { fe: Math.ceil(c.fe * m), cu: Math.ceil(c.cu * m), si: Math.ceil(c.si * m) };
+}
+
 export function canPlayDef(d: DeckCardDef): { ok: boolean; why?: string } {
   if (d.kind === 'curse') return { ok: false, why: 'CURSES CANNOT BE PLAYED — DISCARD OR PURGE IT' };
-  if (!canAfford(d.cost)) return { ok: false, why: 'INSUFFICIENT MATTER' };
+  var cost = d.kind === 'board' ? effCost(d.cost) : d.cost;
+  if (!canAfford(cost)) return { ok: false, why: 'INSUFFICIENT MATTER' };
   if (d.kind === 'board') {
     var c = CARDS[d.tower!];
     if (usedGrid() + c.draw > gridCap()) return { ok: false, why: 'GRID CAPACITY EXCEEDED' };
@@ -194,6 +218,10 @@ export function canPlayDef(d: DeckCardDef): { ok: boolean; why?: string } {
   if ((d.id === 'skill_purge' || d.id === 'skill_quarantine') &&
       !S.hand.some(function (ci) { return defOf(ci).kind === 'curse'; })) {
     return { ok: false, why: 'NO CURSE IN HAND' };
+  }
+  if (d.id === 'skill_wreck' && !S.towers.length) return { ok: false, why: 'NO DEPLOYED UNITS' };
+  if (d.id === 'skill_patch' && !S.towers.some(function (t) { return t.hp < t.mhp; })) {
+    return { ok: false, why: 'UNITS AT FULL INTEGRITY' };
   }
   return { ok: true };
 }
@@ -220,6 +248,13 @@ export function playCard(handIdx: number): { ok: boolean; msg: string } {
   if (d.kind === 'power') {
     S.powers[d.id] = (S.powers[d.id] || 0) + 1;
     if (d.id === 'power_sub') S.gridMax += 4;
+    if (d.id === 'power_shield') {
+      for (i = 0; i < S.towers.length; i++) {
+        var st = S.towers[i];
+        st.mhp = towerMhp(st);
+        st.hp = Math.min(st.hp + 5, st.mhp);
+      }
+    }
     S.rings.push({ x: cp.x, y: cp.y, r: 6, max: 52, col: '#ffd23f' });
     float(cp.x, cp.y - 18, d.name + ' INSTALLED', '#ffd23f');
     resolveAfterPlay(handIdx);
@@ -474,6 +509,106 @@ export function playCard(handIdx: number): { ok: boolean; msg: string } {
       Snd.play('weld');
       msg += ' — ALL HOSTILES SLOWED 60% FOR 6s';
       break;
+    case 'skill_gravity': {
+      var gripped = 0;
+      for (i = 0; i < S.enemies.length; i++) {
+        var gv = S.enemies[i];
+        if (gv.dead) continue;
+        gv.d = Math.max(-14, gv.d - 70);
+        gv.gravT = 3;
+        gripped++;
+      }
+      S.rings.push({ x: cp.x, y: cp.y, r: 8, max: 88, col: '#b18cd9' });
+      Snd.play('beam');
+      msg += gripped ? ' — ' + gripped + ' HOSTILES DRAGGED & SLOWED 3s' : ' — NOTHING IN THE FIELD (EXHAUSTED)';
+      break;
+    }
+    case 'skill_nano': {
+      var corroded = 0;
+      for (i = 0; i < S.enemies.length; i++) {
+        var no = S.enemies[i];
+        if (no.dead) continue;
+        no.burn = Math.max(no.burn, 7.5);
+        no.burnT = Math.max(no.burnT, 4);
+        corroded++;
+      }
+      S.rings.push({ x: cp.x, y: cp.y, r: 8, max: 70, col: '#7ac98a' });
+      Snd.play('beam');
+      msg += corroded ? ' — NANO SWARM DEVOURING ' + corroded + ' HOSTILES' : ' — NOTHING TO CORRODE (EXHAUSTED)';
+      break;
+    }
+    case 'skill_breaker': {
+      var stunned = 0;
+      for (i = 0; i < S.enemies.length; i++) {
+        var br = S.enemies[i];
+        if (br.dead) continue;
+        br.stun = 2;
+        br.flash = .12;
+        stunned++;
+      }
+      S.rings.push({ x: cp.x, y: cp.y, r: 8, max: 76, col: '#ffd23f' });
+      Snd.play('arc');
+      msg += stunned ? ' — ' + stunned + ' HOSTILES STUNNED 2s' : ' — NOTHING TO STUN (EXHAUSTED)';
+      break;
+    }
+    case 'skill_ore':
+      gainRes({ fe: 40, cu: 20, si: 0 }, cp.x, cp.y - 10);
+      msg += ' — +40Fe +20Cu';
+      break;
+    case 'skill_patch': {
+      var patched = 0;
+      for (i = 0; i < S.towers.length; i++) {
+        var pt = S.towers[i];
+        if (pt.hp < pt.mhp) {
+          pt.hp = pt.mhp;
+          patched++;
+          burst(pt.x, pt.y, '#3ec9b0', 5);
+        }
+      }
+      Snd.play('weld');
+      msg += ' — ' + patched + ' UNIT' + (patched === 1 ? '' : 'S') + ' RESTORED TO FULL INTEGRITY';
+      break;
+    }
+    case 'skill_bond': {
+      var pay = 6 * S.wave;
+      gainRes({ fe: pay, cu: 0, si: 0 }, cp.x, cp.y - 10);
+      msg += ' — BOND PAID +' + pay + 'Fe';
+      break;
+    }
+    case 'skill_wreck': {
+      var weak = S.towers[0];
+      for (i = 1; i < S.towers.length; i++) {
+        var wc = S.towers[i];
+        if (wc.lvl < weak.lvl || (wc.lvl === weak.lvl && wc.hp < weak.hp)) weak = wc;
+      }
+      var refund: Cost = { fe: weak.inv.fe, cu: weak.inv.cu, si: weak.inv.si };
+      S.towers = S.towers.filter(function (x) { return x !== weak; });
+      S.beams = S.beams.filter(function (b) { return b.tw !== weak; });
+      if (S.selTower === weak) S.selTower = null;
+      gainRes(refund, weak.x, weak.y);
+      burst(weak.x, weak.y, '#8fa0a6', 12);
+      Snd.play('boom', true);
+      msg += ' — ' + CARDS[weak.i].name + ' SCRAPPED · FULL REFUND';
+      break;
+    }
+    case 'skill_assembly': {
+      var boards: CardInst[] = [];
+      for (i = S.drawPile.length - 1; i >= 0 && boards.length < 2; i--) {
+        if (defOf(S.drawPile[i]).kind === 'board') {
+          boards.push(S.drawPile.splice(i, 1)[0]);
+        }
+      }
+      boards.forEach(function (b) { if (S.hand.length < HAND_CAP) S.hand.push(b); else S.discardPile.push(b); });
+      Snd.play('draft');
+      msg += ' — ' + boards.length + ' BOARD' + (boards.length === 1 ? '' : 'S') + ' FABRICATED TO HAND';
+      break;
+    }
+    case 'skill_overcharge':
+      S.overcharge = true;
+      S.rings.push({ x: cp.x, y: cp.y, r: 5, max: 40, col: '#ffd23f' });
+      Snd.play('upgrade');
+      msg += ' — NEXT BOARD PRINTS AT LEVEL 2';
+      break;
     default:
       break;
   }
@@ -555,4 +690,22 @@ export function castRecalibrate(t: Tower): string {
   burst(t.x, t.y, '#ffd23f', 8);
   Snd.play('upgrade');
   return d.name + ' — ' + CARDS[t.i].name + ' +1 LEVEL';
+}
+
+/** One free mulligan per sector: redraw the whole hand once. */
+export function freeMulligan(): string {
+  if (S.mulliganUsed) return 'MULLIGAN ALREADY USED THIS SECTOR';
+  if (S.phase !== 'build') return 'MULLIGAN ONLY IN THE FABRICATION WINDOW';
+  S.mulliganUsed = true;
+  var tossed = 0;
+  for (var i = S.hand.length - 1; i >= 0; i--) {
+    var d = defOf(S.hand[i]);
+    if (d.ethereal) S.exhaustPile.push(S.hand.splice(i, 1)[0]);
+    else S.discardPile.push(S.hand.splice(i, 1)[0]);
+    tossed++;
+  }
+  var got = drawCards(handSize());
+  S.selCard = null;
+  Snd.play('draft');
+  return 'MULLIGAN — TOSSED ' + tossed + ' · DREW ' + got;
 }

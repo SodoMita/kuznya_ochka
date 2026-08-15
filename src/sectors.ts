@@ -208,6 +208,76 @@ function genLoops(r: () => number): GenResult {
   return { nodes, edges, core, spawnCands };
 }
 
+/** Archimedean spiral arm with chords cutting back across the turns — one long
+    switchback road that crosses itself repeatedly. Spawns sit on the outer
+    turns, the CORE waits at the centre. */
+function genSpiral(r: () => number): GenResult {
+  const landscape = W >= H;
+  const n = 14;
+  const nodes: RouteNode[] = [];
+  const cx = .5 + jittered(r, .04), cy = .5 + jittered(r, .04);
+  const a0 = .016 + r() * .008;                 /* spacing per radian */
+  const b0 = .028 + r() * .012;                 /* radius growth per radian */
+  const th0 = .6 + r() * 1.2;                   /* starting angle */
+  const turns = 3.1 + r() * .7;                 /* ~3–3.8 full turns */
+  const ang = (k: number) => th0 + k / (n - 1) * turns * Math.PI * 2;
+  /* scale the spiral to fit the frame */
+  const R = (k: number) => a0 + b0 * (ang(k) - th0);
+  let maxR = 0;
+  for (let k = 0; k < n; k++) maxR = Math.max(maxR, R(k));
+  const fit = (landscape ? .44 : .38) / maxR;
+  for (let k = 0; k < n; k++) {
+    const th = ang(k), rad = R(k) * fit;
+    nodes.push({
+      x: clamp(cx + Math.cos(th) * rad * (landscape ? 1 : .85), .08, .92),
+      y: clamp(cy + Math.sin(th) * rad * (landscape ? .85 : 1), .1, .9),
+      px: 0, py: 0, kind: 'junc'
+    });
+  }
+  const edges: [number, number][] = [];
+  for (let k = 0; k < n - 1; k++) edges.push([k, k + 1]);
+  /* chords between adjacent turns — each jumps ~one full turn ahead and
+     crosses the intervening spine, guaranteeing loops AND crossings */
+  const perTurn = Math.max(3, Math.round((n - 1) / turns));
+  const have = new Set<string>();
+  const key = (a: number, b: number) => a < b ? a + '-' + b : b + '-' + a;
+  const spine = (a: number, b: number) => key(a, b);
+  for (let k = 0; k < n; k++) {
+    if (k > 0) have.add(spine(k - 1, k));
+  }
+  let chords = 0;
+  for (let k = 1; k < n - perTurn && chords < 4; k += Math.max(1, Math.floor(perTurn / 2))) {
+    const j = Math.min(n - 1, k + perTurn);
+    if (j <= k + 1 || have.has(key(k, j))) continue;
+    let crosses = 0;
+    const A = nodes[k], B = nodes[j];
+    for (let m = 0; m < n - 1; m++) {
+      if (properCross(A, B, nodes[m], nodes[m + 1])) crosses++;
+    }
+    if (crosses >= 1) {
+      have.add(key(k, j));
+      edges.push([k, j]);
+      chords++;
+    }
+  }
+  /* fallback chords — scan the widest gaps until two crossings exist */
+  let guard = 0;
+  while (chords < 2 && guard++ < 60) {
+    const a = 1 + Math.floor(r() * (n - 3));
+    const b = a + 3 + Math.floor(r() * (n - a - 3));
+    if (b >= n || have.has(key(a, b))) continue;
+    let crosses = 0;
+    for (let m = 0; m < n - 1; m++) {
+      if (properCross(nodes[a], nodes[b], nodes[m], nodes[m + 1])) crosses++;
+    }
+    if (crosses >= 1) { have.add(key(a, b)); edges.push([a, b]); chords++; }
+  }
+  /* core at the innermost turn, spawns on the outer turns */
+  const core = 0;
+  const spawnCands: number[] = [n - 1, Math.max(1, n - 5), Math.max(2, Math.floor(n / 2))];
+  return { nodes, edges, core, spawnCands };
+}
+
 /** Random scatter with 2-nearest-neighbor edges + random chords → organic loops & crossings. */
 function genWeb(r: () => number): GenResult {
   const landscape = W >= H;
@@ -370,13 +440,14 @@ function assemble(r: () => number, gen: (r: () => number) => GenResult) {
 export function genSector(): void {
   S.sectorGen++;                 /* invalidates cached road/grid/sky layers */
   const r = mulberry32((S.seed + S.sector * 7919) >>> 0);
-  const gens: ((r: () => number) => GenResult)[] = [genGrid, genRadial, genRiver, genWeb, genLoops];
+  const gens: ((r: () => number) => GenResult)[] = [genGrid, genRadial, genRiver, genWeb, genLoops, genSpiral];
   const g = assemble(r, gens[Math.floor(r() * gens.length)]);
   S.nodes = g.nodes;
   S.edges = g.edges;
   S.spawns = g.spawns;
   S.coreIdx = g.core;
   S.spawnIdx = 0;
+  S.scorch = [];
   genSpots(r);
   buildGraphPx();
   S.motes = [];

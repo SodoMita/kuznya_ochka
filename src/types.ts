@@ -73,6 +73,7 @@ export interface EnemyTypeDef {
   size: number;
   col: string;
   regen?: number;
+  explode?: number;     // shrieker: tower-damage burst radius in px
 }
 
 export interface SectorMix {
@@ -106,6 +107,15 @@ export interface Tower {
   mods: string[];       // installed module ids (one of each kind per unit)
   selF?: number;        // selection flash decay
   _st?: TowerStats;     // per-tick cached stats (set by sim)
+  /* integrity system */
+  hp: number;           // current tower integrity
+  mhp: number;          // max integrity (20 + 10/level)
+  /* veterancy + combat ledger */
+  kills: number;        // hostiles destroyed
+  caps: number;         // hostiles captured
+  dealt: number;        // total damage dealt
+  dropT: number;        // placement drop-in animation timer (seconds)
+  jam: number;          // 1 while jammed by an enemy jammer aura
 }
 
 export interface TowerStats {
@@ -133,13 +143,17 @@ export interface Enemy {
   burn: number;         // active burn DoT (dps from flamethrower modules)
   burnT: number;        // seconds of burn remaining
   beamT: number;
+  stun: number;         // seconds of circuit-breaker stun remaining
+  gravT: number;        // seconds of gravity-well 40% slow remaining
   x: number;
   y: number;
   ang: number;
   dead: boolean;
   bm?: number;          // 1 while being capture-beamed
   vet?: boolean;        // veteran elite: +60% hull, +70% bounty, gold frame
+  perk?: string;        // veteran perk: 'fast' | 'tough' | 'regen'
   ph?: number;          // phase-shifter blink timer
+  bossT?: number;       // overlord: seconds until the next scrap spawn
   route: number[];      // node-id sequence from a spawn gate to the core
   routePx: PathPoint[]; // pixel polyline of that route (rebuilt on resize)
   routeLen: number;     // total pixel length of routePx
@@ -152,7 +166,7 @@ export interface Shot {
   ty: number;
   life: number;
   col: string;
-  kind: number;         // 0 = tracer, 1 = chain arc
+  kind: number;         // 0 = tracer, 1 = chain arc, 2 = rail, 3 = lobbed shell, 4 = meteor
 }
 
 export interface Beam {
@@ -267,4 +281,55 @@ export interface GhostState {
   y: number;
   sx: number | null;    // snapped foundation, if any
   sy: number | null;
+}
+
+/** Player-tunable settings, persisted between sessions. */
+export interface Settings {
+  vol: number;            // master volume 0..1
+  shake: boolean;         // screen shake on/off
+  particles: number;      // 0 low · 1 normal · 2 high
+  scanlines: boolean;     // CRT scanline overlay
+  autopause: boolean;     // pause when the tab loses focus
+  uiScale: number;        // 1 · 1.15 · 1.3
+  confirmRecycle: boolean;// confirm before permanently recycling
+  colorblind: boolean;    // colorblind-friendly palette + shapes
+  contrast: boolean;      // high-contrast theme
+  dmgNumbers: boolean;    // floating damage numbers
+  handSort: boolean;      // auto-sort hand (boards first)
+}
+
+/** A per-sector bonus objective with a one-time reward. */
+export interface SectorObjective {
+  id: string;
+  name: string;
+  desc: string;
+  done: boolean;
+  track: number;          // generic progress counter
+}
+
+/** One recorded run for the history ledger. */
+export interface RunRecord {
+  seed: number;
+  win: boolean;
+  sector: number;
+  wave: number;
+  score: number;
+  kills: number;
+  captures: number;
+  date: string;
+}
+
+/** A pending confirm dialog. */
+export interface Confirm {
+  title: string;
+  msg: string;
+  okLabel: string;
+  danger: boolean;
+  onOk: () => void;
+}
+
+/** A queued toast message. */
+export interface ToastItem {
+  msg: string;
+  kind: string;           // '' | 'warn' | 'good' | 'medal'
 }

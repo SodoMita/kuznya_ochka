@@ -1,13 +1,14 @@
-/* Salvage-cache draft: pick one of three offers between waves.
+/* Salvage-cache draft: pick one of three offers between waves (or skip).
    Offers mix NEW CARDS for the circuit deck (the StS card reward),
    blueprint rank-ups, and relics. */
 import { S } from './state';
 import { CARDS, DECK_CARDS, RELICS, KIND_LABEL, KIND_COL, GLYPHS } from './data';
 import { $ } from './utils';
 import { openModal, closeModal } from './modals';
-import { toast, hud } from './hud';
+import { toast, hud, award } from './hud';
 import { addCardToDeck, defById } from './deck';
 import { Snd } from './audio';
+import { saveRun } from './persist';
 import type { DraftOffer } from './types';
 
 export function rollOffers(): DraftOffer[] {
@@ -46,6 +47,7 @@ export function rollOffers(): DraftOffer[] {
 }
 
 export function openDraft(): void {
+  if (S.over) return;
   S.draftOffers = rollOffers();
   var h = '';
   for (var i = 0; i < S.draftOffers.length; i++) {
@@ -63,8 +65,9 @@ export function openDraft(): void {
       ribbon = '<span class="okind">' + KIND_LABEL[d.kind] + '</span>';
       glyph = d.kind === 'board' ? GLYPHS[CARDS[d.tower!].id] : (GLYPHS['k_' + d.kind] || '');
       tags = flags.length ? '<div class="tags">' + flags.join('') + '</div>' : '';
-      name = d.name;
-      desc = d.desc + '. Added to your circuit deck.';
+      var owned = S.deck.filter(function (c) { return c.id === o.id; }).length;
+      name = d.name + (owned ? ' <u class="owned">×' + owned + ' OWNED</u>' : '');
+      desc = d.desc + '. Added to your circuit deck.' + (owned ? ' You already field ' + owned + ' copies.' : '');
       pick = '▸ ADD TO DECK';
     } else if (o.kind === 'rank') {
       var c = CARDS.filter(function (x) { return x.id === o.id; })[0];
@@ -72,7 +75,7 @@ export function openDraft(): void {
       ribbon = '<span class="okind">BLUEPRINT UPGRADE</span>';
       glyph = GLYPHS[c.id];
       name = c.name + ' Mk.' + (S.ranks[o.id] + 2);
-      desc = 'Permanent +5% damage & output for every ' + c.name + ' unit, current and future.';
+      desc = 'Permanent +5% damage & output for every ' + c.name + ' unit, current and future. Now Mk.' + (S.ranks[o.id] + 1) + '.';
     } else {
       var r = RELICS.filter(function (x) { return x.id === o.id; })[0];
       col = '#ffa02f';
@@ -82,8 +85,12 @@ export function openDraft(): void {
     }
     h += '<div class="offer" data-off="' + i + '" style="color:' + col + '">' + ribbon +
       '<span class="rar r' + o.rar + '">' + rn + '</span><b>' + (glyph || '') + name + '</b><p>' + desc + '</p>' + tags +
-      '<div class="pick">' + pick + '</div></div>';
+      '<div class="pick">' + pick + ' <kbd>' + (i + 1) + '</kbd></div></div>';
   }
+  /* the fourth offer: skip for scrap */
+  h += '<div class="offer skip" data-off="3" style="color:#8c9da4"><span class="okind">FIELD SCRAP</span>' +
+    '<b>SKIP</b><p>Decline the cache. The fabrication rig sweeps the debris: gain 15 Fe immediately.</p>' +
+    '<div class="pick">▸ TAKE SCRAP <kbd>4</kbd></div></div>';
   $('offers').innerHTML = h;
   var nodes = $('offers').children;
   for (i = 0; i < nodes.length; i++) {
@@ -96,6 +103,15 @@ export function openDraft(): void {
 }
 
 export function chooseDraft(i: number): void {
+  if (i === 3) {  /* skip — salvage scrap */
+    S.res.fe += 15;
+    toast('CACHE DECLINED — +15Fe SCRAP');
+    Snd.play('ui');
+    closeModal('draftModal');
+    hud(true);
+    saveRun();
+    return;
+  }
   var o = S.draftOffers[i];
   if (!o) return;
   if (o.kind === 'card') {
@@ -108,9 +124,12 @@ export function chooseDraft(i: number): void {
     S.relics[o.id] = true;
     if (o.id === 'cap') S.gridMax += 8;
     if (o.id === 'plating') { S.coreMax += 6; S.core += 6; }
+    var owned = RELICS.filter(function (r) { return S.relics[r.id]; }).length;
+    if (owned >= 5) award('relic5');
     toast(RELICS.filter(function (r) { return r.id === o.id; })[0].name + ' INSTALLED');
   }
   Snd.play('upgrade');
   closeModal('draftModal');
   hud(true);
+  saveRun();
 }

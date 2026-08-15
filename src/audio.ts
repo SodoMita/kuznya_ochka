@@ -21,7 +21,7 @@ export const Snd: SoundEngine = {
     try {
       this.ac = new (window.AudioContext || (window as any).webkitAudioContext)();
       this.g = this.ac.createGain();
-      this.g.gain.value = .14;
+      this.g.gain.value = .14 * S.settings.vol;
       this.g.connect(this.ac.destination);
     } catch (e) { /* audio unavailable */ }
   },
@@ -59,6 +59,7 @@ export const Snd: SoundEngine = {
     if (fast && S.speed > 6) return;
     if (this.ac && this.ac.state === 'suspended') this.ac.resume();
     if (this.ac && this.ac.state !== 'running') return;
+    if (this.muted) return;
     switch (name) {
       case 'shoot': this.t('square', 920, 240, .06, .5); break;
       case 'arc': this.t('sawtooth', 340, 70, .11, .5); break;
@@ -72,6 +73,9 @@ export const Snd: SoundEngine = {
       case 'rail': this.t('square', 1500, 160, .13, .6); this.n(.08, .4); break;
       case 'surge': this.t('sawtooth', 180, 940, .32, .6); this.n(.12, .35); break;
       case 'weld': this.t('triangle', 320, 540, .1, .5); this.n(.06, .3); this.t('triangle', 540, 760, .12, .4); break;
+      case 'repair': this.t('triangle', 260, 700, .14, .5); this.n(.05, .25); break;
+      case 'stun': this.t('square', 1200, 300, .1, .4); this.t('square', 900, 250, .09, .3); break;
+      case 'meteor': this.t('sawtooth', 900, 90, .3, .35); this.n(.12, .4); break;
       case 'leak': this.t('sine', 110, 55, .3, .9); this.n(.15, .5); break;
       case 'wave': this.t('sawtooth', 98, 98, .32, .55); this.t('sawtooth', 147, 147, .32, .4); break;
       case 'place': this.t('triangle', 420, 640, .08, .6); break;
@@ -83,6 +87,7 @@ export const Snd: SoundEngine = {
       case 'error': this.t('square', 130, 90, .12, .6); break;
       case 'ui': this.t('sine', 900, 700, .04, .35); break;
       case 'draft': this.t('sine', 520, 780, .16, .55); this.t('triangle', 1040, 1560, .2, .3); break;
+      case 'medal': this.t('triangle', 660, 990, .12, .5); this.t('triangle', 990, 1480, .18, .4); break;
       case 'fanfare':
         this.t('sawtooth', 196, 196, .3, .5);
         var f = this;

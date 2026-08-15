@@ -1,18 +1,21 @@
 /* All user input: pointer on the battlefield, deck buttons, hotkeys. */
 import { S } from './state';
 import { cv, wcv } from './view';
-import { SPEEDS, TGTS, RKEYS } from './data';
-import { $ } from './utils';
-import { canPlace, placeTower, installModule } from './towers';
+import { SPEEDS, TGTS, RKEYS, CARDS } from './data';
+import { $, dailySeed } from './utils';
+import { canPlace, placeTower, installModule, undoPlace, sellAllOf, upgradeAllOf, towerCard } from './towers';
 import { launchWave } from './enemies';
-import { hud, renderUnit, toast, award, playHandCard, openDeckModal } from './hud';
-import { defOf, selBoard, isTargetedSkill, castRecalibrate, discardSelCard, recycleSelCard } from './deck';
+import { hud, renderUnit, toast, award, playHandCard, openDeckModal, openMedals, openStats, openSettings, applySettingsBody, statsTab } from './hud';
+import { chooseDraft } from './draft';
+import { defOf, selBoard, isTargetedSkill, castRecalibrate, discardSelCard, recycleSelCard, freeMulligan } from './deck';
 import { canAfford, spend, usedGrid, gainRes, upCost, gridCap } from './economy';
 import { burst, float } from './fx';
-import { openMap, pickWorld } from './worldmap';
-import { openModal } from './modals';
+import { openMap, pickWorld, drawWorld } from './worldmap';
+import { openModal, closeModal, closeTopModal, askConfirm, confirmYes, confirmNo } from './modals';
 import { Snd } from './audio';
-import type { Tower, GhostState } from './types';
+import { startNewRun } from './reset';
+import { saveSettings, clearSave } from './persist';
+import type { Tower, GhostState, Enemy } from './types';
 
 function canvasPos(ev: PointerEvent | TouchEvent): { x: number; y: number } {
   var r = cv.getBoundingClientRect();
@@ -25,6 +28,17 @@ function towerNear(p: { x: number; y: number }, r: number): Tower | null {
   for (var i = 0; i < S.towers.length; i++) {
     var t = S.towers[i], d = Math.hypot(t.x - p.x, t.y - p.y);
     if (d < bd) { bd = d; best = t; }
+  }
+  return best;
+}
+
+function enemyNear(p: { x: number; y: number }, r: number): Enemy | null {
+  var best: Enemy | null = null, bd = r;
+  for (var i = 0; i < S.enemies.length; i++) {
+    var e = S.enemies[i];
+    if (e.dead) continue;
+    var d = Math.hypot(e.x - p.x, e.y - p.y);
+    if (d < bd) { bd = d; best = e; }
   }
   return best;
 }
@@ -80,6 +94,16 @@ cv.addEventListener('pointerdown', function (ev) {
     S.ghost = updGhost(p);
     return;
   }
+  /* no card selected + no tower → tapping a hostile pins its readout */
+  if (S.selCard == null) {
+    var enHit = enemyNear(p, 14);
+    if (enHit) {
+      S.inspect = enHit === S.inspect ? null : enHit;
+      S.inspectT = 2.5;
+      Snd.play('ui');
+      return;
+    }
+  }
   placing = true;
   if (!selBoard() && !towerNear(p, 48)) { S.selTower = null; hud(true); } /* stray taps near a unit never deselect */
   S.ghost = updGhost(p);
@@ -134,6 +158,21 @@ wcv.addEventListener('pointerdown', function (ev) {
   pickWorld(ev);
 });
 
+wcv.addEventListener('pointermove', function (ev) {
+  var r = wcv.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top;
+  var hover = -1, bd = 14;
+  for (var i = 0; i < S.worldNodes.length; i++) {
+    var n = S.worldNodes[i];
+    var d = Math.hypot(x - n.x * r.width, y - n.y * r.height);
+    if (d < bd) { bd = d; hover = i; }
+  }
+  if (hover >= 0) drawWorld(hover);
+});
+
+wcv.addEventListener('pointerleave', function () {
+  drawWorld(-1);
+});
+
 $('startBtn').addEventListener('pointerdown', function () {
   Snd.init();
   launchWave();
@@ -152,6 +191,13 @@ $('pauseBtn').addEventListener('pointerdown', function () {
   Snd.init();
   S.paused = !S.paused;
   Snd.play('ui');
+  hud(true);
+});
+
+$('mulliganBtn').addEventListener('pointerdown', function () {
+  Snd.init();
+  toast(freeMulligan());
+  hud(true);
 });
 
 $('upBtn').addEventListener('pointerdown', function () {
@@ -175,13 +221,42 @@ $('recBtn').addEventListener('pointerdown', function () {
   Snd.init();
   const t = S.selTower;
   if (!t || S.towers.indexOf(t) < 0) return;
-  gainRes({ fe: t.inv.fe * .7, cu: t.inv.cu * .7, si: t.inv.si * .7 }, t.x, t.y);
-  S.towers = S.towers.filter(function (x) { return x !== t; });
-  S.beams = S.beams.filter(function (b) { return b.tw !== t; });
-  S.selTower = null;
-  burst(t.x, t.y, '#8fa0a6', 10);
-  Snd.play('boom', true);
-  toast('70% MATTER RECOVERED');
+  var doRecycle = function () {
+    gainRes({ fe: t.inv.fe * .7, cu: t.inv.cu * .7, si: t.inv.si * .7 }, t.x, t.y);
+    S.towers = S.towers.filter(function (x) { return x !== t; });
+    S.beams = S.beams.filter(function (b) { return b.tw !== t; });
+    S.undoStack = S.undoStack.filter(function (u) { return u.t !== t; });
+    S.selTower = null;
+    burst(t.x, t.y, '#8fa0a6', 10);
+    Snd.play('boom', true);
+    toast('70% MATTER RECOVERED');
+    hud(true);
+  };
+  if (S.settings.confirmRecycle) {
+    askConfirm('RECYCLE ' + towerCard(t).name + ' L' + t.lvl + '?', 'The unit is dismantled for 70% of invested matter. Modules and upgrades are lost.', 'RECYCLE', true, doRecycle);
+  } else {
+    doRecycle();
+  }
+});
+
+$('sellAllBtn').addEventListener('pointerdown', function () {
+  Snd.init();
+  const t = S.selTower;
+  if (!t || S.towers.indexOf(t) < 0) { Snd.play('error'); return; }
+  var n = S.towers.filter(function (x) { return x.i === t!.i; }).length;
+  if (n <= 1) { toast('ONLY ONE DEPLOYED — USE RECYCLE'); Snd.play('error'); return; }
+  var i = t.i;
+  askConfirm('SCRAP ' + n + '× ' + CARDS[i].name + '?', 'All deployed copies are dismantled for 70% of invested matter. Units, modules and upgrades are lost.', 'SCRAP ALL', true, function () {
+    toast(sellAllOf(i));
+    hud(true);
+  });
+});
+
+$('upAllBtn').addEventListener('pointerdown', function () {
+  Snd.init();
+  const t = S.selTower;
+  if (!t || S.towers.indexOf(t) < 0) { Snd.play('error'); return; }
+  toast(upgradeAllOf(t.i));
   hud(true);
 });
 
@@ -214,11 +289,21 @@ $('discardCard').addEventListener('pointerdown', function () {
 
 $('recycleCard').addEventListener('pointerdown', function () {
   Snd.init();
-  var msg = recycleSelCard();
-  if (!msg) { toast('SELECT A CARD FIRST'); Snd.play('error'); return; }
-  toast(msg);
-  Snd.play('upgrade');
-  hud(true);
+  if (S.selCard == null) { toast('SELECT A CARD FIRST'); Snd.play('error'); return; }
+  var doTear = function () {
+    var msg = recycleSelCard();
+    if (!msg) { toast('SELECT A CARD FIRST'); Snd.play('error'); return; }
+    toast(msg);
+    Snd.play('upgrade');
+    hud(true);
+  };
+  if (S.settings.confirmRecycle) {
+    var ci = S.hand[S.selCard];
+    var nm = ci ? defOf(ci).name : 'CARD';
+    askConfirm('TEAR ' + nm + ' FROM THE DECK?', 'Permanent removal — the card is gone for the whole run. You get a 50% matter refund.', 'TEAR IT OUT', true, doTear);
+  } else {
+    doTear();
+  }
 });
 
 Array.prototype.forEach.call($('tgtRow').children, function (b: Element) {
@@ -266,6 +351,21 @@ $('helpBtn').addEventListener('pointerdown', function () {
   openModal('helpModal');
 });
 
+$('medBtn').addEventListener('pointerdown', function () {
+  Snd.init();
+  openMedals();
+});
+
+$('statBtn').addEventListener('pointerdown', function () {
+  Snd.init();
+  openStats();
+});
+
+$('setBtn').addEventListener('pointerdown', function () {
+  Snd.init();
+  openSettings();
+});
+
 $('sndBtn').addEventListener('pointerdown', function () {
   Snd.init();
   Snd.muted = !Snd.muted;
@@ -306,10 +406,15 @@ $('abilWeld').addEventListener('pointerdown', function (ev) {
   S.res.cu -= 15;
   a.cd = S.time + 60;
   S.core = Math.min(S.coreMax, S.core + 3);
+  /* WELD also splashes repair onto every deployed unit */
+  var weldedUnits = 0;
+  S.towers.forEach(function (t) {
+    if (t.hp < t.mhp) { t.hp = Math.min(t.mhp, t.hp + 4); weldedUnits++; }
+  });
   S.screenFlash = { col: '#3edcb0', a: 0.06 };
   var cp = S.nodes[S.coreIdx];
-  float(cp.px, cp.py - 16, '+3 CORE', '#3edcb0');
-  S.rings.push({ x: cp.px, y: cp.py, r: 4, max: 36, col: '#3edcb0' });
+  float(cp.px, cp.py - 16, '+3 CORE' + (weldedUnits ? ' · +4 INT ×' + weldedUnits : ''), '#3ec9b0');
+  S.rings.push({ x: cp.x, y: cp.py, r: 4, max: 36, col: '#3ec9b0' });
   Snd.play('weld');
   hud(true);
 });
@@ -322,8 +427,104 @@ $('abilWeld').addEventListener('pointerdown', function (ev) {
   });
 });
 
+/* settings modal controls */
+function bindSetting(elId: string, fn: (v: string) => void): void {
+  var el = $(elId);
+  if (!el) return;
+  el.addEventListener('input', function () {
+    fn((el as HTMLInputElement).value);
+    saveSettings();
+    applySettingsBody();
+    hud(true);
+  });
+  el.addEventListener('change', function () {
+    fn((el as HTMLInputElement).value);
+    saveSettings();
+    applySettingsBody();
+    hud(true);
+  });
+}
+bindSetting('setVol', function (v) {
+  S.settings.vol = Math.max(0, Math.min(1, +v / 10));
+  if (Snd.g) Snd.g.gain.value = .14 * S.settings.vol;
+});
+bindSetting('setShake', function (v) { S.settings.shake = v === 'on'; });
+bindSetting('setPart', function (v) { S.settings.particles = Math.max(0, Math.min(2, +v)); });
+bindSetting('setScan', function (v) { S.settings.scanlines = v === 'on'; });
+bindSetting('setAuto', function (v) { S.settings.autopause = v === 'on'; });
+bindSetting('setScale', function (v) { S.settings.uiScale = +v; });
+bindSetting('setConfirm', function (v) { S.settings.confirmRecycle = v === 'on'; });
+bindSetting('setCB', function (v) { S.settings.colorblind = v === 'on'; });
+bindSetting('setHC', function (v) { S.settings.contrast = v === 'on'; });
+bindSetting('setDmg', function (v) { S.settings.dmgNumbers = v === 'on'; });
+bindSetting('setSort', function (v) { S.settings.handSort = v === 'on'; });
+
+$('setDaily').addEventListener('pointerdown', function () {
+  Snd.init();
+  askConfirm('START DAILY SEED?', 'Abandon the current run and deploy on the deterministic daily route. Deck, ranks and relics reset.', 'DAILY RUN', false, function () {
+    closeModal('settingsModal');
+    startNewRun(dailySeed());
+  });
+});
+
+$('setReroll').addEventListener('pointerdown', function () {
+  Snd.init();
+  askConfirm('ABANDON CURRENT RUN?', 'A fresh route is generated with a new random seed. All progress is lost.', 'REROLL SEED', true, function () {
+    closeModal('settingsModal');
+    startNewRun(((Date.now() ^ 0x5f3a9) >>> 0));
+  });
+});
+
+$('confirmOk').addEventListener('pointerdown', function () {
+  Snd.init();
+  confirmYes();
+});
+$('confirmNo').addEventListener('pointerdown', function () {
+  Snd.init();
+  confirmNo();
+});
+
+Array.prototype.forEach.call($('statsTabs').children, function (b: Element) {
+  b.addEventListener('pointerdown', function () {
+    Snd.init();
+    statsTab((b as HTMLElement).dataset.tab!);
+  });
+});
+
+$('retreatBtn').addEventListener('pointerdown', function () {
+  Snd.init();
+  askConfirm('RETREAT TO THE ROUTE NETWORK?', 'Sector progress is lost (waves replay from 1) — your circuit deck, ranks, relics and cleared routes are kept.', 'RETREAT', true, function () {
+    closeModal('mapModal');
+    openMap();
+    toast('RETREATED — SECTOR PROGRESS DISCARDED');
+  });
+});
+
+/* ESC + keyboard map: draft modals get their own handlers in draft.ts */
+function typingFocus(): boolean {
+  var el = document.activeElement as HTMLElement | null;
+  if (!el) return false;
+  var tag = (el.tagName || '').toLowerCase();
+  return tag === 'input' || tag === 'textarea' || tag === 'select';
+}
+
 addEventListener('keydown', function (ev) {
   Snd.init();
+  if (ev.key === 'Escape') {
+    if (S.modalOpen) { closeTopModal(); return; }
+    S.selCard = null;
+    S.selTower = null;
+    hud(true);
+    return;
+  }
+  if (S.modalOpen) {
+    /* draft modal: 1-4 picks, ESC handled above */
+    if (ev.key >= '1' && ev.key <= '4' && $('draftModal').classList.contains('open')) {
+      chooseDraft(+ev.key - 1);
+    }
+    return;
+  }
+  if (typingFocus()) return;
   if (ev.key >= '1' && ev.key <= '9') {
     var hi = +ev.key - 1;
     if (!S.hand[hi]) { Snd.play('error'); return; }
@@ -345,6 +546,19 @@ addEventListener('keydown', function (ev) {
   else if (ev.key === '-') $('spdDn').click();
   else if (ev.key === 'u' || ev.key === 'U') $('upBtn').click();
   else if (ev.key === 'x' || ev.key === 'X') $('recBtn').click();
+  else if (ev.key === 'z' || ev.key === 'Z') { toast(undoPlace()); hud(true); }
+  else if (ev.key === 'c' || ev.key === 'C') {
+    var tc = S.selTower;
+    if (tc && S.towers.indexOf(tc) >= 0) {
+      var n = 0;
+      S.towers.forEach(function (o) {
+        if (o !== tc && CARDS[o.i].id === CARDS[tc!.i].id) { o.tgt = tc!.tgt; n++; }
+      });
+      toast(n ? 'DOCTRINE COPIED TO ' + n + ' ' + CARDS[tc.i].name + ' UNIT' + (n > 1 ? 'S' : '') : 'NO SISTER UNITS TO COPY TO');
+      Snd.play('ui');
+      hud(true);
+    }
+  }
   else if (ev.key === 't' || ev.key === 'T') {
     var t2 = S.selTower;
     if (t2 && S.towers.indexOf(t2) >= 0) {
@@ -362,9 +576,9 @@ addEventListener('keydown', function (ev) {
       hud(true);
     }
   }
-  else if (ev.key === 'Escape') {
-    S.selCard = null;
-    S.selTower = null;
-    hud(true);
+  else if (ev.key === 'r' || ev.key === 'R') {
+    askConfirm('RETREAT TO THE ROUTE NETWORK?', 'Sector progress is lost — deck, ranks, relics and cleared routes are kept.', 'RETREAT', true, function () {
+      openMap();
+    });
   }
 });

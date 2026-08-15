@@ -11,6 +11,8 @@ export const GLYPHS: Record<string, string> = {
   rail: '<svg viewBox="0 0 16 16"><path d="M1 13L13 3M13 3l2-2M13 3v3M10 6v3M3 15h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
   aegis: '<svg viewBox="0 0 16 16"><path d="M8 1l6 3v4c0 3.5-2.7 6-6 7-3.3-1-6-3.5-6-7V4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="7.5" r="1.6" fill="currentColor"/></svg>',
   mortar: '<svg viewBox="0 0 16 16"><path d="M3 13h10M4 13V9l3-2h4l2 2v4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 4l2-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  vulcan: '<svg viewBox="0 0 16 16"><path d="M2 8h12M4 8V5M8 8V4M12 8V5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2 11h12" stroke="currentColor" stroke-width="1.6"/></svg>',
+  pulse: '<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="2.2" fill="currentColor"/><path d="M8 1v3M8 12v3M1 8h3M12 8h3" stroke="currentColor" stroke-width="1.3"/></svg>',
   mod: '<svg viewBox="0 0 16 16"><path d="M10 2l4 4-6 6-3 1-1-3 6-8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="4" cy="12" r="1.3" fill="currentColor"/></svg>',
   /* generic card-kind schematics — subroutine / firmware / corruption */
   k_skill: '<svg viewBox="0 0 16 16"><path d="M5 4L2 8l3 4M11 4l3 4-3 4M9.5 3l-3 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -25,7 +27,9 @@ export const CARDS: Card[] = [
   { id: 'foundry', name: 'FOUNDRY', desc: 'refines matter, feeds nearby units +8%', cost: { fe: 40, cu: 10, si: 10 }, dmg: 0, rate: 0, range: 92, draw: 1, col: '#e0854e' },
   { id: 'rail', name: 'RAIL', desc: 'long-range sniper, punches 80% of armor', cost: { fe: 20, cu: 12, si: 26 }, dmg: 60, rate: .5, range: 150, draw: 3, col: '#ffd23f' },
   { id: 'aegis', name: 'AEGIS', desc: 'slow field 30% — no guns, pure drag', cost: { fe: 12, cu: 26, si: 6 }, dmg: 0, rate: 0, range: 70, draw: 1, col: '#7fd8c8' },
-  { id: 'mortar', name: 'MORTAR', desc: 'lobbed shells, area splash', cost: { fe: 30, cu: 14, si: 12 }, dmg: 42, rate: .55, range: 118, draw: 2, col: '#c9a6e0' }
+  { id: 'mortar', name: 'MORTAR', desc: 'lobbed shells, area splash', cost: { fe: 30, cu: 14, si: 12 }, dmg: 42, rate: .55, range: 118, draw: 2, col: '#c9a6e0' },
+  { id: 'vulcan', name: 'VULCAN', desc: 'twin gatling — swarm shredder', cost: { fe: 28, cu: 18, si: 6 }, dmg: 4, rate: 9, range: 80, draw: 1, col: '#ff8a3d' },
+  { id: 'pulse', name: 'PULSE CORE', desc: 'periodic radial blast, area denial', cost: { fe: 34, cu: 16, si: 14 }, dmg: 30, rate: .33, range: 64, draw: 2, col: '#b18cd9' }
 ];
 
 /* ---- unit upgrade modules ---------------------------------------------- */
@@ -43,7 +47,9 @@ export const MODULES: ModuleDef[] = [
   { id: 'overvolt', name: 'OVERVOLT CAPACITOR', forIds: ['needle', 'arc', 'rail'], desc: '+20% fire rate', cost: { fe: 8, cu: 18, si: 6 }, rar: 0, col: '#ffd23f' },
   { id: 'hollow', name: 'HOLLOW-POINT AMMO', forIds: ['needle'], desc: 'Needle rounds punch through 40% of armor', cost: { fe: 12, cu: 20, si: 4 }, rar: 1, col: '#c9a6e0' },
   { id: 'frag', name: 'FRAG SHELLS', forIds: ['mortar'], desc: 'Mortar splash radius +50%, splash damage +25%', cost: { fe: 16, cu: 12, si: 8 }, rar: 1, col: '#c9a6e0' },
-  { id: 'static', name: 'STATIC GRID', forIds: ['aegis'], desc: 'Aegis field also zaps hosts for 2 + 0.5/level dps', cost: { fe: 10, cu: 20, si: 8 }, rar: 1, col: '#8fd8ff' }
+  { id: 'static', name: 'STATIC GRID', forIds: ['aegis'], desc: 'Aegis field also zaps hosts for 2 + 0.5/level dps', cost: { fe: 10, cu: 20, si: 8 }, rar: 1, col: '#8fd8ff' },
+  { id: 'tungsten', name: 'TUNGSTEN BARRELS', forIds: ['vulcan'], desc: 'Vulcan +25% fire rate, rounds punch 30% of armor', cost: { fe: 10, cu: 16, si: 4 }, rar: 1, col: '#ff8a3d' },
+  { id: 'resonance', name: 'RESONANCE CHAMBER', forIds: ['pulse'], desc: 'Pulse blast radius +45% and damage +20%', cost: { fe: 12, cu: 14, si: 12 }, rar: 1, col: '#b18cd9' }
 ];
 
 /* ---- the circuit deck: StS-style cards --------------------------------- */
@@ -62,6 +68,8 @@ export const DECK_CARDS: DeckCardDef[] = [
   { id: 'board_rail', name: 'RAIL BOARD', kind: 'board', tower: 4, desc: 'print a RAIL — long-range armor-piercing sniper', cost: CARDS[4].cost, rar: 2, exhaust: true },
   { id: 'board_aegis', name: 'AEGIS BOARD', kind: 'board', tower: 5, desc: 'print an AEGIS — 30% slow field, pure drag', cost: CARDS[5].cost, rar: 1 },
   { id: 'board_mortar', name: 'MORTAR BOARD', kind: 'board', tower: 6, desc: 'print a MORTAR — lobbed shells, area splash', cost: CARDS[6].cost, rar: 1, exhaust: true },
+  { id: 'board_vulcan', name: 'VULCAN BOARD', kind: 'board', tower: 7, desc: 'print a VULCAN — twin gatling, swarm shredder', cost: CARDS[7].cost, rar: 0 },
+  { id: 'board_pulse', name: 'PULSE BOARD', kind: 'board', tower: 8, desc: 'print a PULSE CORE — periodic radial blast', cost: CARDS[8].cost, rar: 1 },
   /* subroutines — one-shot skills */
   { id: 'skill_scrap', name: 'SCRAP INFUSION', kind: 'skill', desc: 'gain 26 Fe · 10 Cu · 4 Si', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
   { id: 'skill_hotswap', name: 'HOTSWAP', kind: 'skill', desc: 'draw 2 cards', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
@@ -91,6 +99,16 @@ export const DECK_CARDS: DeckCardDef[] = [
   { id: 'skill_artillery', name: 'ARTILLERY CALL', kind: 'skill', desc: '3 shells strike random hostiles for 45 damage each', cost: { fe: 0, cu: 10, si: 14 }, rar: 2, exhaust: true },
   { id: 'skill_deepfreeze', name: 'DEEPFREEZE', kind: 'skill', desc: 'all hostiles slowed 60% for 6s', cost: { fe: 0, cu: 12, si: 10 }, rar: 1, exhaust: true },
   { id: 'skill_recal', name: 'RECALIBRATE', kind: 'skill', desc: 'selected unit gains +1 level, free', cost: { fe: 0, cu: 0, si: 10 }, rar: 1, exhaust: true },
+  /* battlefield subroutines — wave-2 wave control */
+  { id: 'skill_gravity', name: 'GRAVITY WELL', kind: 'skill', desc: 'drag every hostile 70px back and slow them 40% for 3s', cost: { fe: 0, cu: 10, si: 6 }, rar: 1, exhaust: true },
+  { id: 'skill_nano', name: 'NANO SWARM', kind: 'skill', desc: 'every hostile corrodes: 30 hull damage over 4s', cost: { fe: 0, cu: 10, si: 8 }, rar: 1, exhaust: true },
+  { id: 'skill_breaker', name: 'CIRCUIT BREAKER', kind: 'skill', desc: 'stun every hostile for 2s — frozen in place', cost: { fe: 0, cu: 14, si: 4 }, rar: 2, exhaust: true },
+  { id: 'skill_ore', name: 'ORE VEIN', kind: 'skill', desc: 'gain 40 Fe · 20 Cu', cost: { fe: 0, cu: 0, si: 0 }, rar: 0, exhaust: true },
+  { id: 'skill_patch', name: 'FIELD PATCH', kind: 'skill', desc: 'restore every deployed unit to full integrity', cost: { fe: 10, cu: 6, si: 0 }, rar: 0, exhaust: true },
+  { id: 'skill_bond', name: 'SALVAGE BOND', kind: 'skill', desc: 'gain 6 Fe for each wave cleared this sector', cost: { fe: 0, cu: 4, si: 0 }, rar: 0 },
+  { id: 'skill_wreck', name: 'WRECKING BALL', kind: 'skill', desc: 'scrap your weakest unit for a 100% matter refund', cost: { fe: 0, cu: 6, si: 0 }, rar: 1, exhaust: true },
+  { id: 'skill_assembly', name: 'ASSEMBLY CALL', kind: 'skill', desc: 'draw up to 2 circuit boards from the draw pile', cost: { fe: 0, cu: 0, si: 6 }, rar: 1, exhaust: true },
+  { id: 'skill_overcharge', name: 'OVERCHARGE', kind: 'skill', desc: 'the next board you print deploys at level 2', cost: { fe: 0, cu: 0, si: 10 }, rar: 1, retain: true },
   /* firmware — sector-wide powers, always exhaust */
   { id: 'power_lathe', name: 'TUNGSTEN LATHE', kind: 'power', desc: '+10% unit damage this sector', cost: { fe: 20, cu: 0, si: 8 }, rar: 1, exhaust: true },
   { id: 'power_sub', name: 'SUBSTATION', kind: 'power', desc: '+4 grid capacity this sector', cost: { fe: 0, cu: 18, si: 0 }, rar: 0, exhaust: true },
@@ -102,12 +120,16 @@ export const DECK_CARDS: DeckCardDef[] = [
   { id: 'power_feedback', name: 'FEEDBACK CLOCK', kind: 'power', desc: '+12% unit fire rate this sector', cost: { fe: 0, cu: 16, si: 6 }, rar: 2, exhaust: true },
   { id: 'power_failsafe', name: 'CORE FAILSAFE', kind: 'power', desc: 'restore 2 core at the start of each new turn', cost: { fe: 14, cu: 5, si: 0 }, rar: 1, exhaust: true },
   { id: 'power_scrubber', name: 'ERROR SCRUBBER', kind: 'power', desc: 'curses exhaust harmlessly at turn end this sector', cost: { fe: 8, cu: 8, si: 8 }, rar: 2, exhaust: true },
+  { id: 'power_reactor', name: 'ARC REACTOR', kind: 'power', desc: 'arcs chain to +1 target this sector', cost: { fe: 12, cu: 16, si: 10 }, rar: 1, exhaust: true },
+  { id: 'power_seek', name: 'HOMING RIG', kind: 'power', desc: 'units +20% range this sector', cost: { fe: 8, cu: 14, si: 8 }, rar: 1, exhaust: true },
+  { id: 'power_drone', name: 'SCAVENGER DRONE', kind: 'power', desc: '+12% salvage from every source this sector', cost: { fe: 14, cu: 6, si: 4 }, rar: 1, exhaust: true },
+  { id: 'power_repulsor', name: 'REPULSOR FIELD', kind: 'power', desc: 'hostiles march 8% slower this sector', cost: { fe: 0, cu: 12, si: 6 }, rar: 1, exhaust: true },
+  { id: 'power_efficiency', name: 'BLUEPRINT EFFICIENCY', kind: 'power', desc: 'circuit boards cost 10% less matter this sector', cost: { fe: 8, cu: 8, si: 8 }, rar: 2, exhaust: true },
+  { id: 'power_shield', name: 'SHIELD GRID', kind: 'power', desc: 'deployed units gain +25% integrity this sector', cost: { fe: 10, cu: 10, si: 6 }, rar: 1, exhaust: true },
   /* curses — dead draws acquired by risky technology; never offered directly */
   { id: 'curse_jam', name: 'SIGNAL JAM', kind: 'curse', desc: 'unplayable · clogs your hand until discarded', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
   { id: 'curse_rust', name: 'RUST DEBT', kind: 'curse', desc: 'unplayable · lose 8 Fe when left in hand at turn end', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
   { id: 'curse_breach', name: 'HULL BREACH', kind: 'curse', desc: 'unplayable · lose 1 core when left in hand at turn end', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
-  { id: 'power_reactor', name: 'ARC REACTOR', kind: 'power', desc: 'arcs chain to +1 target this sector', cost: { fe: 12, cu: 16, si: 10 }, rar: 1, exhaust: true },
-  { id: 'power_seek', name: 'HOMING RIG', kind: 'power', desc: 'units +20% range this sector', cost: { fe: 8, cu: 14, si: 8 }, rar: 1, exhaust: true },
   /* modules — bolt an upgrade onto one deployed unit, then exhaust */
   { id: 'mod_flame', name: 'FLAMETHROWER HEAD', kind: 'module', module: 'flame', desc: 'bolt onto a NEEDLE — rounds ignite hosts: 40% of each shot burns 2.5s', cost: MODULES[0].cost, rar: 1, innate: true, exhaust: true },
   { id: 'mod_tesla', name: 'TESLA FRAME', kind: 'module', module: 'tesla', desc: 'bolt onto an ARC COIL — chains +2 targets, full strength, +40% reach', cost: MODULES[1].cost, rar: 1, exhaust: true },
@@ -119,7 +141,9 @@ export const DECK_CARDS: DeckCardDef[] = [
   { id: 'mod_overvolt', name: 'OVERVOLT CAPACITOR', kind: 'module', module: 'overvolt', desc: 'bolt onto a gun turret — +20% fire rate', cost: MODULES[7].cost, rar: 0, exhaust: true },
   { id: 'mod_hollow', name: 'HOLLOW-POINT AMMO', kind: 'module', module: 'hollow', desc: 'bolt onto a NEEDLE — rounds punch 40% of armor', cost: MODULES[8].cost, rar: 1, exhaust: true },
   { id: 'mod_frag', name: 'FRAG SHELLS', kind: 'module', module: 'frag', desc: 'bolt onto a MORTAR — +50% splash radius, +25% splash damage', cost: MODULES[9].cost, rar: 1, exhaust: true },
-  { id: 'mod_static', name: 'STATIC GRID', kind: 'module', module: 'static', desc: 'bolt onto an AEGIS — field zaps hosts for 2 + 0.5/level dps', cost: MODULES[10].cost, rar: 1, exhaust: true }
+  { id: 'mod_static', name: 'STATIC GRID', kind: 'module', module: 'static', desc: 'bolt onto an AEGIS — field zaps hosts for 2 + 0.5/level dps', cost: MODULES[10].cost, rar: 1, exhaust: true },
+  { id: 'mod_tungsten', name: 'TUNGSTEN BARRELS', kind: 'module', module: 'tungsten', desc: 'bolt onto a VULCAN — +25% fire rate, rounds punch 30% of armor', cost: MODULES[11].cost, rar: 1, exhaust: true },
+  { id: 'mod_resonance', name: 'RESONANCE CHAMBER', kind: 'module', module: 'resonance', desc: 'bolt onto a PULSE CORE — blast radius +45%, damage +20%', cost: MODULES[12].cost, rar: 1, exhaust: true }
 ];
 
 /** The run starts with this 10-card deck. */
@@ -143,7 +167,7 @@ export const RELICS: Relic[] = [
   { id: 'clock', name: 'OVERCLOCK FIRMWARE', desc: '+10% global fire rate', rar: 2 },
   { id: 'cryo', name: 'CRYO COOLANT', desc: '+12% turret range', rar: 1 },
   { id: 'metal', name: 'METALLURGY', desc: '+18% foundry output', rar: 1 },
-  { id: 'tread', name: 'TRACTION TREADS', desc: 'beam slow 45% → 62%', rar: 2 },
+  { id: 'tread', name: 'TRACTION TREADS', desc: 'beam slow 55% → 72%', rar: 2 },
   { id: 'magnet', name: 'SALVAGE MAGNETS', desc: '+0.5 extra grid per capture', rar: 2 },
   { id: 'plating', name: 'EMERGENCY PLATING', desc: '+6 core integrity, immediately', rar: 1 },
   { id: 'tungsten', name: 'TUNGSTEN ROUNDS', desc: '+10% turret damage', rar: 2 },
@@ -158,7 +182,12 @@ export const RELICS: Relic[] = [
   { id: 'lens', name: 'ORBITAL LENS', desc: 'Rail range +25%', rar: 1 },
   { id: 'shock', name: 'VOLT COUPLING', desc: 'arcs chain to one extra target, +15% arc damage', rar: 2 },
   { id: 'flak', name: 'PROXIMITY FUSES', desc: 'mortar splash radius +40%', rar: 1 },
-  { id: 'shrine', name: 'SALVAGE SHRINE', desc: 'captured titans yield +4 bonus silicon', rar: 2 }
+  { id: 'shrine', name: 'SALVAGE SHRINE', desc: 'captured titans yield +4 bonus silicon', rar: 2 },
+  { id: 'anvil', name: 'SELF-HEALING HULL', desc: 'deployed units restore 1 integrity per second', rar: 2 },
+  { id: 'harvester', name: 'GRID RECLAIMER', desc: 'units refund +10% matter when recycled', rar: 1 },
+  { id: 'bulwark', name: 'ARMORED MOUNTS', desc: 'deployed units gain +40% integrity', rar: 1 },
+  { id: 'catalyst', name: 'PULSE CATALYST', desc: 'pulse blasts fire 20% more often', rar: 2 },
+  { id: 'drill', name: 'BOREHEAD GATLINGS', desc: 'Vulcan fire rate +15%', rar: 1 }
 ];
 
 export const ETYPES: Record<string, EnemyTypeDef> = {
@@ -171,7 +200,10 @@ export const ETYPES: Record<string, EnemyTypeDef> = {
   phase: { hp: 1.1, sp: .9, dmg: 1, armor: 0, reward: 1.2, size: 6, col: '#7fa8d9' },
   carrier: { hp: 6, sp: .65, dmg: 3, armor: .1, reward: 4, size: 11, col: '#a58a6a' },
   dread: { hp: 22, sp: .45, dmg: 6, armor: .35, regen: .008, reward: 12, size: 15, col: '#8a2a30' },
-  reaver: { hp: 1.6, sp: .72, dmg: 2, armor: .5, reward: 2.6, size: 8, col: '#b8e986' }
+  reaver: { hp: 1.6, sp: .72, dmg: 2, armor: .5, reward: 2.6, size: 8, col: '#b8e986' },
+  shrieker: { hp: .8, sp: 1.3, dmg: 1, armor: 0, reward: 1.6, size: 5, col: '#ff5f5f', explode: 40 },
+  jammer: { hp: 1.5, sp: .75, dmg: 2, armor: .15, reward: 2.4, size: 7, col: '#c78bff' },
+  overlord: { hp: 30, sp: .38, dmg: 8, armor: .4, reward: 20, size: 18, col: '#ff3b47', regen: .01 }
 };
 
 export const SECTORS: SectorDef[] = [
@@ -181,11 +213,14 @@ export const SECTORS: SectorDef[] = [
   { name: "GRINDER'S DELTA", mix: { fe: 1.05, cu: 1.05, si: .95 }, tint: '#221818', grid: '#332424', path: '#4d3535', haz: 5 },
   { name: 'MAGNA TRENCH', mix: { fe: 1.1, cu: .95, si: 1.1 }, tint: '#191a22', grid: '#272a37', path: '#3d4155', haz: 3 },
   { name: 'VAULT MERIDIAN', mix: { fe: .9, cu: 1.15, si: 1.05 }, tint: '#221f14', grid: '#33301f', path: '#57513a', haz: 4, gild: 2.2 },
-  { name: 'REAVER SLAG', mix: { fe: 1.15, cu: .9, si: 1.0 }, tint: '#171c16', grid: '#26301f', path: '#46563a', haz: 6, gild: .4 }
+  { name: 'REAVER SLAG', mix: { fe: 1.15, cu: .9, si: 1.0 }, tint: '#171c16', grid: '#26301f', path: '#46563a', haz: 6, gild: .4 },
+  { name: 'NULL HORIZON', mix: { fe: .7, cu: .9, si: 1.8 }, tint: '#131a20', grid: '#1d2832', path: '#33424f', haz: 3, reaver: .6 },
+  { name: 'OBSIDIAN VEINS', mix: { fe: 1.1, cu: 1.25, si: .6 }, tint: '#151519', grid: '#26262e', path: '#3f3f4d', haz: 0, gild: .5 }
 ];
 
 export const HAZNAMES = ['PLATED HEAVY', 'SWARM DENSE', 'REGEN CELLS', 'PHASE SHIFTERS', 'GILDED VEINS', 'CARRIER BELT', 'REAVER ARMOR'];
 export const HAZCODE = ['PL', 'SW', 'RG', 'PH', 'GL', 'CR', 'RV'];
+export const HAZCOL = ['#8d9aa5', '#d8a24a', '#7ac98a', '#7fa8d9', '#ffd23f', '#a58a6a', '#b8e986'];
 
 export const MEDALS: [string, string][] = [
   ['firstcap', 'FIRST RECLAMATION'],
@@ -198,15 +233,39 @@ export const MEDALS: [string, string][] = [
   ['gild5', 'GOLD RUSH'],
   ['surge10', 'OVERDRIVER'],
   ['calib', 'MASTERWORK'],
-  ['burn10', 'PYROMANIAC']
+  ['burn10', 'PYROMANIAC'],
+  ['score10k', 'OVERCLOCKED'],
+  ['relic5', 'HOARDER'],
+  ['noleak', 'UNBREACHABLE'],
+  ['tower10', 'IRON FOREST']
 ];
+
+export const MEDAL_TIPS: Record<string, string> = {
+  firstcap: 'capture your first hostile',
+  cap25: 'capture 25 hostiles in one run',
+  titancap: 'capture a TITAN intact',
+  k200: 'destroy 200 hostiles in one run',
+  streak20: 'chain a ×20 salvage streak',
+  sector3: 'clear 3 sectors',
+  dreadkill: 'destroy a DREAD',
+  gild5: 'capture 5 GILDED hostiles',
+  surge10: 'fire 10 surges (card or ability)',
+  calib: 'calibrate a unit to level 10',
+  burn10: 'let fire finish 10 hostiles',
+  score10k: 'reach 10,000 score',
+  relic5: 'own 5 relics at once',
+  noleak: 'clear a sector without a single leak',
+  tower10: 'field 10 deployed units at once'
+};
 
 export const EVENTS: { id: string; name: string }[] = [
   { id: 'ion', name: 'ION STORM' },
   { id: 'grav', name: 'GRAV SHEAR' },
   { id: 'rust', name: 'RUST WIND' },
   { id: 'solar', name: 'SOLAR FLARE' },
-  { id: 'frost', name: 'HARD FROST' }
+  { id: 'frost', name: 'HARD FROST' },
+  { id: 'meteor', name: 'METEOR SHOWER' },
+  { id: 'silicon', name: 'SILICON RAIN' }
 ];
 
 export const SPEEDS = [1, 2, 4, 8, 16, 32, 64, 100];
@@ -216,3 +275,20 @@ export const TGTS = ['first', 'last', 'strong', 'weak', 'near', 'far'];
 export const TGT_LABEL: Record<string, string> = {
   first: '1ST', last: 'LST', strong: 'MAX', weak: 'MIN', near: 'NEAR', far: 'FAR'
 };
+
+export const TGT_TIPS: Record<string, string> = {
+  first: 'furthest along the route — closest to the core',
+  last: 'nearest to the spawn gates',
+  strong: 'highest current hull',
+  weak: 'lowest current hull',
+  near: 'closest to the unit',
+  far: 'farthest from the unit'
+};
+
+/** Per-sector bonus objectives. */
+export const OBJECTIVES: { id: string; name: string; desc: string }[] = [
+  { id: 'noleak', name: 'SEALED HULL', desc: 'clear wave 12 with zero leaks — reward +2 grid' },
+  { id: 'cap5', name: 'SALVAGE PROTOCOL', desc: 'capture 5 hostiles intact — reward +2 grid' },
+  { id: 'early', name: 'BLITZ DOCTRINE', desc: 'launch wave 1 within 10s — reward +50 Fe' },
+  { id: 'nofall', name: 'IRON DISCIPLINE', desc: 'lose no units this sector — reward +100 Fe' }
+];

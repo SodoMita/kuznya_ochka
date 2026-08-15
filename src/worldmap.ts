@@ -1,15 +1,19 @@
 /* World route canvas: draw the 12-sector graph and handle travel picks. */
 import { S } from './state';
 import { wcv, wctx, dpr } from './view';
-import { SECTORS, HAZNAMES, HAZCODE } from './data';
-import { pad2, $ } from './utils';
+import { SECTORS, HAZNAMES, HAZCODE, HAZCOL } from './data';
+import { pad2, $, hexA } from './utils';
 import { nodeOpen } from './world';
 import { resetSector } from './reset';
 import { openModal, closeModal } from './modals';
 import { Snd } from './audio';
 
-export function drawWorld(): void {
+let hoverIdx = -1;
+
+export function drawWorld(hover?: number): void {
+  if (hover !== undefined) hoverIdx = hover;
   var r = wcv.getBoundingClientRect(), dw = r.width, dh = r.height;
+  if (!dw || !dh) return;
   wcv.width = Math.max(1, dw * dpr);
   wcv.height = Math.max(1, dh * dpr);
   wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -34,7 +38,7 @@ export function drawWorld(): void {
     var a = S.worldNodes[S.worldEdges[i][0]], b = S.worldNodes[S.worldEdges[i][1]];
     var open = S.cleared[a.idx];
     var ax = a.x * dw, ay = a.y * dh, bx = b.x * dw, by = b.y * dh;
-    if (open) {                       /* live route: glowing solid link */
+    if (open) {                       /* live route: glowing solid link + flow */
       wctx.strokeStyle = 'rgba(62,201,176,.14)';
       wctx.lineWidth = 4;
       wctx.beginPath();
@@ -53,15 +57,27 @@ export function drawWorld(): void {
     wctx.moveTo(ax, ay);
     wctx.lineTo(bx, by);
     wctx.stroke();
+    if (open) {
+      /* marching dash along live routes */
+      wctx.strokeStyle = 'rgba(62,220,176,.6)';
+      wctx.lineWidth = 2;
+      wctx.setLineDash([2, 10]);
+      wctx.lineDashOffset = -(performance.now() / 40 % 12);
+      wctx.beginPath();
+      wctx.moveTo(ax, ay);
+      wctx.lineTo(bx, by);
+      wctx.stroke();
+      wctx.setLineDash([]);
+      wctx.lineDashOffset = 0;
+    }
   }
-  wctx.setLineDash([]);
 
   for (i = 0; i < S.worldNodes.length; i++) {
     n = S.worldNodes[i];
     var nx = n.x * dw, ny = n.y * dh, sec = SECTORS[n.idx % SECTORS.length];
     var isCur = n.idx === S.sector, done = !!S.cleared[n.idx], open = nodeOpen(i);
-    var col = done ? '#3edcb0' : (open ? '#f0ece4' : '#3a4a52');
-    var tt = performance.now() / 1000;
+    var col = done ? '#3ec9b0' : (open ? '#f0ece4' : '#3a4a52');
+    var tt = S.time;                    /* deterministic, unlike performance.now */
     wctx.save();
     wctx.translate(nx, ny);
     /* halo marks sectors you can actually deploy to */
@@ -78,6 +94,13 @@ export function drawWorld(): void {
       cg.addColorStop(1, 'rgba(62,201,176,0)');
       wctx.fillStyle = cg;
       wctx.fillRect(-20, -20, 40, 40);
+    }
+    if (hoverIdx === i) {
+      wctx.strokeStyle = hexA('#ffa02f', .7);
+      wctx.lineWidth = 1.5;
+      wctx.beginPath();
+      wctx.arc(0, 0, 16, 0, 7);
+      wctx.stroke();
     }
     if (isCur) {
       wctx.strokeStyle = '#ffb83a';
@@ -122,7 +145,7 @@ export function drawWorld(): void {
       wctx.lineTo(-6, -12);
       wctx.stroke();
     }
-    wctx.fillStyle = '#697a80';
+    wctx.fillStyle = HAZCOL[sec.haz] || '#697a80';
     wctx.fillText(HAZCODE[sec.haz] || '?', 14, -8);
     wctx.restore();
   }
@@ -144,7 +167,9 @@ export function pickWorld(ev: { clientX: number; clientY: number }): void {
     Snd.play('error');
     return;
   }
-  $('nodeInfo').textContent = 'SECTOR ' + pad2(idx + 1) + ' · ' + sec.name + ' · ' + HAZNAMES[sec.haz] + ' · click again to deploy';
+  var wavesCleared = S.cleared[idx] ? ' · cleared (waves escalate on revisit)' : ' · 12 waves to clear';
+  $('nodeInfo').textContent = 'SECTOR ' + pad2(idx + 1) + ' · ' + sec.name + ' · ' + HAZNAMES[sec.haz] +
+    wavesCleared + ' · click again to deploy';
   Snd.play('ui');
   if (S.worldPick === idx) {
     closeModal('mapModal');
@@ -156,6 +181,7 @@ export function pickWorld(ev: { clientX: number; clientY: number }): void {
 
 export function openMap(): void {
   S.worldPick = -1;
+  hoverIdx = -1;
   openModal('mapModal');
-  requestAnimationFrame(function () { requestAnimationFrame(drawWorld); });
+  requestAnimationFrame(function () { requestAnimationFrame(function () { drawWorld(-1); }); });
 }

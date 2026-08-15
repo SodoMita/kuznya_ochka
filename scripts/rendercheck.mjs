@@ -201,6 +201,30 @@ for (let w = 0; w < 40; w++) {
   if ($('phaseBig').textContent === 'FABRICATION') click($('startBtn'));
 }
 
+/* --- new content paths: VULCAN + PULSE blueprints, hostile additions,
+       weather overlays, integrity bars, jammer fields --- */
+const FZ = window.__FZ;
+if (FZ) {
+  FZ.debugDeploy(7, 300, 320);          /* VULCAN */
+  FZ.debugDeploy(8, 420, 300);          /* PULSE CORE */
+  FZ.debugSpawn('shrieker');
+  FZ.debugSpawn('jammer');
+  FZ.debugSpawn('overlord');
+  FZ.debugSpawn('reaver');
+  tick(60);
+  FZ.S.event = { id: 'meteor', name: 'METEOR SHOWER' };
+  tick(120);
+  FZ.S.event = { id: 'silicon', name: 'SILICON RAIN' };
+  tick(60);
+  FZ.S.event = null;
+  /* damage a tower so the integrity bar draws */
+  if (FZ.S.towers.length) FZ.S.towers[0].hp = Math.max(1, FZ.S.towers[0].mhp - 5);
+  tick(30);
+  /* inspect a hostile */
+  if (FZ.S.enemies.length) { FZ.S.inspect = FZ.S.enemies[0]; FZ.S.inspectT = 3; }
+  tick(30);
+}
+
 /* --- world map render --- */
 click($('mapBtn'));
 tick(6);

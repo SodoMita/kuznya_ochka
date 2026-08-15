@@ -167,6 +167,15 @@ doc.querySelector('[data-close="deckModal"]').dispatchEvent(
 );
 assert(!$('deckModal').classList.contains('open'), 'circuit ledger closes');
 
+/* --- free mulligan: one redraw per sector, first window only --- */
+const discBeforeMull = parseInt($('vDisc').textContent, 10);
+const handBeforeMull = doc.querySelectorAll('#cards .card').length;
+assert($('mulliganBtn').style.display !== 'none', 'mulligan available at sector start');
+click($('mulliganBtn'));
+assert(parseInt($('vDisc').textContent, 10) === discBeforeMull + handBeforeMull, 'mulligan tossed the whole hand into the discard pile');
+assert(doc.querySelectorAll('#cards .card').length === 5, 'mulligan deals a fresh 5-card hand');
+assert($('mulliganBtn').style.display === 'none', 'mulligan is once per sector');
+
 /* --- launch wave 1 --- */
 click($('startBtn'));
 assert($('phaseBig').textContent === 'WAVE 01', 'wave 1 active (got ' + $('phaseBig').textContent + ')');
@@ -215,5 +224,81 @@ assert(sawFabrication, 'back to fabrication between waves (got ' + $('phaseBig')
 const handAfterTurn = doc.querySelectorAll('#cards .card').length;
 assert(handAfterTurn === 5, 'new turn deals a fresh 5-card hand (got ' + handAfterTurn + ')');
 
-console.log('SMOKE TEST PASSED ✓ (boot, deck piles, board deploy, module install, card discard/recycle, subroutines, wave 1, doctrine/pause/speed/modals, turn redraw)');
+/* --- new systems: undo, medals/archive/settings modals, ESC, draft skip, save --- */
+const key = (k, code) => window.dispatchEvent(new window.KeyboardEvent('keydown', { key: k, code }));
+
+/* deploy + undo: full refund (skip if no foundation found near the tap) */
+const nb3 = handCard('NEEDLE BOARD');
+if (nb3) {
+  const feBeforeUndo = parseInt($('vFe').textContent, 10);
+  click(nb3);
+  pointerAt(500, 260, 'pointerdown');
+  pointerAt(500, 260, 'pointerup');
+  if (parseInt($('vFe').textContent, 10) < feBeforeUndo) {
+    key('z', 'KeyZ');
+    assert(parseInt($('vFe').textContent, 10) === feBeforeUndo, 'undo refunded the full placement cost (got ' + $('vFe').textContent + ')');
+  }
+}
+
+/* medals + archive + settings modals */
+click($('medBtn'));
+assert($('medalsModal').classList.contains('open'), 'medals gallery opens');
+assert($('medalList').textContent.indexOf('FIRST RECLAMATION') >= 0, 'medal gallery lists all medals');
+doc.querySelector('[data-close="medalsModal"]').dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, cancelable: true }));
+click($('statBtn'));
+assert($('statsModal').classList.contains('open'), 'run archive opens');
+click([...$('statsTabs').children].find((b) => b.dataset.tab === 'relics'));
+assert($('tabRelics').style.display === 'block', 'archive relics tab renders');
+click([...$('statsTabs').children].find((b) => b.dataset.tab === 'codex'));
+assert($('codexTowers').textContent.indexOf('VULCAN') >= 0, 'codex documents VULCAN');
+assert($('codexEnemies').textContent.indexOf('SHRIEKER') >= 0, 'codex documents SHRIEKER');
+doc.querySelector('[data-close="statsModal"]').dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, cancelable: true }));
+click($('setBtn'));
+assert($('settingsModal').classList.contains('open'), 'settings open');
+click($('setDaily'));
+assert($('confirmModal').classList.contains('open'), 'daily-seed asks for confirmation');
+click($('confirmNo'));
+assert(!$('confirmModal').classList.contains('open'), 'confirm cancels safely');
+doc.querySelector('[data-close="settingsModal"]').dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+/* ESC closes the deck ledger */
+click($('pileDraw'));
+assert($('deckModal').classList.contains('open'), 'ledger opens for ESC test');
+key('Escape', 'Escape');
+assert(!$('deckModal').classList.contains('open'), 'ESC closes the top modal');
+
+/* wave 2: clear it to trigger the salvage draft, then SKIP for scrap */
+click($('startBtn'));
+let draftOpened = false;
+for (let s2 = 0; s2 < 220 && !draftOpened; s2++) {
+  tick(60);
+  draftOpened = $('draftModal').classList.contains('open');
+}
+assert(errors.length === 0, 'no errors during wave 2: ' + errors.map(String).join(' | '));
+if (draftOpened) {
+  const feBeforeSkip = parseInt($('vFe').textContent, 10);
+  const skipOffer = doc.querySelector('#offers .offer.skip');
+  assert(!!skipOffer, 'draft shows the SKIP option');
+  skipOffer.dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, cancelable: true }));
+  assert(parseInt($('vFe').textContent, 10) === feBeforeSkip + 15, 'skipping the draft pays +15 Fe');
+  assert(!$('draftModal').classList.contains('open'), 'draft closes after skipping');
+}
+/* auto-save written after wave clear */
+assert(!!window.localStorage.getItem('fz_save_v2'), 'run auto-saves to localStorage');
+
+/* save/load roundtrip restores the run faithfully */
+if (window.__FZ && $('phaseBig').textContent === 'FABRICATION') {
+  const FZ = window.__FZ;
+  const w0 = FZ.S.wave;
+  const fe0 = FZ.S.res.fe;
+  FZ.saveRun();
+  FZ.S.wave = 99;
+  FZ.S.res.fe = -1234;
+  FZ.loadRun();
+  assert(FZ.S.wave === w0, 'save/load roundtrip restores the wave (' + FZ.S.wave + ' vs ' + w0 + ')');
+  assert(FZ.S.res.fe === fe0, 'save/load roundtrip restores matter');
+  FZ.S.pendingEnemies = null;
+}
+
+console.log('SMOKE TEST PASSED ✓ (boot, deck piles, board deploy, module install, card discard/recycle, subroutines, wave 1, doctrine/pause/speed/modals, turn redraw, mulligan/undo, medals/archive/settings, ESC modal, draft skip, auto-save)');
 process.exit(0);

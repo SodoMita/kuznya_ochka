@@ -2,7 +2,7 @@
 import type {
   Tower, Enemy, Shot, Beam, Part, FloatTxt, Ring, Mote, Spot, WorldNode,
   DraftOffer, GhostState, RouteNode, WeatherEvent, AbilityState, StreakState,
-  SkyBuilding, Ember, CardInst
+  SkyBuilding, Ember, CardInst, Settings, SectorObjective, RunRecord, Confirm, ToastItem
 } from './types';
 
 export interface GameState {
@@ -46,7 +46,7 @@ export interface GameState {
   spawnT: number;
   time: number;
   shake: number;
-  stat: { kills: number; captures: number; leaks: number; waves: number; salvaged: number; gilds: number; surges: number; burnKills: number };
+  stat: { kills: number; captures: number; leaks: number; waves: number; salvaged: number; gilds: number; surges: number; burnKills: number; towerLoss: number; maxTowers: number; byType: Record<string, number> };
   streak: StreakState;
   medals: Record<string, boolean>;
   ability: AbilityState;
@@ -71,70 +71,116 @@ export interface GameState {
   draftOffers: DraftOffer[];
   worldPick: number;
   endWin?: boolean;
+  /* ---- meta systems (run management, score, persistence) ---- */
+  settings: Settings;
+  score: number;
+  best: number;
+  history: RunRecord[];
+  historySaved: boolean;      // guards one history entry per run
+  objective: SectorObjective | null;
+  mulliganUsed: boolean;
+  undoStack: { t: Tower; ci: CardInst; from: 'discard' | 'exhaust' }[];
+  overcharge: boolean;        // next deployed board this turn prints at +1 level
+  inspect: Enemy | null;
+  inspectT: number;
+  pendingConfirm: Confirm | null;
+  toastQ: ToastItem[];
+  notif: number;              // unseen medals, badge counter
+  meteorT: number;            // METEOR SHOWER strike timer
+  endStatsShown: boolean;
+  scorch: { x: number; y: number; seed: number }[];  // baked kill-site scorch marks (per sector)
+  pendingEnemies: Enemy[] | null;                    // saved enemies awaiting route rebuild after resume
 }
 
-export const S: GameState = {
-  seed: (Date.now() ^ 0x5f3a9) >>> 0,
-  sectorGen: 0,
-  sector: 0,
-  wave: 0,
-  phase: 'build',
-  buildT: 18,
-  buildMax: 18,
-  core: 20,
-  coreMax: 20,
-  gridMax: 10,
-  res: { fe: 120, cu: 65, si: 36 },
-  towers: [],
-  enemies: [],
-  shots: [],
-  beams: [],
-  parts: [],
-  floats: [],
-  rings: [],
-  motes: [],
-  ranks: { needle: 0, arc: 0, harvest: 0, foundry: 0 },
-  relics: {},
-  deck: [],
-  drawPile: [],
-  hand: [],
-  discardPile: [],
-  exhaustPile: [],
-  powers: {},
-  speed: 1,
-  paused: false,
-  over: false,
-  victoryShown: false,
-  modalOpen: false,
-  selCard: null,
-  selTower: null,
-  mode: 'loot',
-  ghost: null,
-  spawnQ: [],
-  spawnT: 0,
-  time: 0,
-  shake: 0,
-  stat: { kills: 0, captures: 0, leaks: 0, waves: 0, salvaged: 0, gilds: 0, surges: 0, burnKills: 0 },
-  streak: { n: 0, t: 0 },
-  medals: {},
-  ability: { surge: { cd: 0, until: 0 }, weld: { cd: 0 } },
-  event: null,
-  screenFlash: { col: '', a: 0 },
-  gridPulse: null,
-  sky: [],
-  embers: [],
-  cleared: {},
-  nodes: [],
-  edges: [],
-  edgeLen: [],
-  edgeMap: new Map<number, number>(),
-  spawns: [],
-  coreIdx: 0,
-  spawnIdx: 0,
-  spots: [],
-  spawnInt: .6,
-  worldNodes: [],
-  worldEdges: [],
-  draftOffers: [],
-  worldPick: -1
-};
+/** A brand-new run state for a given seed. */
+export function freshState(seed: number): GameState {
+  return {
+    seed: seed >>> 0,
+    sectorGen: 0,
+    sector: 0,
+    wave: 0,
+    phase: 'build',
+    buildT: 18,
+    buildMax: 18,
+    core: 20,
+    coreMax: 20,
+    gridMax: 10,
+    res: { fe: 120, cu: 65, si: 36 },
+    towers: [],
+    enemies: [],
+    shots: [],
+    beams: [],
+    parts: [],
+    floats: [],
+    rings: [],
+    motes: [],
+    ranks: { needle: 0, arc: 0, harvest: 0, foundry: 0 },
+    relics: {},
+    deck: [],
+    drawPile: [],
+    hand: [],
+    discardPile: [],
+    exhaustPile: [],
+    powers: {},
+    speed: 1,
+    paused: false,
+    over: false,
+    victoryShown: false,
+    modalOpen: false,
+    selCard: null,
+    selTower: null,
+    mode: 'loot',
+    ghost: null,
+    spawnQ: [],
+    spawnT: 0,
+    time: 0,
+    shake: 0,
+    stat: { kills: 0, captures: 0, leaks: 0, waves: 0, salvaged: 0, gilds: 0, surges: 0, burnKills: 0, towerLoss: 0, maxTowers: 0, byType: {} },
+    streak: { n: 0, t: 0 },
+    medals: {},
+    ability: { surge: { cd: 0, until: 0 }, weld: { cd: 0 } },
+    event: null,
+    screenFlash: { col: '', a: 0 },
+    gridPulse: null,
+    sky: [],
+    embers: [],
+    cleared: {},
+    nodes: [],
+    edges: [],
+    edgeLen: [],
+    edgeMap: new Map<number, number>(),
+    spawns: [],
+    coreIdx: 0,
+    spawnIdx: 0,
+    spots: [],
+    spawnInt: .6,
+    worldNodes: [],
+    worldEdges: [],
+    draftOffers: [],
+    worldPick: -1,
+    settings: {
+      vol: 1, shake: true, particles: 1, scanlines: true, autopause: true,
+      uiScale: 1, confirmRecycle: false, colorblind: false, contrast: false,
+      dmgNumbers: true, handSort: false
+    },
+    score: 0,
+    best: 0,
+    history: [],
+    historySaved: false,
+    objective: null,
+    mulliganUsed: false,
+    undoStack: [],
+    overcharge: false,
+    inspect: null,
+    inspectT: 0,
+    pendingConfirm: null,
+    toastQ: [],
+    notif: 0,
+    meteorT: 0,
+    endStatsShown: false,
+    scorch: [],
+    pendingEnemies: null
+  };
+}
+
+export const S: GameState = freshState((Date.now() ^ 0x5f3a9) >>> 0);
