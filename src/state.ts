@@ -51,6 +51,9 @@ export interface GameState {
   medals: Record<string, boolean>;
   ability: AbilityState;
   event: WeatherEvent | null;
+  /* screen FX */
+  screenFlash: { col: string; a: number };
+  gridPulse: { x: number; y: number; col: string; a: number; r: number } | null;
   sky: SkyBuilding[];
   embers: Ember[];
   cleared: Record<number, boolean>;
@@ -116,6 +119,8 @@ export const S: GameState = {
   medals: {},
   ability: { surge: { cd: 0, until: 0 }, weld: { cd: 0 } },
   event: null,
+  screenFlash: { col: '', a: 0 },
+  gridPulse: null,
   sky: [],
   embers: [],
   cleared: {},

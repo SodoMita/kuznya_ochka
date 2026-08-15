@@ -169,8 +169,8 @@ export function draw(): void {
     if (m.x > W) m.x = 0;
     if (m.y < 0) m.y = H;
     if (m.y > H) m.y = 0;
-    ctx.globalAlpha = m.a * .35;
-    ctx.fillStyle = '#c8bfa8';
+    ctx.globalAlpha = m.a * .25;
+    ctx.fillStyle = '#d4c8b0';
     ctx.fillRect(m.x, m.y, m.r, m.r);
   }
   ctx.restore();
@@ -191,14 +191,15 @@ export function draw(): void {
       ctx.fillRect(bx2 + bw2 * .5 - 3.5, by2 - 9, 7, 7);
     }
   }
-  /* rising forge embers */
+
+  /* rising forge embers — with glow */
   for (i = 0; i < S.embers.length; i++) {
     var em = S.embers[i];
     em.y -= em.vy * .016;
-    em.x += Math.sin(S.time * 2 + em.ph) * .25;
+    em.x += Math.sin(S.time * 2 + em.ph) * .3;
     if (em.y < -2) { em.y = H; em.x = Math.random() * W; }
-    ctx.globalAlpha = .22 + .14 * Math.sin(S.time * 5 + em.ph);
-    ctx.fillStyle = '#e0b184';
+    ctx.globalAlpha = .18 + .14 * Math.sin(S.time * 5 + em.ph);
+    ctx.fillStyle = '#e8c090';
     ctx.fillRect(em.x, em.y, 1.5, 2.5);
   }
   ctx.globalAlpha = 1;
@@ -207,9 +208,31 @@ export function draw(): void {
   bakeGrid(sec);
   if (gridCv) ctx.drawImage(gridCv, 0, 0, W, H);
 
+  /* grid pulse — expanding circle of light across grid lines */
+  if (S.gridPulse && S.gridPulse.a > 0) {
+    var gp = S.gridPulse;
+    gp.r += 180 * (1 / 60);
+    gp.a -= 0.8 * (1 / 60);
+    if (gp.a < 0) { gp.a = 0; S.gridPulse = null; }
+    else {
+      ctx.save();
+      ctx.globalAlpha = gp.a;
+      ctx.strokeStyle = gp.col;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(gp.x, gp.y, gp.r, 0, 7);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
   /* shake */
   ctx.save();
-  if (S.shake > 0) ctx.translate((Math.random() - .5) * S.shake, (Math.random() - .5) * S.shake);
+  if (S.shake > 0) {
+    var sx = (Math.random() - .5) * S.shake;
+    var sy = (Math.random() - .5) * S.shake;
+    ctx.translate(sx, sy);
+  }
 
   /* build pads — bracket corners, and they breathe while a board is held */
   var ghostBoard = selBoard();
@@ -217,6 +240,7 @@ export function draw(): void {
   ctx.globalAlpha = padPulse;
   ctx.strokeStyle = ghostBoard ? '#3ec9b0' : '#8fa0a6';
   ctx.lineWidth = 1;
+  ctx.setLineDash([2, 3]);
   for (i = 0; i < S.spots.length; i++) {
     var sp = S.spots[i];
     if (ghostBoard) {
@@ -232,39 +256,40 @@ export function draw(): void {
     ctx.moveTo(sp.px - q + a2, sp.py + q); ctx.lineTo(sp.px - q, sp.py + q); ctx.lineTo(sp.px - q, sp.py + q - a2);
     ctx.stroke();
   }
+  ctx.setLineDash([]);
   ctx.globalAlpha = 1;
 
   drawPath(sec);
   drawCore();
   drawSpawn();
 
-  /* ghost preview — snaps to nearest valid foundation */
+  /* ghost preview */
   if (S.ghost && ghostBoard && !S.modalOpen) {
     var c = ghostBoard,
-        gx = S.ghost.sx != null ? S.ghost.sx : S.ghost.x,
-        gy = S.ghost.sy != null ? S.ghost.sy : S.ghost.y;
+        gpx = S.ghost.sx != null ? S.ghost.sx : S.ghost.x,
+        gpy = S.ghost.sy != null ? S.ghost.sy : S.ghost.y;
     var posOk = S.ghost.sx != null, afford = canAfford(c.cost) && usedGrid() + c.draw <= gridCap();
-    var gcol = !posOk ? '#e5484d' : (afford ? '#3ec9b0' : '#ffa02f');
-    if (posOk && (Math.abs(gx - S.ghost.x) > 3 || Math.abs(gy - S.ghost.y) > 3)) {
-      ctx.strokeStyle = 'rgba(143,160,166,.55)';
+    var gcol = !posOk ? '#f04a50' : (afford ? '#3edcb0' : '#ffb83a');
+    if (posOk && (Math.abs(gpx - S.ghost.x) > 3 || Math.abs(gpy - S.ghost.y) > 3)) {
+      ctx.strokeStyle = 'rgba(143,160,166,.4)';
       ctx.lineWidth = 1;
       ctx.setLineDash([2, 4]);
       ctx.beginPath();
       ctx.moveTo(S.ghost.x, S.ghost.y);
-      ctx.lineTo(gx, gy);
+      ctx.lineTo(gpx, gpy);
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.strokeRect(S.ghost.x - 3, S.ghost.y - 3, 6, 6);
     }
-    ctx.globalAlpha = .55;
+    ctx.globalAlpha = .45;
     ctx.fillStyle = posOk && afford ? c.col : gcol;
-    ctx.fillRect(gx - 8, gy - 8, 16, 16);
-    ctx.globalAlpha = .4;
+    ctx.fillRect(gpx - 8, gpy - 8, 16, 16);
+    ctx.globalAlpha = .3;
     ctx.strokeStyle = gcol;
     ctx.setLineDash([4, 4]);
     ctx.lineDashOffset = -S.time * 20;
     ctx.beginPath();
-    ctx.arc(gx, gy, c.range, 0, 7);
+    ctx.arc(gpx, gpy, c.range, 0, 7);
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.lineDashOffset = 0;
@@ -274,15 +299,19 @@ export function draw(): void {
   /* towers */
   for (i = 0; i < S.towers.length; i++) drawTower(S.towers[i]);
 
-  /* aegis slow fields */
+  /* aegis slow fields — radial gradient instead of flat fill */
   for (i = 0; i < S.towers.length; i++) {
     if (CARDS[S.towers[i].i].id === 'aegis') {
       var at = S.towers[i], ar = (at._st || stats(at)).range, ap = (Math.sin(S.time * 3 + at.x) + 1) / 2;
-      ctx.fillStyle = 'rgba(62,201,176,.05)';
+      var aegisGrad = ctx.createRadialGradient(at.x, at.y, 0, at.x, at.y, ar);
+      aegisGrad.addColorStop(0, 'rgba(62,220,176,.07)');
+      aegisGrad.addColorStop(0.5, 'rgba(62,220,176,.03)');
+      aegisGrad.addColorStop(1, 'rgba(62,220,176,0)');
+      ctx.fillStyle = aegisGrad;
       ctx.beginPath();
       ctx.arc(at.x, at.y, ar, 0, 7);
       ctx.fill();
-      ctx.strokeStyle = hexA('#3ec9b0', .18 + .14 * ap);
+      ctx.strokeStyle = hexA('#3edcb0', .12 + .1 * ap);
       ctx.lineWidth = 1;
       ctx.setLineDash([6, 6]);
       ctx.lineDashOffset = -S.time * 14;
@@ -297,7 +326,7 @@ export function draw(): void {
   /* selected range + ID tag */
   if (S.selTower && S.towers.indexOf(S.selTower) >= 0) {
     var st2 = stats(S.selTower), lt = S.selTower, lc = CARDS[lt.i];
-    ctx.strokeStyle = 'rgba(62,201,176,.5)';
+    ctx.strokeStyle = 'rgba(62,220,176,.4)';
     ctx.lineWidth = 1;
     ctx.setLineDash([5, 5]);
     ctx.lineDashOffset = -S.time * 20;
@@ -306,15 +335,24 @@ export function draw(): void {
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.lineDashOffset = 0;
+    /* range fill */
+    ctx.fillStyle = 'rgba(62,220,176,.02)';
+    ctx.beginPath();
+    ctx.arc(lt.x, lt.y, st2.range, 0, 7);
+    ctx.fill();
     var lbl = lc.name + ' L' + lt.lvl + (lc.id === 'foundry' ? '' : ' · ' + TGT_LABEL[lt.tgt]);
-    ctx.font = 'bold 8px ui-monospace,Menlo,monospace';
-    var tw = ctx.measureText(lbl).width, lx = clamp(lt.x, tw / 2 + 5, W - tw / 2 - 5), ly = lt.y - 27;
-    ctx.fillStyle = 'rgba(10,15,17,.88)';
-    ctx.fillRect(lx - tw / 2 - 4, ly - 8, tw + 8, 12);
-    ctx.strokeStyle = '#3ec9b0';
+    ctx.font = '600 8px "JetBrains Mono",ui-monospace,Menlo,monospace';
+    var tw = ctx.measureText(lbl).width, lx = clamp(lt.x, tw / 2 + 6, W - tw / 2 - 6), ly = lt.y - 28;
+    /* tag bg with gradient */
+    var tagGrad = ctx.createLinearGradient(lx - tw / 2 - 6, ly - 9, lx + tw / 2 + 6, ly + 6);
+    tagGrad.addColorStop(0, 'rgba(10,18,22,.92)');
+    tagGrad.addColorStop(1, 'rgba(14,22,28,.92)');
+    ctx.fillStyle = tagGrad;
+    ctx.fillRect(lx - tw / 2 - 6, ly - 9, tw + 12, 15);
+    ctx.strokeStyle = 'rgba(62,220,176,.5)';
     ctx.lineWidth = 1;
-    ctx.strokeRect(lx - tw / 2 - 4, ly - 8, tw + 8, 12);
-    ctx.fillStyle = '#3ec9b0';
+    ctx.strokeRect(lx - tw / 2 - 6, ly - 9, tw + 12, 15);
+    ctx.fillStyle = '#3edcb0';
     ctx.textAlign = 'center';
     ctx.fillText(lbl, lx, ly + 1);
     ctx.textAlign = 'left';
@@ -353,7 +391,7 @@ export function draw(): void {
     ctx.lineCap = 'butt';
   }
 
-  /* enemies */
+  /* enemies — with motion trails */
   for (i = 0; i < S.enemies.length; i++) drawEnemy(S.enemies[i]);
 
   /* shots — additive so overlapping fire blooms instead of muddying */
@@ -787,10 +825,11 @@ function drawTower(t: Tower): void {
   ctx.translate(t.x, t.y);
   if (sel) {
     var pu = (Math.sin(S.time * 5) + 1) / 2;
-    ctx.globalAlpha = .13 + .1 * pu;
-    ctx.fillStyle = '#3ec9b0';
+    /* selection halo */
+    ctx.globalAlpha = .08 + .06 * pu;
+    ctx.fillStyle = '#3edcb0';
     ctx.beginPath();
-    ctx.arc(0, 0, 17 + pu * 2.5, 0, 7);
+    ctx.arc(0, 0, 17 + pu * 3, 0, 7);
     ctx.fill();
     ctx.globalAlpha = 1;
   }
@@ -826,6 +865,9 @@ function drawTower(t: Tower): void {
     /* hot slag line at the base */
     ctx.fillStyle = hexA('#e0854e', .75 + glow * .25);
     ctx.fillRect(-9, 8, 18, 2);
+    /* smoke particles hint */
+    ctx.fillStyle = hexA('#5a6a70', .15 + glow * .1);
+    ctx.fillRect(-2 + Math.sin(S.time * 3) * 2, -14, 3, 3);
   } else if (c.id === 'aegis') {
     /* rotating slow-field emitter: no turret body, no barrel */
     ctx.fillStyle = lgrad('aegis', 0, -9, 0, 10, [[0, '#28343b'], [1, '#141c20']]);
@@ -850,13 +892,13 @@ function drawTower(t: Tower): void {
     ctx.restore();
     ctx.save();
     ctx.rotate(S.time * 1.5);
-    ctx.fillStyle = '#3ec9b0';
+    ctx.fillStyle = '#3edcb0';
     ctx.fillRect(-3.5, -3.5, 7, 7);
     ctx.fillStyle = hexA('#d6fff5', .75);
     ctx.fillRect(-1.5, -1.5, 3, 3);
     ctx.restore();
     var pu3 = (Math.sin(S.time * 4) + 1) / 2;
-    ctx.strokeStyle = hexA('#3ec9b0', .25 + .35 * pu3);
+    ctx.strokeStyle = hexA('#3edcb0', .18 + .25 * pu3);
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(0, 0, 11 + pu3 * 3, 0, 7);
@@ -949,9 +991,9 @@ function drawTower(t: Tower): void {
   }
   if (sel) {
     var pu2 = (Math.sin(S.time * 5) + 1) / 2;
-    ctx.strokeStyle = '#3ec9b0';
+    ctx.strokeStyle = '#3edcb0';
     ctx.lineWidth = 1.5;
-    ctx.globalAlpha = .55 + .45 * pu2;
+    ctx.globalAlpha = .45 + .45 * pu2;
     ctx.beginPath();
     ctx.moveTo(-12, -6);
     ctx.lineTo(-12, -12);
@@ -972,35 +1014,35 @@ function drawTower(t: Tower): void {
   ctx.restore();
   var sf = t.selF || 0;
   if (sf > 0) {
-    ctx.globalAlpha = sf * .45;
-    ctx.fillStyle = '#e9e4d6';
+    ctx.globalAlpha = sf * .35;
+    ctx.fillStyle = '#f0ece4';
     ctx.fillRect(t.x - 9, t.y - 9, 18, 18);
     ctx.globalAlpha = 1;
   }
   /* level pips */
   var pips = Math.min(5, t.lvl - 1);
   if (pips > 0) {
-    ctx.fillStyle = '#ffd23f';
+    ctx.fillStyle = '#ffd84a';
     for (var k = 0; k < pips; k++) ctx.fillRect(t.x - 8 + k * 4, t.y + 11, 2.5, 2.5);
   }
   if (t.lvl > 6) {
-    ctx.fillStyle = '#ffd23f';
-    ctx.font = '7px ui-monospace,monospace';
+    ctx.fillStyle = '#ffd84a';
+    ctx.font = '600 7px "JetBrains Mono",monospace';
     ctx.fillText('L' + t.lvl, t.x + 4, t.y + 17);
   }
-  /* targeting doctrine badge (foundries and aegis emitters don't fire) */
+  /* targeting badge */
   if (c.id !== 'foundry' && c.id !== 'aegis') {
-    ctx.font = 'bold 6px ui-monospace,Menlo,monospace';
+    ctx.font = '700 6px "JetBrains Mono",ui-monospace,Menlo,monospace';
     ctx.textAlign = 'center';
-    ctx.fillStyle = t.tgt === 'first' ? '#5c6d73' : '#3ec9b0';
+    ctx.fillStyle = t.tgt === 'first' ? '#5c6d73' : '#3edcb0';
     ctx.fillText(TGT_LABEL[t.tgt], t.x, t.y - 13);
     ctx.textAlign = 'left';
   }
   /* calibration stars */
   var stx = Math.floor((t.lvl - 1) / 5);
   if (stx > 0) {
-    ctx.font = 'bold 7px ui-monospace,monospace';
-    ctx.fillStyle = '#ffd23f';
+    ctx.font = '700 7px "JetBrains Mono",monospace';
+    ctx.fillStyle = '#ffd84a';
     ctx.textAlign = 'center';
     ctx.fillText('★'.repeat(Math.min(stx, 4)) + (stx > 4 ? stx : ''), t.x, t.y + 23);
     ctx.textAlign = 'left';
@@ -1021,7 +1063,7 @@ function drawTower(t: Tower): void {
   /* surge overdrive frame */
   if (S.time < S.ability.surge.until) {
     var sg2 = (Math.sin(S.time * 8) + 1) / 2;
-    ctx.strokeStyle = hexA('#ffd23f', .3 + .3 * sg2);
+    ctx.strokeStyle = hexA('#ffd84a', .2 + .25 * sg2);
     ctx.lineWidth = 1.5;
     ctx.strokeRect(t.x - 10.5, t.y - 10.5, 21, 21);
   }
@@ -1038,6 +1080,7 @@ function drawEnemy(e: Enemy): void {
   var capT = e.hp / e.mhp <= capZone();
   ctx.rotate(e.ang || 0);
   ctx.fillStyle = e.col;
+
   if (e.type === 'plated') {
     ctx.fillRect(-e.size, -e.size * .7, e.size * 2, e.size * 1.4);
     ctx.fillStyle = '#5f6d78';
@@ -1106,16 +1149,20 @@ function drawEnemy(e: Enemy): void {
     ctx.fillRect(-e.size + 2, -e.size * .6 - 3, 5, 3);
     ctx.fillRect(2, -e.size * .6 - 3, 5, 3);
     ctx.fillRect(-4, e.size * .6, 8, 3);
+    /* cargo bay light */
+    ctx.fillStyle = hexA('#ffb83a', .2 + Math.sin(S.time * 4) * .1);
+    ctx.fillRect(-3, -2, 6, 4);
   } else if (e.type === 'gilded') {
     var gp = (Math.sin(S.time * 7 + e.d * .1) + 1) / 2;
     ctx.save();
     ctx.rotate(Math.PI / 4);
     ctx.fillRect(-e.size * .75, -e.size * .75, e.size * 1.5, e.size * 1.5);
     ctx.restore();
-    ctx.strokeStyle = hexA('#ffd23f', .25 + .45 * gp);
+    /* golden aura */
+    ctx.strokeStyle = hexA('#ffd84a', .15 + .35 * gp);
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.arc(0, 0, e.size + 2 + gp * 2.5, 0, 7);
+    ctx.arc(0, 0, e.size + 2 + gp * 3, 0, 7);
     ctx.stroke();
   } else if (e.type === 'phase') {
     ctx.fillRect(-e.size, -e.size * .6, e.size * 2, e.size * 1.2);
@@ -1149,12 +1196,17 @@ function drawEnemy(e: Enemy): void {
     ctx.fillStyle = '#2f4a1e';
     ctx.fillRect(-e.size + 3, -e.size * .7 + 3, e.size * 2 - 6, e.size * 1.4 - 6);
   } else {
+    /* scraplet — basic enemy with subtle detail */
     ctx.fillRect(-e.size, -e.size * .75, e.size * 2, e.size * 1.5);
     ctx.fillStyle = 'rgba(255,255,255,.12)';       /* lit upper hull */
     ctx.fillRect(-e.size, -e.size * .75, e.size * 2, 1);
     ctx.fillStyle = '#8a4a30';                     /* tread band */
     ctx.fillRect(-e.size, e.size * .4, e.size * 2, 2);
+    /* eye dot */
+    ctx.fillStyle = hexA('#ffb83a', .3);
+    ctx.fillRect(e.size * .3, -e.size * .3, 1.5, 1.5);
   }
+
   if (e.flash > 0) {
     ctx.globalAlpha = e.flash * 14;
     ctx.fillStyle = '#fff';
@@ -1170,10 +1222,11 @@ function drawEnemy(e: Enemy): void {
     ctx.fill();
   }
   ctx.rotate(-(e.ang || 0));
+
   /* capture-eligible marker */
   if (capT && S.mode === 'capture') {
-    ctx.strokeStyle = '#3ec9b0';
-    ctx.globalAlpha = .6 + Math.sin(S.time * 8) * .3;
+    ctx.strokeStyle = '#3edcb0';
+    ctx.globalAlpha = .5 + Math.sin(S.time * 8) * .3;
     ctx.setLineDash([2, 3]);
     ctx.beginPath();
     ctx.arc(0, 0, e.size + 4, 0, 7);
@@ -1181,9 +1234,9 @@ function drawEnemy(e: Enemy): void {
     ctx.setLineDash([]);
     ctx.globalAlpha = 1;
   }
-  /* slowed / veteran frames */
+  /* slowed frame */
   if (e.slow > 0) {
-    ctx.strokeStyle = 'rgba(62,201,176,.55)';
+    ctx.strokeStyle = 'rgba(62,220,176,.45)';
     ctx.lineWidth = 1;
     ctx.strokeRect(-e.size - 2, -e.size - 2, e.size * 2 + 4, e.size * 2 + 4);
   }
@@ -1193,7 +1246,7 @@ function drawEnemy(e: Enemy): void {
     ctx.strokeRect(-e.size - 2.5, -e.size - 2.5, e.size * 2 + 5, e.size * 2 + 5);
   }
   if (e.vet) {
-    ctx.strokeStyle = '#ffd23f';
+    ctx.strokeStyle = '#ffd84a';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(-e.size - 1, -e.size - 1, e.size * 2 + 2, e.size * 2 + 2);
   }

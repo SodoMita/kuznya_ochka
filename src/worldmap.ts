@@ -55,11 +55,12 @@ export function drawWorld(): void {
     wctx.stroke();
   }
   wctx.setLineDash([]);
+
   for (i = 0; i < S.worldNodes.length; i++) {
     n = S.worldNodes[i];
     var nx = n.x * dw, ny = n.y * dh, sec = SECTORS[n.idx % SECTORS.length];
     var isCur = n.idx === S.sector, done = !!S.cleared[n.idx], open = nodeOpen(i);
-    var col = done ? '#3ec9b0' : (open ? '#e9e4d6' : '#3a4a52');
+    var col = done ? '#3edcb0' : (open ? '#f0ece4' : '#3a4a52');
     var tt = performance.now() / 1000;
     wctx.save();
     wctx.translate(nx, ny);
@@ -79,15 +80,15 @@ export function drawWorld(): void {
       wctx.fillRect(-20, -20, 40, 40);
     }
     if (isCur) {
-      wctx.strokeStyle = '#ffa02f';
+      wctx.strokeStyle = '#ffb83a';
       wctx.lineWidth = 2;
       wctx.beginPath();
-      wctx.arc(0, 0, 13, tt * 2, tt * 2 + 4.7);
+      wctx.arc(0, 0, 14, tt * 2, tt * 2 + 4.7);
       wctx.stroke();
     }
     wctx.rotate(Math.PI / 4);
     var sz = sec.haz === 0 ? 7 : 8;
-    wctx.fillStyle = done ? '#173a34' : '#1a2226';
+    wctx.fillStyle = done ? 'rgba(62,220,176,.12)' : '#1a2226';
     wctx.strokeStyle = col;
     wctx.lineWidth = 1.5;
     wctx.fillRect(-sz, -sz, sz * 2, sz * 2);
@@ -98,7 +99,7 @@ export function drawWorld(): void {
     wctx.strokeRect(-sz + 2, -sz + 2, sz * 2 - 4, sz * 2 - 4);
     wctx.rotate(-Math.PI / 4);
     wctx.fillStyle = col;
-    wctx.font = 'bold 8px ui-monospace,Menlo,monospace';
+    wctx.font = '700 8px "JetBrains Mono",ui-monospace,Menlo,monospace';
     wctx.textAlign = 'center';
     wctx.fillText(pad2(n.idx + 1), 0, 3);
     /* mix bars — salvage gauges with dark tracks behind them */
