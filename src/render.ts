@@ -8,10 +8,26 @@ import { stats } from './towers';
 import { selBoard } from './deck';
 import type { Tower, Enemy, SectorDef } from './types';
 
+/** Regular n-gon path helper (flat terminal-style glyphs). */
+function ngon(x: number, y: number, r: number, n: number, rot: number): void {
+  ctx.beginPath();
+  for (var k = 0; k < n; k++) {
+    var a = rot + k * Math.PI * 2 / n;
+    if (k === 0) ctx.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+    else ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+  }
+  ctx.closePath();
+}
+
 export function draw(): void {
   var sec = sector(), i;
+  /* near-black terminal field; the sector tint survives only as a faint cast */
+  ctx.fillStyle = '#0c1013';
+  ctx.fillRect(0, 0, W, H);
+  ctx.globalAlpha = .28;
   ctx.fillStyle = sec.tint;
   ctx.fillRect(0, 0, W, H);
+  ctx.globalAlpha = 1;
 
   /* drifting smog motes — ambient, real-time */
   ctx.save();
@@ -29,14 +45,12 @@ export function draw(): void {
   }
   ctx.restore();
 
-  /* ruined skyline */
+  /* distant beacon lights on the horizon (terminal style: no dark skyline slabs) */
   for (i = 0; i < S.sky.length; i++) {
     var sk = S.sky[i];
-    ctx.fillStyle = 'rgba(0,0,0,.20)';
-    ctx.fillRect(sk.x * W, H - sk.h * H, sk.w * W + 1, sk.h * H);
     if (sk.ant) {
-      ctx.fillStyle = hexA('#e5484d', .25 + .45 * ((Math.sin(S.time * 2 + i * 2) + 1) / 2));
-      ctx.fillRect(sk.x * W + sk.w * W * .5, H - sk.h * H - 3, 2, 3);
+      ctx.fillStyle = hexA('#e5484d', .1 + .2 * ((Math.sin(S.time * 2 + i * 2) + 1) / 2));
+      ctx.fillRect(sk.x * W + sk.w * W * .5, H - sk.h * H - 3, 2, 2);
     }
   }
   /* rising forge embers */
@@ -51,13 +65,21 @@ export function draw(): void {
   }
   ctx.globalAlpha = 1;
 
-  /* grid */
-  ctx.strokeStyle = hexA(sec.grid.replace('#', '#'), 1);
-  ctx.globalAlpha = .5;
+  /* ground — faint 1px hex etch, terminal style (neutral, sector tint stays subtle) */
+  ctx.strokeStyle = '#1c2329';
+  ctx.globalAlpha = .9;
   ctx.lineWidth = 1;
+  var hr = 24, hw = hr * 1.7320508, row = 0;
   ctx.beginPath();
-  for (var gx = 0; gx < W; gx += 26) { ctx.moveTo(gx, 0); ctx.lineTo(gx, H); }
-  for (var gy = 0; gy < H; gy += 26) { ctx.moveTo(0, gy); ctx.lineTo(W, gy); }
+  for (var hy = -hr; hy < H + hr * 2; hy += hr * 1.5, row++) {
+    for (var hx = (row % 2 ? hw / 2 : 0) - hw; hx < W + hw; hx += hw) {
+      ctx.moveTo(hx + hw / 2, hy - hr / 2);
+      ctx.lineTo(hx + hw / 2, hy + hr / 2);
+      ctx.lineTo(hx, hy + hr);
+      ctx.moveTo(hx + hw / 2, hy + hr / 2);
+      ctx.lineTo(hx + hw, hy + hr);
+    }
+  }
   ctx.stroke();
   ctx.globalAlpha = 1;
 
@@ -65,14 +87,15 @@ export function draw(): void {
   ctx.save();
   if (S.shake > 0) ctx.translate((Math.random() - .5) * S.shake, (Math.random() - .5) * S.shake);
 
-  /* build pads */
+  /* build pads — octagonal foundation outlines */
   var ghostBoard = selBoard();
-  ctx.globalAlpha = ghostBoard ? .55 : .16;
-  ctx.strokeStyle = '#8fa0a6';
-  ctx.lineWidth = 1;
+  ctx.globalAlpha = ghostBoard ? .85 : .45;
+  ctx.strokeStyle = '#66757d';
+  ctx.lineWidth = 1.5;
   for (i = 0; i < S.spots.length; i++) {
     var sp = S.spots[i];
-    ctx.strokeRect(sp.px - 4, sp.py - 4, 8, 8);
+    ngon(sp.px, sp.py, 9, 8, Math.PI / 8);
+    ctx.stroke();
   }
   ctx.globalAlpha = 1;
 
@@ -274,33 +297,35 @@ export function draw(): void {
 function drawPath(sec: SectorDef): void {
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-  ctx.strokeStyle = '#0d1012';
-  ctx.lineWidth = 27;
+  /* terminal lanes: slim dark bed with crisp 1px amber edge rims */
+  ctx.strokeStyle = hexA('#ffa02f', .55);
+  ctx.lineWidth = 16;
   strokeEdges();
-  ctx.strokeStyle = sec.path;
-  ctx.lineWidth = 21;
+  ctx.strokeStyle = '#14181d';
+  ctx.lineWidth = 14;
   strokeEdges();
-  ctx.strokeStyle = '#0d1012';
-  ctx.lineWidth = 15;
-  strokeEdges();
-  ctx.strokeStyle = hexA(sec.path, 1);
-  ctx.globalAlpha = .5;
+  ctx.strokeStyle = hexA(sec.path, .22);
   ctx.lineWidth = 11;
   strokeEdges();
-  ctx.globalAlpha = 1;
-  ctx.strokeStyle = '#c8bfa8';
-  ctx.globalAlpha = .5;
-  ctx.lineWidth = 1.5;
-  ctx.setLineDash([4, 9]);
+  /* animated dashed centerline — flow direction */
+  ctx.strokeStyle = hexA('#ffa02f', .4);
+  ctx.lineWidth = 1;
+  ctx.setLineDash([5, 9]);
   ctx.lineDashOffset = -S.time * 26;
   strokeEdges();
   ctx.setLineDash([]);
   ctx.lineDashOffset = 0;
-  ctx.globalAlpha = 1;
-  /* junction hubs: small pads where roads meet */
-  ctx.fillStyle = '#0d1012';
+  /* junction hubs: lit node dots where roads meet */
   for (const n of S.nodes) {
-    if (n.kind === 'junc') ctx.fillRect(n.px - 3.5, n.py - 3.5, 7, 7);
+    if (n.kind !== 'junc') continue;
+    ctx.fillStyle = '#10151a';
+    ctx.beginPath();
+    ctx.arc(n.px, n.py, 5, 0, 7);
+    ctx.fill();
+    ctx.fillStyle = '#ffd8a0';
+    ctx.beginPath();
+    ctx.arc(n.px, n.py, 2.2, 0, 7);
+    ctx.fill();
   }
 }
 
@@ -355,17 +380,19 @@ function drawCore(): void {
   var p = S.nodes[S.coreIdx], pulse = (Math.sin(S.time * 3) + 1) / 2;
   ctx.save();
   ctx.translate(p.px, p.py);
+  /* hex silhouette with a single soft glow — terminal style */
   ctx.fillStyle = '#141c20';
   ctx.strokeStyle = '#3ec9b0';
   ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(0, 0, 13, 0, 7);
+  ctx.shadowColor = hexA('#3ec9b0', .5 + pulse * .3);
+  ctx.shadowBlur = 10 + pulse * 6;
+  ngon(0, 0, 14, 6, -Math.PI / 2);
   ctx.fill();
   ctx.stroke();
+  ctx.shadowBlur = 0;
   ctx.strokeStyle = hexA('#3ec9b0', .25 + pulse * .35);
   ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.arc(0, 0, 17 + pulse * 2.5, 0, 7);
+  ngon(0, 0, 18 + pulse * 2.5, 6, -Math.PI / 2);
   ctx.stroke();
   var frac = Math.max(0, S.core / S.coreMax);
   ctx.strokeStyle = frac > .4 ? '#3ec9b0' : '#e5484d';
@@ -377,6 +404,9 @@ function drawCore(): void {
   ctx.font = 'bold 8px ui-monospace,Menlo,monospace';
   ctx.textAlign = 'center';
   ctx.fillText(S.core + '', 0, 3);
+  ctx.fillStyle = hexA('#3ec9b0', .8);
+  ctx.font = '6px ui-monospace,Menlo,monospace';
+  ctx.fillText('CORE', 0, 26);
   ctx.textAlign = 'left';
   ctx.restore();
 }
@@ -394,80 +424,118 @@ function drawTower(t: Tower): void {
     ctx.fill();
     ctx.globalAlpha = 1;
   }
+  /* octagonal base pad — every unit sits on one (top-down plan view) */
+  ctx.fillStyle = '#1a2226';
+  ctx.strokeStyle = sel ? '#3ec9b0' : '#3a4a52';
+  ctx.lineWidth = 1.5;
+  ngon(0, 0, 11, 8, Math.PI / 8);
+  ctx.fill();
+  ctx.stroke();
   if (CARDS[t.i].id === 'foundry') {
+    /* square furnace: glowing center vent + corner chimney stub */
     var glow = (Math.sin(S.time * 5 + t.x) + 1) / 2;
-    ctx.fillStyle = '#1d262b';
-    ctx.strokeStyle = sel ? '#3ec9b0' : '#3a4a52';
-    ctx.lineWidth = 1.5;
-    ctx.fillRect(-9, -8, 18, 16);
-    ctx.strokeRect(-9, -8, 18, 16);
-    ctx.fillStyle = hexA('#e0854e', .5 + glow * .5);
-    ctx.fillRect(-4, -3, 8, 8);
+    ctx.fillStyle = '#232d33';
+    ctx.strokeStyle = '#3a4a52';
+    ctx.lineWidth = 1;
+    ctx.fillRect(-7, -7, 14, 14);
+    ctx.strokeRect(-7, -7, 14, 14);
+    ctx.fillStyle = hexA('#e0854e', .45 + glow * .55);
+    ctx.fillRect(-3.5, -3.5, 7, 7);
+    ctx.fillStyle = hexA('#ffd8a0', .3 + glow * .5);
+    ctx.fillRect(-1.5, -1.5, 3, 3);
+    /* chimney stub, top-right corner, with ember dot */
     ctx.fillStyle = '#3a4a52';
-    ctx.fillRect(3, -12, 4, 5);
-    ctx.fillStyle = '#e0854e';
-    ctx.fillRect(-9, 8, 18, 2);
-  } else if (c.id === 'aegis') {
-    /* rotating slow-field emitter: no turret body, no barrel */
-    ctx.fillStyle = '#1d262b';
-    ctx.strokeStyle = sel ? '#3ec9b0' : '#3a4a52';
-    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(0, -9);
-    ctx.lineTo(8, -4);
-    ctx.lineTo(8, 5);
-    ctx.lineTo(0, 10);
-    ctx.lineTo(-8, 5);
-    ctx.lineTo(-8, -4);
-    ctx.closePath();
+    ctx.arc(5, -5, 2.5, 0, 7);
+    ctx.fill();
+    ctx.fillStyle = hexA('#e0854e', .4 + glow * .6);
+    ctx.beginPath();
+    ctx.arc(5, -5, 1, 0, 7);
+    ctx.fill();
+  } else if (c.id === 'aegis') {
+    /* hex pylon with a rotating inner square + field ring */
+    ctx.fillStyle = '#232d33';
+    ctx.strokeStyle = '#3a4a52';
+    ctx.lineWidth = 1;
+    ngon(0, 0, 8, 6, -Math.PI / 2);
     ctx.fill();
     ctx.stroke();
     ctx.save();
     ctx.rotate(S.time * 1.5);
-    ctx.fillStyle = '#3ec9b0';
-    ctx.fillRect(-3.5, -3.5, 7, 7);
+    ctx.strokeStyle = '#3ec9b0';
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(-4, -4, 8, 8);
+    ctx.fillStyle = hexA('#3ec9b0', .6);
+    ctx.fillRect(-1.5, -1.5, 3, 3);
     ctx.restore();
     var pu3 = (Math.sin(S.time * 4) + 1) / 2;
     ctx.strokeStyle = hexA('#3ec9b0', .25 + .35 * pu3);
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.arc(0, 0, 11 + pu3 * 3, 0, 7);
+    ctx.arc(0, 0, 12 + pu3 * 3, 0, 7);
     ctx.stroke();
-  } else {
-    ctx.fillStyle = '#1d262b';
-    ctx.strokeStyle = sel ? '#3ec9b0' : '#3a4a52';
-    ctx.lineWidth = 1.5;
+  } else if (c.id === 'arc') {
+    /* coil seen from above: concentric rings + orbiting spark */
+    ctx.strokeStyle = '#3a4a52';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(-9, -9);
-    ctx.lineTo(9, -9);
-    ctx.lineTo(9, 6);
-    ctx.lineTo(5, 9);
-    ctx.lineTo(-5, 9);
-    ctx.lineTo(-9, 6);
-    ctx.closePath();
-    ctx.fill();
+    ctx.arc(0, 0, 7.5, 0, 7);
     ctx.stroke();
+    ctx.strokeStyle = c.col;
+    ctx.beginPath();
+    ctx.arc(0, 0, 5, 0, 7);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(0, 0, 2.5, 0, 7);
+    ctx.stroke();
+    var sa = S.time * 4 + t.x;
+    ctx.fillStyle = hexA('#ffd23f', .5 + .5 * ((Math.sin(S.time * 9 + t.y) + 1) / 2));
+    ctx.fillRect(Math.cos(sa) * 6.5 - 1, Math.sin(sa) * 6.5 - 1, 2, 2);
+    if (t.flash > 0) {
+      ctx.strokeStyle = hexA('#fff', Math.min(1, t.flash * 12));
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, 0, 9, 0, 7);
+      ctx.stroke();
+    }
+  } else {
+    /* rotating hub + per-blueprint barrel, plan view */
     ctx.rotate(t.ang);
-    ctx.fillStyle = '#2c3940';
-    ctx.fillRect(-4, -4, 8, 8);
-    ctx.fillStyle = c.col;
-    if (c.id === 'arc') {
-      ctx.fillRect(2, -1.5, 10, 3);
-      ctx.fillRect(9, -3.5, 2, 7);
-    } else if (c.id === 'harvest') {
+    if (c.id === 'harvest') {
+      /* round hub with C-shaped claw dish opening forward */
+      ctx.fillStyle = '#2c3940';
+      ctx.beginPath();
+      ctx.arc(0, 0, 4.5, 0, 7);
+      ctx.fill();
       ctx.strokeStyle = c.col;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(8, 0, 4, -1.2, 1.2);
+      ctx.arc(6.5, 0, 4.5, -1.15, 1.15);
       ctx.stroke();
-      ctx.fillRect(1, -1.5, 7, 3);
+      ctx.fillStyle = c.col;
+      ctx.fillRect(0, -1.2, 5, 2.4);
     } else if (c.id === 'rail') {
-      ctx.fillRect(1, -1.2, 15, 2.4);
-      ctx.fillRect(12, -2.6, 2, 5.2);
+      /* twin parallel rails on a rectangular carriage */
+      ctx.fillStyle = '#2c3940';
+      ctx.fillRect(-6, -4.5, 10, 9);
+      ctx.fillStyle = c.col;
+      ctx.fillRect(0, -3.2, 15, 1.6);
+      ctx.fillRect(0, 1.6, 15, 1.6);
       ctx.fillStyle = '#8a6a20';
-      ctx.fillRect(-6, -3, 5, 6);
+      ctx.fillRect(-5, -2.5, 4, 5);
     } else {
-      ctx.fillRect(2, -1, 11, 2);
+      /* needle: small round hub, single long thin barrel */
+      ctx.fillStyle = '#2c3940';
+      ctx.beginPath();
+      ctx.arc(0, 0, 4.5, 0, 7);
+      ctx.fill();
+      ctx.strokeStyle = c.col;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, 0, 4.5, 0, 7);
+      ctx.stroke();
+      ctx.fillStyle = c.col;
+      ctx.fillRect(2, -1, 12, 2);
     }
     if (t.flash > 0) {
       ctx.fillStyle = '#fff';
@@ -565,26 +633,57 @@ function drawEnemy(e: Enemy): void {
     ctx.closePath();
     ctx.fill();
   } else if (e.type === 'titan') {
+    /* heavy hull with red corner armor plates */
     ctx.fillRect(-e.size, -e.size, e.size * 2, e.size * 2);
-    ctx.strokeStyle = '#7c282c';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(-e.size + 2, -e.size + 2, e.size * 2 - 4, e.size * 2 - 4);
+    ctx.strokeStyle = '#39454d';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(-e.size + 2.5, -e.size + 2.5, e.size * 2 - 5, e.size * 2 - 5);
+    ctx.fillStyle = '#7c282c';
+    var cp = e.size * .5;
+    ctx.fillRect(-e.size, -e.size, cp, cp);
+    ctx.fillRect(e.size - cp, -e.size, cp, cp);
+    ctx.fillRect(-e.size, e.size - cp, cp, cp);
+    ctx.fillRect(e.size - cp, e.size - cp, cp, cp);
     ctx.fillStyle = '#ffd23f';
     ctx.fillRect(-2, -2, 4, 4);
   } else if (e.type === 'dread') {
+    /* spiked hull with pulsing red eye */
     ctx.fillRect(-e.size, -e.size, e.size * 2, e.size * 2);
+    ctx.fillStyle = '#4d1418';
+    for (var sk = 0; sk < 8; sk++) {
+      var ska = sk * Math.PI / 4 + Math.PI / 8;
+      var skx = Math.cos(ska), sky = Math.sin(ska);
+      ctx.beginPath();
+      ctx.moveTo(skx * e.size, sky * e.size);
+      ctx.lineTo(skx * (e.size + 4) - sky * 2, sky * (e.size + 4) + skx * 2);
+      ctx.lineTo(skx * (e.size + 4) + sky * 2, sky * (e.size + 4) - skx * 2);
+      ctx.closePath();
+      ctx.fill();
+    }
     ctx.strokeStyle = '#4d1418';
     ctx.lineWidth = 2.5;
     ctx.strokeRect(-e.size + 2, -e.size + 2, e.size * 2 - 4, e.size * 2 - 4);
-    ctx.strokeRect(-e.size + 5, -e.size + 5, e.size * 2 - 10, e.size * 2 - 10);
-    ctx.fillStyle = hexA('#ffd23f', .55 + Math.sin(S.time * 5) * .4);
-    ctx.fillRect(-2.5, -2.5, 5, 5);
+    var dp = .55 + Math.sin(S.time * 5) * .4;
+    ctx.fillStyle = hexA('#e5484d', dp);
+    ctx.beginPath();
+    ctx.arc(0, 0, 4, 0, 7);
+    ctx.fill();
+    ctx.fillStyle = hexA('#ffd23f', dp);
+    ctx.fillRect(-1.5, -1.5, 3, 3);
   } else if (e.type === 'carrier') {
-    ctx.fillRect(-e.size, -e.size * .6, e.size * 2, e.size * 1.2);
-    ctx.fillStyle = '#6e5a44';
-    ctx.fillRect(-e.size + 2, -e.size * .6 - 3, 5, 3);
-    ctx.fillRect(2, -e.size * .6 - 3, 5, 3);
-    ctx.fillRect(-4, e.size * .6, 8, 3);
+    /* oval pod with a seam down the middle */
+    ctx.beginPath();
+    ctx.ellipse(0, 0, e.size * 1.1, e.size * .7, 0, 0, 7);
+    ctx.fill();
+    ctx.strokeStyle = '#6e5a44';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, e.size * 1.1 - 2, e.size * .7 - 2, 0, 0, 7);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-e.size * 1.1 + 2, 0);
+    ctx.lineTo(e.size * 1.1 - 2, 0);
+    ctx.stroke();
   } else if (e.type === 'gilded') {
     var gp = (Math.sin(S.time * 7 + e.d * .1) + 1) / 2;
     ctx.save();
@@ -597,22 +696,36 @@ function drawEnemy(e: Enemy): void {
     ctx.arc(0, 0, e.size + 2 + gp * 2.5, 0, 7);
     ctx.stroke();
   } else if (e.type === 'phase') {
-    ctx.fillRect(-e.size, -e.size * .6, e.size * 2, e.size * 1.2);
+    /* translucent disc with trailing ghost copy */
+    ctx.globalAlpha = .4;
+    ctx.beginPath();
+    ctx.arc(-e.size * .7, 0, e.size * .85, 0, 7);
+    ctx.fill();
+    ctx.globalAlpha = .85;
+    ctx.beginPath();
+    ctx.arc(0, 0, e.size * .85, 0, 7);
+    ctx.fill();
+    ctx.globalAlpha = 1;
     ctx.fillStyle = '#141a24';
-    ctx.fillRect(-e.size + 2, -e.size * .6 + 2, e.size * 2 - 4, 2.5);
+    ctx.beginPath();
+    ctx.arc(0, 0, e.size * .3, 0, 7);
+    ctx.fill();
     if ((e.ph || 0) > 1.9) {
       ctx.strokeStyle = hexA('#cfe0f5', ((e.ph || 0) - 1.9) * 1.4);
       ctx.lineWidth = 1;
-      ctx.strokeRect(-e.size - 2.5, -e.size * .6 - 2.5, e.size * 2 + 5, e.size * 1.2 + 5);
+      ctx.beginPath();
+      ctx.arc(0, 0, e.size + 2.5, 0, 7);
+      ctx.stroke();
     }
   } else if (e.type === 'regen') {
+    /* round body with a green repair cross */
     ctx.beginPath();
     ctx.arc(0, 0, e.size, 0, 7);
     ctx.fill();
     ctx.fillStyle = hexA('#b8f0c4', .5 + Math.sin(S.time * 6) * .4);
-    ctx.beginPath();
-    ctx.arc(0, 0, e.size * .45, 0, 7);
-    ctx.fill();
+    var cw = Math.max(1.6, e.size * .28), cl = e.size * .62;
+    ctx.fillRect(-cw / 2, -cl, cw, cl * 2);
+    ctx.fillRect(-cl, -cw / 2, cl * 2, cw);
   } else {
     ctx.fillRect(-e.size, -e.size * .75, e.size * 2, e.size * 1.5);
     ctx.fillStyle = '#8a4a30';

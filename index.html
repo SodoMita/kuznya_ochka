@@ -15,7 +15,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--mono)}
 button{font-family:var(--mono);color:var(--ink);touch-action:manipulation;user-select:none;-webkit-user-select:none}
-#app{width:100vw;height:100dvh;max-width:980px;margin:auto;display:grid;grid-template-rows:42px minmax(0,1fr) 142px;position:relative;background:
+#app{width:100vw;height:100dvh;max-width:980px;margin:auto;display:grid;grid-template-rows:42px minmax(0,1fr) 158px;position:relative;background:
   radial-gradient(120% 90% at 50% -10%,#1b252b 0%,var(--bg) 55%),var(--bg)}
 /* ---------- HUD ---------- */
 #hud{display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid var(--line);background:linear-gradient(#1e282e,#171f24)}
@@ -90,29 +90,36 @@ button{font-family:var(--mono);color:var(--ink);touch-action:manipulation;user-s
 .spd button{border:1px solid var(--line);background:var(--panel2);cursor:pointer;font-size:11px;padding:4px 0;transition:border-color .12s}
 .spd button:hover{border-color:var(--gold)}
 #spdVal{color:var(--gold);font-weight:700;font-size:10px}
-/* hand cards — StS style: kind ribbon, body, keyword tags, cost footer */
-.card{position:relative;flex:1 0 100px;max-width:136px;border:1px solid var(--line);border-top:2px solid currentColor;background:linear-gradient(172deg,#1e272d,#161e22 70%);padding:0 0 4px;cursor:pointer;display:flex;flex-direction:column;min-width:0;overflow:hidden;transition:border-color .12s,transform .12s,box-shadow .12s}
-.card:hover{border-color:var(--amber);transform:translateY(-3px);box-shadow:0 5px 16px #000a}
-.card.sel{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal),0 0 14px #3ec9b040;transform:translateY(-4px)}
-.card.broke{opacity:.5;filter:saturate(.55)}
+/* hand cards — spec-sheet anatomy: colored frame, diagonal ribbon, name,
+   framed icon zone, centered body, stamped tags, hex cost chips */
+.card{position:relative;flex:1 0 104px;max-width:140px;border:1px solid currentColor;background:#14191d;padding:0 0 4px;cursor:pointer;display:flex;flex-direction:column;min-width:0;overflow:hidden;text-align:center;transition:border-color .12s,transform .12s,box-shadow .12s,filter .12s}
+.card:hover{transform:translateY(-3px);box-shadow:0 5px 16px #000a;filter:brightness(1.12)}
+.card.sel{box-shadow:inset 0 0 0 1px var(--teal),0 0 14px #3ec9b066;border-color:var(--teal);transform:translateY(-4px)}
+.card.broke{filter:saturate(.4) brightness(.75)}
+.card.broke::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(229,72,77,.22) 0 7px,transparent 7px 16px);pointer-events:none}
 .card.broke:hover{border-color:var(--red);transform:none;box-shadow:none}
 .card.deal{animation:deal .3s ease-out backwards}
 @keyframes deal{from{opacity:0;transform:translateY(16px) scale(.94)}}
-.card .kind{font-size:6px;letter-spacing:1.5px;padding:2px 5px 1px;color:#0f1517;background:currentColor;white-space:nowrap;overflow:hidden}
+.card .kind{position:relative;font-size:6px;letter-spacing:1.5px;padding:2px 6px 1px;color:#0f1517;background:currentColor;white-space:nowrap;overflow:hidden;clip-path:polygon(0 0,100% 0,100% 45%,86% 100%,0 100%);text-align:left}
 .card .kind i{font-style:normal;color:#0f1517}
-.card .hd{display:flex;align-items:center;gap:4px;min-width:0;padding:4px 5px 0}
-.card svg{flex:0 0 13px;height:13px}
-.card strong{font-family:var(--disp);font-size:10px;letter-spacing:.3px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400}
-.card .key{margin-left:auto;font-size:7px;color:var(--dim);border:1px solid var(--line2);padding:0 3px;flex:0 0 auto}
-.card p{margin:2px 0 0;padding:0 5px;font-size:7.5px;line-height:1.35;color:var(--dim);overflow:hidden}
-.card .tags{padding:2px 5px 0;font-size:6.5px;letter-spacing:1px;line-height:1.5;min-height:10px}
-.card .tags em{font-style:normal;margin-right:4px;white-space:nowrap;cursor:help}
+.card .hd{padding:3px 4px 0}
+.card strong{font-family:var(--disp);font-size:10.5px;letter-spacing:.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400;display:block}
+.card .key{position:absolute;right:3px;top:14px;font-size:6px;color:var(--dim);border:1px solid var(--line2);padding:0 2px;background:#14191d}
+.card .icon{display:flex;align-items:center;justify-content:center;margin:3px auto 0;width:34px;height:24px;border:1px solid var(--line);flex:0 0 auto;opacity:.95}
+@supports (border-color:color-mix(in srgb,red 50%,transparent)){.card .icon{border-color:color-mix(in srgb,currentColor 45%,transparent)}}
+.card .icon svg{width:18px;height:18px;filter:drop-shadow(0 0 3px currentColor)}
+.card p{margin:2px 0 0;padding:0 4px;font-size:7px;line-height:1.3;color:var(--dim);overflow:hidden}
+.card .tags{padding:2px 4px 0;font-size:6px;letter-spacing:.8px;line-height:1.7;min-height:10px}
+.card .tags em{font-style:normal;margin:0 1px;white-space:nowrap;cursor:help;border:1px solid currentColor;padding:0 2px}
 .tag-ex{color:var(--red)}.tag-eth{color:#b18cd9}.tag-ret{color:var(--teal)}.tag-inn{color:var(--steel)}.tag-con{color:var(--gold)}
-.card .cst{margin-top:auto;padding:3px 5px 1px;font-size:7.5px;font-weight:700;letter-spacing:.2px;white-space:nowrap;border-top:1px solid var(--line2)}
-.cst .fe{color:var(--copper)}.cst .cu{color:var(--amber)}.cst .si{color:var(--steel)}.cst .free{color:var(--dim);font-weight:400}
-.cst .lack{color:var(--red)}
-.card .cst span+span{margin-left:5px}
-.card .rank{position:absolute;right:4px;top:14px;font-size:7px;color:var(--teal);letter-spacing:1px}
+.card .cst{margin-top:auto;padding:3px 4px 1px;font-size:7px;font-weight:700;letter-spacing:.2px;white-space:nowrap;border-top:1px solid var(--line2)}
+@supports (border-color:color-mix(in srgb,red 50%,transparent)){.card .cst{border-top-color:color-mix(in srgb,currentColor 35%,transparent)}}
+.cst span{display:inline-block;padding:1px 6px;clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 50%,calc(100% - 4px) 100%,4px 100%,0 50%);color:#12171a}
+.cst .fe{background:var(--copper)}.cst .cu{background:var(--amber)}.cst .si{background:var(--steel)}
+.cst .free{background:none;clip-path:none;padding:1px 0;color:var(--dim);font-weight:400}
+.cst .lack{background:var(--red);color:#1c0708}
+.card .cst span+span{margin-left:3px}
+.card .rank{position:absolute;left:3px;top:14px;font-size:7px;color:var(--teal);letter-spacing:1px}
 .card .play{position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:7px;letter-spacing:2px;color:#0f1517;background:var(--teal);padding:1px 0;opacity:0;transition:.12s}
 .card.sel.runnable .play{opacity:1}
 #handEmpty{align-self:center;margin:auto;font-size:8px;letter-spacing:2px;color:var(--dim);border:1px dashed var(--line2);padding:8px 14px}
@@ -150,15 +157,19 @@ button{font-family:var(--mono);color:var(--ink);touch-action:manipulation;user-s
 .close{float:right;border:1px solid var(--line);background:var(--panel2);padding:4px 9px;cursor:pointer;font-size:9px;letter-spacing:1px}
 .close:hover{border-color:var(--red);color:var(--red)}
 #offers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
-.offer{border:1px solid var(--line);background:#151d21;padding:9px 8px;cursor:pointer;transition:transform .12s,border-color .12s;position:relative}
+.offer{border:1px solid var(--line);border-top:2px solid currentColor;background:#151d21;padding:0 8px 9px;cursor:pointer;transition:transform .12s,border-color .12s;position:relative;overflow:hidden}
 .offer:hover{transform:translateY(-3px)}
+.offer .okind{display:block;font-size:6px;letter-spacing:1.5px;margin:0 -8px 7px;padding:2px 8px 1px;color:#0f1517;background:currentColor;clip-path:polygon(0 0,100% 0,100% 40%,88% 100%,0 100%)}
 .offer .rar{font-size:7px;letter-spacing:2px;padding:2px 5px;display:inline-block;margin-bottom:6px}
 .rar.r0{color:var(--steel);border:1px solid var(--steel)}
 .rar.r1{color:var(--teal);border:1px solid var(--teal)}
 .rar.r2{color:var(--amber);border:1px solid var(--amber)}
 .offer:hover.rarwrap, .offer:hover{border-color:var(--amber)}
-.offer b{display:block;font-family:var(--disp);font-size:14px;letter-spacing:.5px;font-weight:400;color:var(--ink);margin:2px 0 4px}
+.offer b{display:flex;align-items:center;gap:5px;font-family:var(--disp);font-size:14px;letter-spacing:.5px;font-weight:400;color:var(--ink);margin:2px 0 4px}
+.offer b svg{flex:0 0 14px;height:14px;filter:drop-shadow(0 0 3px currentColor)}
 .offer p{font-size:8px;margin:0;color:var(--dim);line-height:1.4}
+.offer .tags{margin-top:5px;font-size:6px;letter-spacing:.8px;line-height:1.7}
+.offer .tags em{font-style:normal;margin-right:3px;white-space:nowrap;border:1px solid currentColor;padding:0 2px}
 .offer .pick{margin-top:7px;font-size:7px;letter-spacing:2px;color:var(--amber);opacity:0;transition:.15s}
 .offer:hover .pick{opacity:1}
 #worldCv{width:100%;height:280px;display:block;border:1px solid var(--line2);background:#0e1417;cursor:pointer}
@@ -173,7 +184,7 @@ h3.sec{font-family:var(--disp);font-size:13px;letter-spacing:1px;color:var(--tea
 kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
 /* ---------- PORTRAIT ---------- */
 @media (max-width:560px){
-  #app{grid-template-rows:40px minmax(0,1fr) 218px}
+  #app{grid-template-rows:40px minmax(0,1fr) 232px}
   #brand{font-size:15px}#brand span{display:none}
   .chip{padding:2px 4px}.chip b{font-size:10px}.chip i{display:none}
   #hbtns button{padding:4px 6px;font-size:8px}
@@ -190,10 +201,11 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   #app{grid-template-rows:38px minmax(0,1fr) 116px}
   #deck{padding:5px;gap:5px}
   .card p{display:none}
+  .card .icon{display:none}
   #unitStats{display:none}
 }
 @media (min-width:561px) and (max-width:700px){
-  #app{grid-template-rows:42px minmax(0,1fr) 128px}
+  #app{grid-template-rows:42px minmax(0,1fr) 136px}
   #deck{grid-template-columns:146px minmax(0,1fr) 168px;gap:5px;padding:5px}
   .card p{display:none}
   #brand span{display:none}
@@ -473,7 +485,11 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     harvest: '<svg viewBox="0 0 16 16"><path d="M3 3v6a5 5 0 0 0 10 0V3M8 6v9M5 15h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
     foundry: '<svg viewBox="0 0 16 16"><path d="M2 14V7l4 2V7l4 2V4h3v10H2zM11 1v2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
     rail: '<svg viewBox="0 0 16 16"><path d="M1 13L13 3M13 3l2-2M13 3v3M10 6v3M3 15h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
-    aegis: '<svg viewBox="0 0 16 16"><path d="M8 1l6 3v4c0 3.5-2.7 6-6 7-3.3-1-6-3.5-6-7V4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="7.5" r="1.6" fill="currentColor"/></svg>'
+    aegis: '<svg viewBox="0 0 16 16"><path d="M8 1l6 3v4c0 3.5-2.7 6-6 7-3.3-1-6-3.5-6-7V4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="7.5" r="1.6" fill="currentColor"/></svg>',
+    /* generic card-kind schematics — subroutine / firmware / corruption */
+    k_skill: '<svg viewBox="0 0 16 16"><path d="M5 4L2 8l3 4M11 4l3 4-3 4M9.5 3l-3 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    k_power: '<svg viewBox="0 0 16 16"><rect x="4" y="4" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 1v3M10 1v3M6 12v3M10 12v3M1 6h3M1 10h3M12 6h3M12 10h3" stroke="currentColor" stroke-width="1.2"/></svg>',
+    k_curse: '<svg viewBox="0 0 16 16"><path d="M8 2v6M8 11v.5M2.5 13.5L8 2l5.5 11.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>'
   };
   var CARDS = [
     { id: "needle", name: "NEEDLE", desc: "rapid kinetic sentry", cost: { fe: 24, cu: 8, si: 2 }, dmg: 7, rate: 4.2, range: 92, draw: 1, col: "#d9e2b0" },
@@ -551,6 +567,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     power: "FIRMWARE",
     curse: "CORRUPTION"
   };
+  var KIND_COL = { board: "#9fb6c9", skill: "#3ec9b0", power: "#ffd23f", curse: "#b18cd9" };
   var RELICS = [
     { id: "cap", name: "CAPACITOR BANK", desc: "+8 grid capacity, immediately", rar: 1 },
     { id: "scav", name: "SCAVENGER PROTOCOL", desc: "+12% salvage from every source", rar: 1 },
@@ -1320,31 +1337,41 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     var h = "";
     for (var i = 0; i < S.draftOffers.length; i++) {
       var o = S.draftOffers[i], name, desc, pick = "\u25B8 INSTALL", rn = ["COMMON", "ADVANCED", "PROTOTYPE"][o.rar];
+      var col = "", ribbon = "", glyph = "", tags = "";
       if (o.kind === "card") {
         var d = defById(o.id);
         var flags = [];
-        if (d.exhaust) flags.push("EXHAUST");
-        if (d.ethereal) flags.push("ETHEREAL");
-        if (d.retain) flags.push("RETAIN");
-        if (d.innate) flags.push("INNATE");
-        if (d.consume) flags.push("CONSUME");
+        if (d.innate) flags.push('<em class="tag-inn">INNATE</em>');
+        if (d.retain) flags.push('<em class="tag-ret">RETAIN</em>');
+        if (d.ethereal) flags.push('<em class="tag-eth">ETHEREAL</em>');
+        if (d.exhaust) flags.push('<em class="tag-ex">EXHAUST</em>');
+        if (d.consume) flags.push('<em class="tag-con">CONSUME</em>');
+        col = d.kind === "board" ? CARDS[d.tower].col : KIND_COL[d.kind];
+        ribbon = '<span class="okind">' + KIND_LABEL[d.kind] + "</span>";
+        glyph = d.kind === "board" ? GLYPHS[CARDS[d.tower].id] : GLYPHS["k_" + d.kind] || "";
+        tags = flags.length ? '<div class="tags">' + flags.join("") + "</div>" : "";
         name = d.name;
-        desc = KIND_LABEL[d.kind] + (flags.length ? " \xB7 " + flags.join(" \xB7 ") : "") + " \u2014 " + d.desc + ". Added to your circuit deck.";
+        desc = d.desc + ". Added to your circuit deck.";
         pick = "\u25B8 ADD TO DECK";
       } else if (o.kind === "rank") {
         var c = CARDS.filter(function(x) {
           return x.id === o.id;
         })[0];
+        col = c.col;
+        ribbon = '<span class="okind">BLUEPRINT UPGRADE</span>';
+        glyph = GLYPHS[c.id];
         name = c.name + " Mk." + (S.ranks[o.id] + 2);
         desc = "Permanent +5% damage & output for every " + c.name + " unit, current and future.";
       } else {
         var r = RELICS.filter(function(x) {
           return x.id === o.id;
         })[0];
+        col = "#ffa02f";
+        ribbon = '<span class="okind">RELIC</span>';
         name = r.name;
         desc = r.desc;
       }
-      h += '<div class="offer" data-off="' + i + '"><span class="rar r' + o.rar + '">' + rn + "</span><b>" + name + "</b><p>" + desc + '</p><div class="pick">' + pick + "</div></div>";
+      h += '<div class="offer" data-off="' + i + '" style="color:' + col + '">' + ribbon + '<span class="rar r' + o.rar + '">' + rn + "</span><b>" + (glyph || "") + name + "</b><p>" + desc + "</p>" + tags + '<div class="pick">' + pick + "</div></div>";
     }
     $("offers").innerHTML = h;
     var nodes = $("offers").children;
@@ -2315,7 +2342,6 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       return (canPlayDef(d).ok ? "1" : "0") + (S.res.fe >= d.cost.fe ? "" : "f") + (S.res.cu >= d.cost.cu ? "" : "c") + (S.res.si >= d.cost.si ? "" : "s");
     }).join("|") + "\xB7" + S.hand.length + "\xB7" + S.selCard;
   }
-  var KIND_COL = { board: "#9fb6c9", skill: "#3ec9b0", power: "#ffd23f", curse: "#b18cd9" };
   var TAG_TIP = {
     INNATE: "guaranteed in the sector\u2019s opening hand",
     RETAIN: "not discarded when the turn ends",
@@ -2351,11 +2377,11 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       var ci = S.hand[i], d = defOf(ci);
       var col = d.kind === "board" ? CARDS[d.tower].col : KIND_COL[d.kind];
       var chk = canPlayDef(d);
-      var glyph = d.kind === "board" ? GLYPHS[CARDS[d.tower].id] : "";
+      var glyph = d.kind === "board" ? GLYPHS[CARDS[d.tower].id] : GLYPHS["k_" + d.kind] || "";
       var rankTag = d.kind === "board" && S.ranks[CARDS[d.tower].id] ? '<span class="rank">Mk.' + (S.ranks[CARDS[d.tower].id] + 1) + "</span>" : "";
       var isNew = !seenUids[ci.uid];
       if (isNew) dealt++;
-      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div><div class="hd">' + glyph + "<strong>" + d.name + "</strong>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + "</div><p>" + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "curse" ? "UNPLAYABLE" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
+      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + "</i></div>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + '<div class="hd"><strong>' + d.name + '</strong></div><div class="icon">' + glyph + "</div><p>" + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "curse" ? "UNPLAYABLE" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
     }
     if (!S.hand.length) {
       h = '<div id="handEmpty">HAND EMPTY \u2014 NEW CARDS DEALT NEXT FABRICATION WINDOW</div>';
@@ -2949,10 +2975,23 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   });
 
   // src/render.ts
+  function ngon(x, y, r, n, rot) {
+    ctx.beginPath();
+    for (var k = 0; k < n; k++) {
+      var a = rot + k * Math.PI * 2 / n;
+      if (k === 0) ctx.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+      else ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+    }
+    ctx.closePath();
+  }
   function draw() {
     var sec = sector(), i;
+    ctx.fillStyle = "#0c1013";
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 0.28;
     ctx.fillStyle = sec.tint;
     ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
     ctx.save();
     for (i = 0; i < S.motes.length; i++) {
       var m = S.motes[i];
@@ -2969,11 +3008,9 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     ctx.restore();
     for (i = 0; i < S.sky.length; i++) {
       var sk = S.sky[i];
-      ctx.fillStyle = "rgba(0,0,0,.20)";
-      ctx.fillRect(sk.x * W, H - sk.h * H, sk.w * W + 1, sk.h * H);
       if (sk.ant) {
-        ctx.fillStyle = hexA("#e5484d", 0.25 + 0.45 * ((Math.sin(S.time * 2 + i * 2) + 1) / 2));
-        ctx.fillRect(sk.x * W + sk.w * W * 0.5, H - sk.h * H - 3, 2, 3);
+        ctx.fillStyle = hexA("#e5484d", 0.1 + 0.2 * ((Math.sin(S.time * 2 + i * 2) + 1) / 2));
+        ctx.fillRect(sk.x * W + sk.w * W * 0.5, H - sk.h * H - 3, 2, 2);
       }
     }
     for (i = 0; i < S.embers.length; i++) {
@@ -2989,29 +3026,32 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       ctx.fillRect(em.x, em.y, 1.5, 2.5);
     }
     ctx.globalAlpha = 1;
-    ctx.strokeStyle = hexA(sec.grid.replace("#", "#"), 1);
-    ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = "#1c2329";
+    ctx.globalAlpha = 0.9;
     ctx.lineWidth = 1;
+    var hr = 24, hw = hr * 1.7320508, row = 0;
     ctx.beginPath();
-    for (var gx = 0; gx < W; gx += 26) {
-      ctx.moveTo(gx, 0);
-      ctx.lineTo(gx, H);
-    }
-    for (var gy = 0; gy < H; gy += 26) {
-      ctx.moveTo(0, gy);
-      ctx.lineTo(W, gy);
+    for (var hy = -hr; hy < H + hr * 2; hy += hr * 1.5, row++) {
+      for (var hx = (row % 2 ? hw / 2 : 0) - hw; hx < W + hw; hx += hw) {
+        ctx.moveTo(hx + hw / 2, hy - hr / 2);
+        ctx.lineTo(hx + hw / 2, hy + hr / 2);
+        ctx.lineTo(hx, hy + hr);
+        ctx.moveTo(hx + hw / 2, hy + hr / 2);
+        ctx.lineTo(hx + hw, hy + hr);
+      }
     }
     ctx.stroke();
     ctx.globalAlpha = 1;
     ctx.save();
     if (S.shake > 0) ctx.translate((Math.random() - 0.5) * S.shake, (Math.random() - 0.5) * S.shake);
     var ghostBoard = selBoard();
-    ctx.globalAlpha = ghostBoard ? 0.55 : 0.16;
-    ctx.strokeStyle = "#8fa0a6";
-    ctx.lineWidth = 1;
+    ctx.globalAlpha = ghostBoard ? 0.85 : 0.45;
+    ctx.strokeStyle = "#66757d";
+    ctx.lineWidth = 1.5;
     for (i = 0; i < S.spots.length; i++) {
       var sp = S.spots[i];
-      ctx.strokeRect(sp.px - 4, sp.py - 4, 8, 8);
+      ngon(sp.px, sp.py, 9, 8, Math.PI / 8);
+      ctx.stroke();
     }
     ctx.globalAlpha = 1;
     drawPath(sec);
@@ -3185,32 +3225,32 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   function drawPath(sec) {
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
-    ctx.strokeStyle = "#0d1012";
-    ctx.lineWidth = 27;
+    ctx.strokeStyle = hexA("#ffa02f", 0.55);
+    ctx.lineWidth = 16;
     strokeEdges();
-    ctx.strokeStyle = sec.path;
-    ctx.lineWidth = 21;
+    ctx.strokeStyle = "#14181d";
+    ctx.lineWidth = 14;
     strokeEdges();
-    ctx.strokeStyle = "#0d1012";
-    ctx.lineWidth = 15;
-    strokeEdges();
-    ctx.strokeStyle = hexA(sec.path, 1);
-    ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = hexA(sec.path, 0.22);
     ctx.lineWidth = 11;
     strokeEdges();
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = "#c8bfa8";
-    ctx.globalAlpha = 0.5;
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([4, 9]);
+    ctx.strokeStyle = hexA("#ffa02f", 0.4);
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 9]);
     ctx.lineDashOffset = -S.time * 26;
     strokeEdges();
     ctx.setLineDash([]);
     ctx.lineDashOffset = 0;
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = "#0d1012";
     for (const n of S.nodes) {
-      if (n.kind === "junc") ctx.fillRect(n.px - 3.5, n.py - 3.5, 7, 7);
+      if (n.kind !== "junc") continue;
+      ctx.fillStyle = "#10151a";
+      ctx.beginPath();
+      ctx.arc(n.px, n.py, 5, 0, 7);
+      ctx.fill();
+      ctx.fillStyle = "#ffd8a0";
+      ctx.beginPath();
+      ctx.arc(n.px, n.py, 2.2, 0, 7);
+      ctx.fill();
     }
   }
   function strokeEdges() {
@@ -3264,14 +3304,15 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     ctx.fillStyle = "#141c20";
     ctx.strokeStyle = "#3ec9b0";
     ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(0, 0, 13, 0, 7);
+    ctx.shadowColor = hexA("#3ec9b0", 0.5 + pulse * 0.3);
+    ctx.shadowBlur = 10 + pulse * 6;
+    ngon(0, 0, 14, 6, -Math.PI / 2);
     ctx.fill();
     ctx.stroke();
+    ctx.shadowBlur = 0;
     ctx.strokeStyle = hexA("#3ec9b0", 0.25 + pulse * 0.35);
     ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(0, 0, 17 + pulse * 2.5, 0, 7);
+    ngon(0, 0, 18 + pulse * 2.5, 6, -Math.PI / 2);
     ctx.stroke();
     var frac = Math.max(0, S.core / S.coreMax);
     ctx.strokeStyle = frac > 0.4 ? "#3ec9b0" : "#e5484d";
@@ -3283,6 +3324,9 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     ctx.font = "bold 8px ui-monospace,Menlo,monospace";
     ctx.textAlign = "center";
     ctx.fillText(S.core + "", 0, 3);
+    ctx.fillStyle = hexA("#3ec9b0", 0.8);
+    ctx.font = "6px ui-monospace,Menlo,monospace";
+    ctx.fillText("CORE", 0, 26);
     ctx.textAlign = "left";
     ctx.restore();
   }
@@ -3299,79 +3343,109 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       ctx.fill();
       ctx.globalAlpha = 1;
     }
+    ctx.fillStyle = "#1a2226";
+    ctx.strokeStyle = sel ? "#3ec9b0" : "#3a4a52";
+    ctx.lineWidth = 1.5;
+    ngon(0, 0, 11, 8, Math.PI / 8);
+    ctx.fill();
+    ctx.stroke();
     if (CARDS[t.i].id === "foundry") {
       var glow = (Math.sin(S.time * 5 + t.x) + 1) / 2;
-      ctx.fillStyle = "#1d262b";
-      ctx.strokeStyle = sel ? "#3ec9b0" : "#3a4a52";
-      ctx.lineWidth = 1.5;
-      ctx.fillRect(-9, -8, 18, 16);
-      ctx.strokeRect(-9, -8, 18, 16);
-      ctx.fillStyle = hexA("#e0854e", 0.5 + glow * 0.5);
-      ctx.fillRect(-4, -3, 8, 8);
+      ctx.fillStyle = "#232d33";
+      ctx.strokeStyle = "#3a4a52";
+      ctx.lineWidth = 1;
+      ctx.fillRect(-7, -7, 14, 14);
+      ctx.strokeRect(-7, -7, 14, 14);
+      ctx.fillStyle = hexA("#e0854e", 0.45 + glow * 0.55);
+      ctx.fillRect(-3.5, -3.5, 7, 7);
+      ctx.fillStyle = hexA("#ffd8a0", 0.3 + glow * 0.5);
+      ctx.fillRect(-1.5, -1.5, 3, 3);
       ctx.fillStyle = "#3a4a52";
-      ctx.fillRect(3, -12, 4, 5);
-      ctx.fillStyle = "#e0854e";
-      ctx.fillRect(-9, 8, 18, 2);
-    } else if (c.id === "aegis") {
-      ctx.fillStyle = "#1d262b";
-      ctx.strokeStyle = sel ? "#3ec9b0" : "#3a4a52";
-      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(0, -9);
-      ctx.lineTo(8, -4);
-      ctx.lineTo(8, 5);
-      ctx.lineTo(0, 10);
-      ctx.lineTo(-8, 5);
-      ctx.lineTo(-8, -4);
-      ctx.closePath();
+      ctx.arc(5, -5, 2.5, 0, 7);
+      ctx.fill();
+      ctx.fillStyle = hexA("#e0854e", 0.4 + glow * 0.6);
+      ctx.beginPath();
+      ctx.arc(5, -5, 1, 0, 7);
+      ctx.fill();
+    } else if (c.id === "aegis") {
+      ctx.fillStyle = "#232d33";
+      ctx.strokeStyle = "#3a4a52";
+      ctx.lineWidth = 1;
+      ngon(0, 0, 8, 6, -Math.PI / 2);
       ctx.fill();
       ctx.stroke();
       ctx.save();
       ctx.rotate(S.time * 1.5);
-      ctx.fillStyle = "#3ec9b0";
-      ctx.fillRect(-3.5, -3.5, 7, 7);
+      ctx.strokeStyle = "#3ec9b0";
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(-4, -4, 8, 8);
+      ctx.fillStyle = hexA("#3ec9b0", 0.6);
+      ctx.fillRect(-1.5, -1.5, 3, 3);
       ctx.restore();
       var pu3 = (Math.sin(S.time * 4) + 1) / 2;
       ctx.strokeStyle = hexA("#3ec9b0", 0.25 + 0.35 * pu3);
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.arc(0, 0, 11 + pu3 * 3, 0, 7);
+      ctx.arc(0, 0, 12 + pu3 * 3, 0, 7);
       ctx.stroke();
-    } else {
-      ctx.fillStyle = "#1d262b";
-      ctx.strokeStyle = sel ? "#3ec9b0" : "#3a4a52";
-      ctx.lineWidth = 1.5;
+    } else if (c.id === "arc") {
+      ctx.strokeStyle = "#3a4a52";
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(-9, -9);
-      ctx.lineTo(9, -9);
-      ctx.lineTo(9, 6);
-      ctx.lineTo(5, 9);
-      ctx.lineTo(-5, 9);
-      ctx.lineTo(-9, 6);
-      ctx.closePath();
-      ctx.fill();
+      ctx.arc(0, 0, 7.5, 0, 7);
       ctx.stroke();
+      ctx.strokeStyle = c.col;
+      ctx.beginPath();
+      ctx.arc(0, 0, 5, 0, 7);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(0, 0, 2.5, 0, 7);
+      ctx.stroke();
+      var sa = S.time * 4 + t.x;
+      ctx.fillStyle = hexA("#ffd23f", 0.5 + 0.5 * ((Math.sin(S.time * 9 + t.y) + 1) / 2));
+      ctx.fillRect(Math.cos(sa) * 6.5 - 1, Math.sin(sa) * 6.5 - 1, 2, 2);
+      if (t.flash > 0) {
+        ctx.strokeStyle = hexA("#fff", Math.min(1, t.flash * 12));
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(0, 0, 9, 0, 7);
+        ctx.stroke();
+      }
+    } else {
       ctx.rotate(t.ang);
-      ctx.fillStyle = "#2c3940";
-      ctx.fillRect(-4, -4, 8, 8);
-      ctx.fillStyle = c.col;
-      if (c.id === "arc") {
-        ctx.fillRect(2, -1.5, 10, 3);
-        ctx.fillRect(9, -3.5, 2, 7);
-      } else if (c.id === "harvest") {
+      if (c.id === "harvest") {
+        ctx.fillStyle = "#2c3940";
+        ctx.beginPath();
+        ctx.arc(0, 0, 4.5, 0, 7);
+        ctx.fill();
         ctx.strokeStyle = c.col;
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(8, 0, 4, -1.2, 1.2);
+        ctx.arc(6.5, 0, 4.5, -1.15, 1.15);
         ctx.stroke();
-        ctx.fillRect(1, -1.5, 7, 3);
+        ctx.fillStyle = c.col;
+        ctx.fillRect(0, -1.2, 5, 2.4);
       } else if (c.id === "rail") {
-        ctx.fillRect(1, -1.2, 15, 2.4);
-        ctx.fillRect(12, -2.6, 2, 5.2);
+        ctx.fillStyle = "#2c3940";
+        ctx.fillRect(-6, -4.5, 10, 9);
+        ctx.fillStyle = c.col;
+        ctx.fillRect(0, -3.2, 15, 1.6);
+        ctx.fillRect(0, 1.6, 15, 1.6);
         ctx.fillStyle = "#8a6a20";
-        ctx.fillRect(-6, -3, 5, 6);
+        ctx.fillRect(-5, -2.5, 4, 5);
       } else {
-        ctx.fillRect(2, -1, 11, 2);
+        ctx.fillStyle = "#2c3940";
+        ctx.beginPath();
+        ctx.arc(0, 0, 4.5, 0, 7);
+        ctx.fill();
+        ctx.strokeStyle = c.col;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(0, 0, 4.5, 0, 7);
+        ctx.stroke();
+        ctx.fillStyle = c.col;
+        ctx.fillRect(2, -1, 12, 2);
       }
       if (t.flash > 0) {
         ctx.fillStyle = "#fff";
@@ -3465,25 +3539,53 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       ctx.fill();
     } else if (e.type === "titan") {
       ctx.fillRect(-e.size, -e.size, e.size * 2, e.size * 2);
-      ctx.strokeStyle = "#7c282c";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(-e.size + 2, -e.size + 2, e.size * 2 - 4, e.size * 2 - 4);
+      ctx.strokeStyle = "#39454d";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(-e.size + 2.5, -e.size + 2.5, e.size * 2 - 5, e.size * 2 - 5);
+      ctx.fillStyle = "#7c282c";
+      var cp = e.size * 0.5;
+      ctx.fillRect(-e.size, -e.size, cp, cp);
+      ctx.fillRect(e.size - cp, -e.size, cp, cp);
+      ctx.fillRect(-e.size, e.size - cp, cp, cp);
+      ctx.fillRect(e.size - cp, e.size - cp, cp, cp);
       ctx.fillStyle = "#ffd23f";
       ctx.fillRect(-2, -2, 4, 4);
     } else if (e.type === "dread") {
       ctx.fillRect(-e.size, -e.size, e.size * 2, e.size * 2);
+      ctx.fillStyle = "#4d1418";
+      for (var sk = 0; sk < 8; sk++) {
+        var ska = sk * Math.PI / 4 + Math.PI / 8;
+        var skx = Math.cos(ska), sky = Math.sin(ska);
+        ctx.beginPath();
+        ctx.moveTo(skx * e.size, sky * e.size);
+        ctx.lineTo(skx * (e.size + 4) - sky * 2, sky * (e.size + 4) + skx * 2);
+        ctx.lineTo(skx * (e.size + 4) + sky * 2, sky * (e.size + 4) - skx * 2);
+        ctx.closePath();
+        ctx.fill();
+      }
       ctx.strokeStyle = "#4d1418";
       ctx.lineWidth = 2.5;
       ctx.strokeRect(-e.size + 2, -e.size + 2, e.size * 2 - 4, e.size * 2 - 4);
-      ctx.strokeRect(-e.size + 5, -e.size + 5, e.size * 2 - 10, e.size * 2 - 10);
-      ctx.fillStyle = hexA("#ffd23f", 0.55 + Math.sin(S.time * 5) * 0.4);
-      ctx.fillRect(-2.5, -2.5, 5, 5);
+      var dp = 0.55 + Math.sin(S.time * 5) * 0.4;
+      ctx.fillStyle = hexA("#e5484d", dp);
+      ctx.beginPath();
+      ctx.arc(0, 0, 4, 0, 7);
+      ctx.fill();
+      ctx.fillStyle = hexA("#ffd23f", dp);
+      ctx.fillRect(-1.5, -1.5, 3, 3);
     } else if (e.type === "carrier") {
-      ctx.fillRect(-e.size, -e.size * 0.6, e.size * 2, e.size * 1.2);
-      ctx.fillStyle = "#6e5a44";
-      ctx.fillRect(-e.size + 2, -e.size * 0.6 - 3, 5, 3);
-      ctx.fillRect(2, -e.size * 0.6 - 3, 5, 3);
-      ctx.fillRect(-4, e.size * 0.6, 8, 3);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, e.size * 1.1, e.size * 0.7, 0, 0, 7);
+      ctx.fill();
+      ctx.strokeStyle = "#6e5a44";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, e.size * 1.1 - 2, e.size * 0.7 - 2, 0, 0, 7);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-e.size * 1.1 + 2, 0);
+      ctx.lineTo(e.size * 1.1 - 2, 0);
+      ctx.stroke();
     } else if (e.type === "gilded") {
       var gp = (Math.sin(S.time * 7 + e.d * 0.1) + 1) / 2;
       ctx.save();
@@ -3496,22 +3598,34 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       ctx.arc(0, 0, e.size + 2 + gp * 2.5, 0, 7);
       ctx.stroke();
     } else if (e.type === "phase") {
-      ctx.fillRect(-e.size, -e.size * 0.6, e.size * 2, e.size * 1.2);
+      ctx.globalAlpha = 0.4;
+      ctx.beginPath();
+      ctx.arc(-e.size * 0.7, 0, e.size * 0.85, 0, 7);
+      ctx.fill();
+      ctx.globalAlpha = 0.85;
+      ctx.beginPath();
+      ctx.arc(0, 0, e.size * 0.85, 0, 7);
+      ctx.fill();
+      ctx.globalAlpha = 1;
       ctx.fillStyle = "#141a24";
-      ctx.fillRect(-e.size + 2, -e.size * 0.6 + 2, e.size * 2 - 4, 2.5);
+      ctx.beginPath();
+      ctx.arc(0, 0, e.size * 0.3, 0, 7);
+      ctx.fill();
       if ((e.ph || 0) > 1.9) {
         ctx.strokeStyle = hexA("#cfe0f5", ((e.ph || 0) - 1.9) * 1.4);
         ctx.lineWidth = 1;
-        ctx.strokeRect(-e.size - 2.5, -e.size * 0.6 - 2.5, e.size * 2 + 5, e.size * 1.2 + 5);
+        ctx.beginPath();
+        ctx.arc(0, 0, e.size + 2.5, 0, 7);
+        ctx.stroke();
       }
     } else if (e.type === "regen") {
       ctx.beginPath();
       ctx.arc(0, 0, e.size, 0, 7);
       ctx.fill();
       ctx.fillStyle = hexA("#b8f0c4", 0.5 + Math.sin(S.time * 6) * 0.4);
-      ctx.beginPath();
-      ctx.arc(0, 0, e.size * 0.45, 0, 7);
-      ctx.fill();
+      var cw = Math.max(1.6, e.size * 0.28), cl = e.size * 0.62;
+      ctx.fillRect(-cw / 2, -cl, cw, cl * 2);
+      ctx.fillRect(-cl, -cw / 2, cl * 2, cw);
     } else {
       ctx.fillRect(-e.size, -e.size * 0.75, e.size * 2, e.size * 1.5);
       ctx.fillStyle = "#8a4a30";

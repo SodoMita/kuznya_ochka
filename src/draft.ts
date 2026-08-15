@@ -2,7 +2,7 @@
    Offers mix NEW CARDS for the circuit deck (the StS card reward),
    blueprint rank-ups, and relics. */
 import { S } from './state';
-import { CARDS, DECK_CARDS, RELICS, KIND_LABEL } from './data';
+import { CARDS, DECK_CARDS, RELICS, KIND_LABEL, KIND_COL, GLYPHS } from './data';
 import { $ } from './utils';
 import { openModal, closeModal } from './modals';
 import { toast, hud } from './hud';
@@ -50,27 +50,39 @@ export function openDraft(): void {
   var h = '';
   for (var i = 0; i < S.draftOffers.length; i++) {
     var o = S.draftOffers[i], name, desc, pick = '▸ INSTALL', rn = ['COMMON', 'ADVANCED', 'PROTOTYPE'][o.rar];
+    var col = '', ribbon = '', glyph = '', tags = '';
     if (o.kind === 'card') {
       var d = defById(o.id);
       var flags: string[] = [];
-      if (d.exhaust) flags.push('EXHAUST');
-      if (d.ethereal) flags.push('ETHEREAL');
-      if (d.retain) flags.push('RETAIN');
-      if (d.innate) flags.push('INNATE');
-      if (d.consume) flags.push('CONSUME');
+      if (d.innate) flags.push('<em class="tag-inn">INNATE</em>');
+      if (d.retain) flags.push('<em class="tag-ret">RETAIN</em>');
+      if (d.ethereal) flags.push('<em class="tag-eth">ETHEREAL</em>');
+      if (d.exhaust) flags.push('<em class="tag-ex">EXHAUST</em>');
+      if (d.consume) flags.push('<em class="tag-con">CONSUME</em>');
+      col = d.kind === 'board' ? CARDS[d.tower!].col : KIND_COL[d.kind];
+      ribbon = '<span class="okind">' + KIND_LABEL[d.kind] + '</span>';
+      glyph = d.kind === 'board' ? GLYPHS[CARDS[d.tower!].id] : (GLYPHS['k_' + d.kind] || '');
+      tags = flags.length ? '<div class="tags">' + flags.join('') + '</div>' : '';
       name = d.name;
-      desc = KIND_LABEL[d.kind] + (flags.length ? ' · ' + flags.join(' · ') : '') + ' — ' + d.desc + '. Added to your circuit deck.';
+      desc = d.desc + '. Added to your circuit deck.';
       pick = '▸ ADD TO DECK';
     } else if (o.kind === 'rank') {
       var c = CARDS.filter(function (x) { return x.id === o.id; })[0];
+      col = c.col;
+      ribbon = '<span class="okind">BLUEPRINT UPGRADE</span>';
+      glyph = GLYPHS[c.id];
       name = c.name + ' Mk.' + (S.ranks[o.id] + 2);
       desc = 'Permanent +5% damage & output for every ' + c.name + ' unit, current and future.';
     } else {
       var r = RELICS.filter(function (x) { return x.id === o.id; })[0];
+      col = '#ffa02f';
+      ribbon = '<span class="okind">RELIC</span>';
       name = r.name;
       desc = r.desc;
     }
-    h += '<div class="offer" data-off="' + i + '"><span class="rar r' + o.rar + '">' + rn + '</span><b>' + name + '</b><p>' + desc + '</p><div class="pick">' + pick + '</div></div>';
+    h += '<div class="offer" data-off="' + i + '" style="color:' + col + '">' + ribbon +
+      '<span class="rar r' + o.rar + '">' + rn + '</span><b>' + (glyph || '') + name + '</b><p>' + desc + '</p>' + tags +
+      '<div class="pick">' + pick + '</div></div>';
   }
   $('offers').innerHTML = h;
   var nodes = $('offers').children;
