@@ -7,6 +7,9 @@ You fight with a real **deck of cards**, drawn Slay-the-Spire style: circuit **b
 to print towers, **subroutines** are one-shot skills, **firmware** powers install sector-wide mods and
 exhaust. Each fabrication window is a turn — the hand is discarded (except RETAIN cards) and redrawn;
 the discard pile reshuffles into the draw pile when it runs dry. Salvage caches add new cards to the deck.
+Hand-control subroutines can actively discard and redraw cards, reclaim cards from discard, or recycle the
+whole pile. Risky black-box cards can also add persistent, unplayable **corruption/curse** cards; CLEAN ROOM
+is the deck's dedicated curse-removal tool.
 
 ## Source layout
 
@@ -18,7 +21,7 @@ The game logic is written in **TypeScript**, split by concern under `src/`:
 | `types.ts` | shared data structures |
 | `utils.ts` | DOM `$`, PRNG, math, formatting |
 | `data.ts` | tower blueprints, the circuit-deck card pool, relics, enemy archetypes, sector templates, speeds |
-| `deck.ts` | **Slay-the-Spire style card engine**: draw/hand/discard/exhaust piles, keywords (exhaust, ethereal, retain, innate, consume), card play resolution |
+| `deck.ts` | **Slay-the-Spire style card engine**: draw/hand/discard/exhaust piles, hand recycling, curses, keywords (exhaust, ethereal, retain, innate, consume), card play resolution |
 | `state.ts` | central mutable game state `S` |
 | `view.ts` | canvas bindings + viewport bookkeeping |
 | `audio.ts` | Web Audio synth (zero external assets) |

@@ -129,6 +129,7 @@ export function endWave(): void {
   /* new turn: ethereal cards burn, non-retain hand discards, redraw */
   var eth = startTurn();
   if (eth) float(S.nodes[S.coreIdx].px, S.nodes[S.coreIdx].py - 26, eth + ' ETHEREAL CARD' + (eth > 1 ? 'S' : '') + ' EXHAUSTED', '#b18cd9');
+  if (S.core <= 0) { S.core = 0; S.over = true; hud(true); showEnd(false); return; }
   if (S.relics.repair) S.core = Math.min(S.coreMax, S.core + 1);
   if (S.wave % 12 === 0 && !S.cleared[S.sector]) {
     S.cleared[S.sector] = true;

@@ -15,6 +15,7 @@ export function rollOffers(): DraftOffer[] {
   /* new copies of cards for the deck — the core StS reward */
   for (i = 0; i < DECK_CARDS.length; i++) {
     var dc = DECK_CARDS[i];
+    if (dc.kind === 'curse') continue;       /* curses come from risky card effects, never rewards */
     var owned = S.deck.filter(function (c) { return c.id === dc.id; }).length;
     if (owned < 4) {                       /* soft cap keeps the pool varied */
       pool.push({ kind: 'card', id: dc.id, rar: dc.rar });

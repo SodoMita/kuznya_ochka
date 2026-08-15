@@ -101,7 +101,7 @@ function handSignature(): string {
   }).join('|') + '·' + S.hand.length + '·' + S.selCard;
 }
 
-const KIND_COL: Record<string, string> = { board: '#9fb6c9', skill: '#3ec9b0', power: '#ffd23f' };
+const KIND_COL: Record<string, string> = { board: '#9fb6c9', skill: '#3ec9b0', power: '#ffd23f', curse: '#b18cd9' };
 
 const TAG_TIP: Record<string, string> = {
   INNATE: 'guaranteed in the sector\u2019s opening hand',
@@ -157,7 +157,7 @@ export function renderCards(): void {
       '<p>' + d.desc + '</p>' +
       '<div class="tags">' + tagStr(d) + '</div>' +
       '<div class="cst">' + costHtml(d.cost) + '</div>' + rankTag +
-      '<div class="play">' + (d.kind === 'board' ? '▸ TAP FIELD TO PRINT' : '▸ TAP AGAIN TO RUN') + '</div>' +
+      '<div class="play">' + (d.kind === 'board' ? '▸ TAP FIELD TO PRINT' : d.kind === 'curse' ? 'UNPLAYABLE' : '▸ TAP AGAIN TO RUN') + '</div>' +
       '</div>';
   }
   if (!S.hand.length) {

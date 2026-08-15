@@ -93,11 +93,24 @@ export function drawCards(n: number): number {
     still in hand exhaust, the rest discard except RETAIN cards, then
     draw back up to hand size. Returns how many ethereal cards burned. */
 export function startTurn(): number {
-  var eth = 0;
+  var eth = 0, cp = corePt();
   for (var i = S.hand.length - 1; i >= 0; i--) {
     var d = defOf(S.hand[i]);
+    /* Curses punish only if they survive in hand until the natural redraw.
+       Deliberately discarding one with a subroutine avoids its trigger. */
+    if (d.id === 'curse_rust') {
+      S.res.fe = Math.max(0, S.res.fe - 8);
+      float(cp.x, cp.y - 18, 'RUST DEBT −8Fe', '#e5484d');
+    } else if (d.id === 'curse_breach') {
+      S.core = Math.max(0, S.core - 1);
+      float(cp.x, cp.y - 18, 'HULL BREACH −1 CORE', '#e5484d');
+    }
     if (d.ethereal) { S.exhaustPile.push(S.hand.splice(i, 1)[0]); eth++; }
     else if (!d.retain) S.discardPile.push(S.hand.splice(i, 1)[0]);
+  }
+  if (S.powers.power_broker) {
+    var stipend = 12 * S.powers.power_broker;
+    gainRes({ fe: stipend, cu: 0, si: 0 }, cp.x, cp.y - 8);
   }
   drawCards(handSize() - S.hand.length);
   S.selCard = null;
@@ -130,12 +143,17 @@ export function selBoard(): Card | null {
 }
 
 export function canPlayDef(d: DeckCardDef): { ok: boolean; why?: string } {
+  if (d.kind === 'curse') return { ok: false, why: 'CURSES CANNOT BE PLAYED — DISCARD OR PURGE IT' };
   if (!canAfford(d.cost)) return { ok: false, why: 'INSUFFICIENT MATTER' };
   if (d.kind === 'board') {
     var c = CARDS[d.tower!];
     if (usedGrid() + c.draw > gridCap()) return { ok: false, why: 'GRID CAPACITY EXCEEDED' };
   }
   if (d.id === 'skill_weld' && S.core >= S.coreMax) return { ok: false, why: 'CORE AT FULL INTEGRITY' };
+  if (d.id === 'skill_recycle' && !S.discardPile.length) return { ok: false, why: 'DISCARD PILE EMPTY' };
+  if (d.id === 'skill_purge' && !S.hand.some(function (ci) { return defOf(ci).kind === 'curse'; })) {
+    return { ok: false, why: 'NO CURSE IN HAND' };
+  }
   return { ok: true };
 }
 
@@ -237,17 +255,98 @@ export function playCard(handIdx: number): { ok: boolean; msg: string } {
       Snd.play('weld');
       msg += ' — +5 MAX CORE (CONSUMED FROM DECK)';
       break;
+    case 'skill_filter': {
+      var filtered = 0;
+      for (i = S.hand.length - 1; i >= 0 && filtered < 3; i--) {
+        if (S.hand[i] === ci) continue;
+        S.discardPile.push(S.hand.splice(i, 1)[0]);
+        filtered++;
+      }
+      var replaced = drawCards(filtered);
+      msg += ' — DISCARDED ' + filtered + ' · DREW ' + replaced;
+      break;
+    }
+    case 'skill_smelter': {
+      var melted = 0;
+      for (i = S.hand.length - 1; i >= 0; i--) {
+        if (S.hand[i] === ci) continue;
+        S.discardPile.push(S.hand.splice(i, 1)[0]);
+        melted++;
+      }
+      if (melted) gainRes({ fe: melted * 8, cu: 0, si: 0 }, cp.x, cp.y - 10);
+      msg += ' — MELTED ' + melted + ' CARD' + (melted === 1 ? '' : 'S') + ' FOR ' + (melted * 8) + 'Fe';
+      break;
+    }
+    case 'skill_recycle': {
+      var reclaimed = S.discardPile.pop();
+      if (reclaimed) S.hand.push(reclaimed);
+      msg += reclaimed ? ' — ' + defOf(reclaimed).name + ' RETURNED TO HAND' : ' — DISCARD PILE EMPTY';
+      break;
+    }
+    case 'skill_coldboot': {
+      var recycled = S.discardPile.length;
+      S.drawPile = shuffleInPlace(S.drawPile.concat(S.discardPile));
+      S.discardPile = [];
+      var bootDraw = drawCards(2);
+      msg += ' — RECYCLED ' + recycled + ' · DREW ' + bootDraw;
+      break;
+    }
+    case 'skill_purge': {
+      var cursed: CardInst[] = [];
+      S.hand = S.hand.filter(function (card) {
+        if (defOf(card).kind === 'curse') { cursed.push(card); return false; }
+        return true;
+      });
+      var curseUids: Record<number, boolean> = {};
+      cursed.forEach(function (card) { curseUids[card.uid] = true; });
+      S.deck = S.deck.filter(function (card) { return !curseUids[card.uid]; });
+      var purgeDraw = drawCards(cursed.length);
+      msg += ' — PURGED ' + cursed.length + ' CURSE' + (cursed.length === 1 ? '' : 'S') + ' · DREW ' + purgeDraw;
+      break;
+    }
+    case 'skill_corrupt': {
+      gainRes({ fe: 70, cu: 28, si: 12 }, cp.x, cp.y - 10);
+      var curses = ['curse_jam', 'curse_rust', 'curse_breach'];
+      var curse = addCardToDeck(curses[Math.floor(Math.random() * curses.length)]);
+      msg += ' — CACHE OPENED · ' + defOf(curse).name + ' ADDED TO DECK';
+      break;
+    }
+    case 'skill_capacitor':
+      S.gridMax += 3;
+      S.rings.push({ x: cp.x, y: cp.y, r: 5, max: 44, col: '#6fd7e8' });
+      msg += ' — +3 GRID THIS SECTOR';
+      break;
+    case 'skill_barrage': {
+      var shredded = 0;
+      for (i = 0; i < S.enemies.length; i++) {
+        var target = S.enemies[i];
+        if (target.dead) continue;
+        target.hp -= 35;
+        target.flash = .08;
+        shredded++;
+        if (target.hp <= 0) killEnemy(target, false);
+      }
+      S.shake = Math.max(S.shake, 5);
+      S.rings.push({ x: cp.x, y: cp.y, r: 8, max: 82, col: '#e0854e' });
+      msg += ' — HIT ' + shredded + ' HOSTILES';
+      break;
+    }
     default:
       break;
   }
-  resolveAfterPlay(handIdx);
+  /* Hand-control cards may have shifted their own index. Resolve the physical
+     card instance, never whichever card happens to occupy the old slot. */
+  var playedIdx = S.hand.indexOf(ci);
+  if (playedIdx >= 0) resolveAfterPlay(playedIdx);
   if (d.id !== 'skill_weld' && d.id !== 'skill_graft') Snd.play('ui');
   return { ok: true, msg: msg };
 }
 
 /** Firmware multipliers consulted by the sim. */
 export function powerDmgMult(): number {
-  return 1 + .1 * (S.powers.power_lathe || 0);
+  var mult = 1 + .1 * (S.powers.power_lathe || 0);
+  if (S.core < S.coreMax * .5) mult += .15 * (S.powers.power_armature || 0);
+  return mult;
 }
 
 export function powerFoundryMult(): number {
