@@ -65,6 +65,8 @@ npm run gencheck    # generator quality check: 400 seeds, asserts crossings/loop
 
 ## Feature set
 
+A 43-card pool spanning boards, subroutines, firmware and corruptions, with discard/recycle,
+exhaust recovery, permanent cloning, curse trade-offs and multiple deck-cleaning strategies.
 Six blueprints (NEEDLE · ARC COIL · HARVESTER · FOUNDRY · RAIL · AEGIS), nine hostile
 classes (scrap · plated · swarm · regen · gilded · phase · titan · carrier · dread), eighteen
 relics, two field abilities (**SURGE** +50% rate for 8s, **WELD** +3 core), weather events

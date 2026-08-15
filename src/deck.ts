@@ -98,19 +98,25 @@ export function startTurn(): number {
     var d = defOf(S.hand[i]);
     /* Curses punish only if they survive in hand until the natural redraw.
        Deliberately discarding one with a subroutine avoids its trigger. */
-    if (d.id === 'curse_rust') {
+    var scrubbed = d.kind === 'curse' && !!S.powers.power_scrubber;
+    if (!scrubbed && d.id === 'curse_rust') {
       S.res.fe = Math.max(0, S.res.fe - 8);
       float(cp.x, cp.y - 18, 'RUST DEBT −8Fe', '#e5484d');
-    } else if (d.id === 'curse_breach') {
+    } else if (!scrubbed && d.id === 'curse_breach') {
       S.core = Math.max(0, S.core - 1);
       float(cp.x, cp.y - 18, 'HULL BREACH −1 CORE', '#e5484d');
     }
-    if (d.ethereal) { S.exhaustPile.push(S.hand.splice(i, 1)[0]); eth++; }
+    if (scrubbed || d.ethereal) { S.exhaustPile.push(S.hand.splice(i, 1)[0]); if (d.ethereal) eth++; }
     else if (!d.retain) S.discardPile.push(S.hand.splice(i, 1)[0]);
   }
   if (S.powers.power_broker) {
     var stipend = 12 * S.powers.power_broker;
     gainRes({ fe: stipend, cu: 0, si: 0 }, cp.x, cp.y - 8);
+  }
+  if (S.powers.power_failsafe && S.core < S.coreMax) {
+    var repair = 2 * S.powers.power_failsafe;
+    S.core = Math.min(S.coreMax, S.core + repair);
+    float(cp.x, cp.y - 24, 'FAILSAFE +' + repair + ' CORE', '#3ec9b0');
   }
   drawCards(handSize() - S.hand.length);
   S.selCard = null;
@@ -150,8 +156,10 @@ export function canPlayDef(d: DeckCardDef): { ok: boolean; why?: string } {
     if (usedGrid() + c.draw > gridCap()) return { ok: false, why: 'GRID CAPACITY EXCEEDED' };
   }
   if (d.id === 'skill_weld' && S.core >= S.coreMax) return { ok: false, why: 'CORE AT FULL INTEGRITY' };
-  if (d.id === 'skill_recycle' && !S.discardPile.length) return { ok: false, why: 'DISCARD PILE EMPTY' };
-  if (d.id === 'skill_purge' && !S.hand.some(function (ci) { return defOf(ci).kind === 'curse'; })) {
+  if ((d.id === 'skill_recycle' || d.id === 'skill_clone') && !S.discardPile.length) return { ok: false, why: 'DISCARD PILE EMPTY' };
+  if (d.id === 'skill_defrag' && !S.exhaustPile.length) return { ok: false, why: 'EXHAUST PILE EMPTY' };
+  if ((d.id === 'skill_purge' || d.id === 'skill_quarantine') &&
+      !S.hand.some(function (ci) { return defOf(ci).kind === 'curse'; })) {
     return { ok: false, why: 'NO CURSE IN HAND' };
   }
   return { ok: true };
@@ -331,6 +339,78 @@ export function playCard(handIdx: number): { ok: boolean; msg: string } {
       msg += ' — HIT ' + shredded + ' HOSTILES';
       break;
     }
+    case 'skill_mulligan': {
+      var sorted = 0;
+      for (i = S.hand.length - 1; i >= 0; i--) {
+        if (S.hand[i] === ci) continue;
+        S.discardPile.push(S.hand.splice(i, 1)[0]);
+        sorted++;
+      }
+      var sortDraw = drawCards(Math.min(5, sorted));
+      msg += ' — DISCARDED ' + sorted + ' · DREW ' + sortDraw;
+      break;
+    }
+    case 'skill_defrag': {
+      var restored = S.exhaustPile.pop();
+      if (restored) S.hand.push(restored);
+      msg += restored ? ' — RESTORED ' + defOf(restored).name : ' — EXHAUST PILE EMPTY';
+      break;
+    }
+    case 'skill_clone': {
+      var source = S.discardPile[S.discardPile.length - 1];
+      if (source) {
+        var clone = addCardToDeck(source.id);
+        S.discardPile.pop();
+        S.hand.push(clone);
+        msg += ' — PERMANENT ' + defOf(clone).name + ' COPY FABRICATED';
+      }
+      break;
+    }
+    case 'skill_triage': {
+      var beforeCore = S.core;
+      S.core = Math.min(S.coreMax, S.core + 2);
+      var triageDraw = drawCards(1);
+      float(cp.x, cp.y - 16, '+' + (S.core - beforeCore) + ' CORE', '#3ec9b0');
+      msg += ' — +' + (S.core - beforeCore) + ' CORE · DREW ' + triageDraw;
+      break;
+    }
+    case 'skill_delete': {
+      var strongest = null as typeof S.enemies[number] | null;
+      for (i = 0; i < S.enemies.length; i++) {
+        if (!S.enemies[i].dead && (!strongest || S.enemies[i].hp > strongest.hp)) strongest = S.enemies[i];
+      }
+      if (strongest) {
+        strongest.hp -= 120;
+        strongest.flash = .12;
+        if (strongest.hp <= 0) killEnemy(strongest, false);
+      }
+      S.shake = Math.max(S.shake, 4);
+      msg += strongest ? ' — STRONGEST HOSTILE HIT FOR 120' : ' — NO HOSTILE TARGET';
+      break;
+    }
+    case 'skill_quarantine': {
+      var isolated = 0;
+      for (i = S.hand.length - 1; i >= 0; i--) {
+        if (defOf(S.hand[i]).kind !== 'curse') continue;
+        S.exhaustPile.push(S.hand.splice(i, 1)[0]);
+        isolated++;
+      }
+      if (isolated) gainRes({ fe: isolated * 12, cu: 0, si: 0 }, cp.x, cp.y - 10);
+      msg += ' — QUARANTINED ' + isolated + ' · +' + (isolated * 12) + 'Fe';
+      break;
+    }
+    case 'skill_siphon': {
+      var living = S.enemies.filter(function (enemy) { return !enemy.dead; }).length;
+      var siphoned = Math.min(45, living * 3);
+      if (siphoned) gainRes({ fe: siphoned, cu: 0, si: 0 }, cp.x, cp.y - 10);
+      msg += ' — DRAINED ' + living + ' HOSTILES · +' + siphoned + 'Fe';
+      break;
+    }
+    case 'skill_gridloan':
+      S.gridMax += 7;
+      addCardToDeck('curse_rust');
+      msg += ' — +7 GRID · RUST DEBT ADDED TO DECK';
+      break;
     default:
       break;
   }
@@ -351,4 +431,12 @@ export function powerDmgMult(): number {
 
 export function powerFoundryMult(): number {
   return 1 + .25 * (S.powers.power_reserve || 0);
+}
+
+export function powerRangeMult(): number {
+  return 1 + .15 * (S.powers.power_scope || 0);
+}
+
+export function powerRateMult(): number {
+  return 1 + .12 * (S.powers.power_feedback || 0);
 }
