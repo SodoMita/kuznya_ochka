@@ -34,7 +34,7 @@ export function showEnd(win: boolean): void {
   saveBest();
   $('endTitle').textContent = win ? 'FRONT SECURED' : 'CORE OFFLINE';
   $('endTitle').style.color = win ? '#3ec9b0' : '#e5484d';
-  $('endSub').textContent = win ? 'ALL 12 SECTORS CLEARED' : 'SECTOR ' + pad2(S.sector + 1) + ' LOST';
+  $('endSub').textContent = win ? 'ALL 14 SECTORS CLEARED' : 'SECTOR ' + pad2(S.sector + 1) + ' LOST';
   var relicCount = RELICS.filter(function (r) { return S.relics[r.id]; }).length;
   $('endStats').innerHTML =
     'seed <b style="color:var(--amber)">' + S.seed + '</b> · score <b style="color:var(--gold)">' + fmt(S.score) + '</b> (best ' + fmt(S.best) + ')' +

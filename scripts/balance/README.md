@@ -18,7 +18,7 @@ property, that property is **proved** for every value in the modelled range.
 
 | File | Role |
 | --- | --- |
-| `model.py` | The 10 proof obligations (exact rational arithmetic, no floats) |
+| `model.py` | The 16 proof obligations (exact rational arithmetic, no floats) |
 | `extract_constants.mjs` | Re-reads the balance constants out of `src/*.ts` and fails if they drift from the model |
 | `crosscheck.mjs` | Drives the **built game** in jsdom and asserts observed costs/refunds/grid match the modelled formulas |
 | `run.mjs` | Runs all three in order (`npm run balance`) |
@@ -43,6 +43,12 @@ The three layers answer three different questions:
 | T8 | Tower count is bounded by grid capacity | Unbounded spam |
 | T9 | Early-launch Fe never beats sustained foundry output | Rushing strictly dominating |
 | T10 | Foundry payback is positive and finite at every level | Free money / dead building |
+| T11 | VULCAN sits at 0.80× NEEDLE per matter and PULSE CORE (10 simultaneous targets) ≤ 2.5×, at every level | Dominant / useless blueprint |
+| T12 | Added hostile classes fit a constant multiple of waveHP; ANNIHILATOR regen < on-curve NEEDLE DPS | Out-of-curve spawns, unkillable bosses |
+| T13 | Jammed fire rate is a fixed positive fraction and a veteran JAMMER dies to one jammed on-curve NEEDLE inside a wave window | Unbounded/free penalty, perma-jam walls |
+| T14 | A meteor strike takes 15% of a hostile's hull and stray clips deal 1 integrity | Weather solo-carrying or griefing |
+| T15 | Every new multiplier is capped; salvage stacks to 1.2544; best-case recycle is 80% | Expansion multiplier loops |
+| T16 | ORE VEIN / SALVAGE BOND / OVERCHARGE are one-shot bounded injections | Matter-printing pumps |
 
 ## Exact arithmetic
 

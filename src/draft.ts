@@ -75,7 +75,7 @@ export function openDraft(): void {
       ribbon = '<span class="okind">BLUEPRINT UPGRADE</span>';
       glyph = GLYPHS[c.id];
       name = c.name + ' Mk.' + (S.ranks[o.id] + 2);
-      desc = 'Permanent +5% damage & output for every ' + c.name + ' unit, current and future. Now Mk.' + (S.ranks[o.id] + 1) + '.';
+      desc = 'Permanent +5% damage & output for every ' + c.name + ' unit, current and future. Now Mk.' + (S.ranks[o.id] + 2) + '.';
     } else {
       var r = RELICS.filter(function (x) { return x.id === o.id; })[0];
       col = '#ffa02f';

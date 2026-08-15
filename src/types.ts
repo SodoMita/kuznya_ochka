@@ -262,13 +262,6 @@ export interface StreakState {
   t: number;            // timestamp of last kill
 }
 
-export interface SkyBuilding {
-  x: number;            // 0..1 horizontal position
-  w: number;            // width (unit)
-  h: number;            // height (unit)
-  ant: boolean;         // has a blinking antenna light
-}
-
 export interface Ember {
   x: number;
   y: number;

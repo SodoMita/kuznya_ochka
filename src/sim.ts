@@ -136,7 +136,7 @@ export function fixedUpdate(dt: number): void {
     if (t.flash > 0) t.flash -= dt;
     if ((t.selF || 0) > 0) t.selF = (t.selF || 0) - dt * 3;
     s = t._st!;
-    var jamRate = t.jam ? .4 : 1;
+    var jamRate = t.jam ? .25 : 1;
     /* aegis: no guns — project a slow field every tick (stacks with beams via max) */
     if (c.id === 'aegis') {
       var as = Math.min(.5, (hasMod(t, 'cryo') ? .45 : .30) + .02 * (t.lvl - 1));

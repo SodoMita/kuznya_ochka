@@ -291,14 +291,33 @@ if (window.__FZ && $('phaseBig').textContent === 'FABRICATION') {
   const FZ = window.__FZ;
   const w0 = FZ.S.wave;
   const fe0 = FZ.S.res.fe;
+  const tw0 = FZ.S.towers.slice();
   FZ.saveRun();
   FZ.S.wave = 99;
   FZ.S.res.fe = -1234;
+  FZ.S.towers = [];
   FZ.loadRun();
   assert(FZ.S.wave === w0, 'save/load roundtrip restores the wave (' + FZ.S.wave + ' vs ' + w0 + ')');
   assert(FZ.S.res.fe === fe0, 'save/load roundtrip restores matter');
+  /* towers come back through the deferred projection queue, unit coords intact */
+  assert(Array.isArray(FZ.S.pendingTowers) && FZ.S.pendingTowers.length === tw0.length,
+    'saved towers stage through the deferred projection queue');
+  for (let k = 0; k < tw0.length; k++) {
+    assert(Math.abs(FZ.S.pendingTowers[k].x - tw0[k].x / 800) < 1e-6 &&
+      Math.abs(FZ.S.pendingTowers[k].y - tw0[k].y / 600) < 1e-6,
+      'tower unit-coords survive the roundtrip');
+  }
+  FZ.S.pendingTowers = null;
   FZ.S.pendingEnemies = null;
 }
 
-console.log('SMOKE TEST PASSED ✓ (boot, deck piles, board deploy, module install, card discard/recycle, subroutines, wave 1, doctrine/pause/speed/modals, turn redraw, mulligan/undo, medals/archive/settings, ESC modal, draft skip, auto-save)');
+/* expansion structural checks: 14-sector world, no skyline data, card badge */
+if (window.__FZ) {
+  const FZ = window.__FZ;
+  assert(FZ.S.worldNodes.length === 14, 'world graph holds 14 sectors (got ' + FZ.S.worldNodes.length + ')');
+  assert(!('sky' in FZ.S), 'skyscraper layer removed from the game state');
+  assert(doc.querySelector('#cards .card .icon i svg') !== null, 'hand cards render the emblem badge');
+}
+
+console.log('SMOKE TEST PASSED ✓ (boot, deck piles, board deploy, module install, card discard/recycle, subroutines, wave 1, doctrine/pause/speed/modals, turn redraw, mulligan/undo, medals/archive/settings, ESC modal, draft skip, auto-save, save/load towers, 14-sector world, card badges)');
 process.exit(0);

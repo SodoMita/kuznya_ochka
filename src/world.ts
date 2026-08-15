@@ -1,10 +1,10 @@
-/* Procedural world route: 12 sectors in 4 layers, edges open as sectors clear. */
+/* Procedural world route: 14 sectors in 4 layers, edges open as sectors clear. */
 import { S } from './state';
 import { mulberry32 } from './utils';
 
 export function genWorld(): void {
   var r = mulberry32((S.seed ^ 0x9e3779b9) >>> 0);
-  var layers = [[0, 1], [2, 3, 4], [5, 6, 7, 8], [9, 10, 11]];
+  var layers = [[0, 1], [2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12, 13]];
   S.worldNodes = [];
   S.worldEdges = [];
   for (var li = 0; li < layers.length; li++) {

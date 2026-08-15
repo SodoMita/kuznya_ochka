@@ -222,7 +222,8 @@ $('recBtn').addEventListener('pointerdown', function () {
   const t = S.selTower;
   if (!t || S.towers.indexOf(t) < 0) return;
   var doRecycle = function () {
-    gainRes({ fe: t.inv.fe * .7, cu: t.inv.cu * .7, si: t.inv.si * .7 }, t.x, t.y);
+    var rm = .7 + (S.relics.harvester ? .1 : 0);
+    gainRes({ fe: t.inv.fe * rm, cu: t.inv.cu * rm, si: t.inv.si * rm }, t.x, t.y);
     S.towers = S.towers.filter(function (x) { return x !== t; });
     S.beams = S.beams.filter(function (b) { return b.tw !== t; });
     S.undoStack = S.undoStack.filter(function (u) { return u.t !== t; });

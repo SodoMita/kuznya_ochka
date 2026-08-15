@@ -463,15 +463,6 @@ export function genSector(): void {
   for (let i = 0; i < 14; i++) {
     S.embers.push({ x: Math.random() * W, y: Math.random() * H, vy: 6 + Math.random() * 12, ph: Math.random() * 6.28 });
   }
-  /* ruined skyline silhouette — seeded per sector */
-  S.sky = [];
-  const sr = mulberry32((S.seed + S.sector * 104729) >>> 0);
-  let skx = -.02;
-  while (skx < 1.02) {
-    const skw = .04 + sr() * .08;
-    S.sky.push({ x: skx, w: skw, h: .05 + sr() * .17, ant: sr() < .35 });
-    skx += skw + sr() * .04;
-  }
 }
 
 /** Place build foundations clear of every road and node. Falls back to a looser gap if the strict pass starves. */

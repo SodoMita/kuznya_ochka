@@ -3,7 +3,6 @@
    still ships as one self-contained HTML file with no network of any kind. */
 import { S } from './state';
 import { storeGet, storeSet } from './utils';
-import { towerMhp } from './economy';
 import { W, H } from './view';
 import type { Enemy, Tower, Settings } from './types';
 
@@ -175,15 +174,15 @@ export function loadRun(): boolean {
     S.objective = sh.objective || null;
     S.spawnIdx = sh.spawnIdx || 0;
     S.enemies = [];          /* saved hostiles flow back via pendingEnemies */
-    /* towers — stored as unit coords, re-projected to the current viewport */
-    S.towers = sh.towers.map(function (t) {
-      var mhp = towerMhp({ i: t.i, lvl: t.lvl } as Tower);
+    /* towers — stored as unit coords; projected after the viewport is sized
+       (the default W/H here are placeholders, so eager projection would
+       misplace every restored unit) */
+    S.pendingTowers = sh.towers.map(function (t) {
       return {
-        x: t.x * W, y: t.y * H, i: t.i, lvl: t.lvl, cool: 0, ang: -Math.PI / 2, flash: 0, slow: 0,
-        tgt: t.tgt, inv: { fe: t.inv.fe, cu: t.inv.cu, si: t.inv.si }, mods: t.mods.slice(),
-        hp: Math.min(t.hp, mhp), mhp: mhp, kills: t.kills, caps: t.caps, dealt: t.dealt,
-        dropT: 0, jam: 0
-      } as Tower;
+        x: t.x, y: t.y, i: t.i, lvl: t.lvl, tgt: t.tgt,
+        inv: { fe: t.inv.fe, cu: t.inv.cu, si: t.inv.si }, mods: t.mods.slice(),
+        hp: t.hp, kills: t.kills, caps: t.caps, dealt: t.dealt
+      };
     });
     /* enemies — routes rebuilt from ids once the graph regenerates */
     S.pendingEnemies = sh.enemies as unknown as Enemy[];

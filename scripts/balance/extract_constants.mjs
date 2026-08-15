@@ -20,7 +20,8 @@ const src = {
   towers: read('src/towers.ts'),
   input: read('src/input.ts'),
   deck: read('src/deck.ts'),
-  data: read('src/data.ts')
+  data: read('src/data.ts'),
+  sim: read('src/sim.ts')
 };
 const model = read('scripts/balance/model.py');
 
@@ -73,7 +74,7 @@ grab('tithe cap',          'enemies', /Math\.min\(S\.relics\.tithe \? (\d+) :/, 
 grab('grid per wave',      'enemies', /S\.gridMax \+= (\d+);/, '2');
 
 /* ── recycle rates ──────────────────────────────────────────────────────── */
-grab('tower recycle',      'input',   /gainRes\(\{ fe: t\.inv\.fe \* \.(\d+),/, '7');
+grab('tower recycle',      'input',   /var rm = \.(\d+) \+ \(S\.relics\.harvester/, '7');
 grab('card recycle',       'deck',    /fe: Math\.ceil\(d\.cost\.fe \* \.(\d+)\)/, '5');
 
 /* ── grid ───────────────────────────────────────────────────────────────── */
@@ -82,6 +83,38 @@ grab('grid per level',     'economy', /draw \+ \.(\d+) \* \(t\.lvl - 1\)/, '3');
 /* ── early launch ───────────────────────────────────────────────────────── */
 grab('early fe',           'enemies', /S\.buildT \* \(S\.relics\.ledger \? ([\d.]+) :/, '1.6');
 grab('early fe base',      'enemies', /S\.relics\.ledger \? 1\.6 : \.(\d+)\)/, '8');
+
+/* ── expansion content ──────────────────────────────────────────────────── */
+grab('needle dmg',       'data',    /id: 'needle'[^\n]*dmg: (\d+), rate: ([\d.]+)/, '7');
+grab('needle rate',      'data',    /id: 'needle'[^\n]*dmg: \d+, rate: ([\d.]+)/, '4.2');
+grab('vulcan dmg',       'data',    /id: 'vulcan'[^\n]*dmg: (\d+), rate: (\d+)/, '4');
+grab('vulcan rate',      'data',    /id: 'vulcan'[^\n]*dmg: \d+, rate: (\d+)/, '9');
+grab('pulse dmg',        'data',    /id: 'pulse'[^\n]*dmg: (\d+), rate: ([\d.]+)/, '30');
+grab('pulse rate',       'data',    /id: 'pulse'[^\n]*dmg: \d+, rate: ([\d.]+)/, '.33');
+grab('shrieker hp',      'data',    /shrieker: \{ hp: \.(\d+),/, '8');
+grab('jammer hp',        'data',    /jammer: \{ hp: ([\d.]+),/, '1.5');
+grab('overlord hp',      'data',    /overlord: \{ hp: (\d+),/, '30');
+grab('hp jitter',        'enemies', /\(0\.9 \+ jr\(\) \* \.(\d+)\)/, '2');
+grab('veteran hp',       'enemies', /if \(vet\) hp \*= ([\d.]+)/, '1.6');
+grab('tough perk hp',    'enemies', /perk === 'tough'\) hp \*= ([\d.]+)/, '1.25');
+grab('jammer rate',      'sim',     /var jamRate = t\.jam \? \.(\d+) :/, '25');
+grab('meteor damage',    'sim',     /var mdmg = victim\.mhp \* \.(\d+)/, '15');
+grab('meteor interval',  'sim',     /S\.meteorT = ([\d.]+)/, '1.6');
+grab('meteor stray hit', 'sim',     /damageTower\(clip, (\d+),/, '1');
+grab('scav relic',       'economy', /S\.relics\.scav \? ([\d.]+) :/, '1.12');
+grab('scav drone',       'economy', /S\.powers\.power_drone\) m \*= ([\d.]+)/, '1.12');
+grab('efficiency',       'economy', /S\.powers\.power_efficiency \? \.(\d+) :/, '9');
+grab('shield grid',      'economy', /S\.powers\.power_shield\) m \*= ([\d.]+)/, '1.25');
+grab('armored mounts',   'economy', /S\.relics\.bulwark\) m \*= ([\d.]+)/, '1.4');
+grab('repulsor field',   'sim',     /S\.powers\.power_repulsor \? \.(\d+) :/, '92');
+grab('homing rig',       'towers',  /S\.powers\.power_seek\) range \*= ([\d.]+)/, '1.2');
+grab('borehead gatlings','towers',  /S\.relics\.drill\) rate \*= ([\d.]+)/, '1.15');
+grab('pulse catalyst',   'towers',  /S\.relics\.catalyst\) rate \*= ([\d.]+)/, '1.2');
+grab('grid reclaimer',   'towers',  /\.7 \+ \(S\.relics\.harvester \? \.(\d+) :/, '1');
+grab('ore vein fe',      'deck',    /case 'skill_ore':[\s\S]*?gainRes\(\{ fe: (\d+), cu: (\d+)/, '40');
+grab('ore vein cu',      'deck',    /case 'skill_ore':[\s\S]*?gainRes\(\{ fe: \d+, cu: (\d+)/, '20');
+grab('salvage bond',     'deck',    /var pay = (\d+) \* S\.wave/, '6');
+grab('overcharge cost',  'data',    /id: 'skill_overcharge'[^\n]*si: (\d+)/, '10');
 
 /* ── the model must still declare the matching constants ────────────────── */
 modelHas('UP_BASE',      /UP_BASE\s*=\s*Fraction\(75, 100\)/);
@@ -95,6 +128,14 @@ modelHas('BOUNTY_FE',    /BOUNTY_FE\s*=\s*Fraction\(32, 1000\)/);
 modelHas('CAPTURE_MULT', /CAPTURE_MULT\s*=\s*Fraction\(25, 10\)/);
 modelHas('GRID_PER_LVL', /GRID_PER_LVL\s*=\s*Fraction\(30, 100\)/);
 modelHas('FOUNDRY_FE',   /FOUNDRY_FE\s*=\s*Fraction\(34, 100\)/);
+modelHas('VULCAN_DMG',   /VULCAN_DMG, VULCAN_RATE, VULCAN_COST = Fraction\(4\), Fraction\(9\), Fraction\(52\)/);
+modelHas('PULSE_DMG',    /PULSE_DMG, PULSE_RATE, PULSE_COST\s*=\s*Fraction\(30\), Fraction\(33, 100\), Fraction\(64\)/);
+modelHas('NEEDLE_DMG',   /NEEDLE_DMG, NEEDLE_RATE, NEEDLE_COST = Fraction\(7\), Fraction\(42, 10\), Fraction\(34\)/);
+modelHas('JAM_RATE',     /JAM_RATE = Fraction\(25, 100\)/);
+modelHas('METEOR_DMG',   /METEOR_DMG = Fraction\(15, 100\)/);
+modelHas('SCAV_DRONE',   /SCAV_RELIC, SCAV_DRONE = Fraction\(112, 100\), Fraction\(112, 100\)/);
+modelHas('HARVESTER_RECYCLE', /HARVESTER_RECYCLE = Fraction\(80, 100\)/);
+modelHas('OVERCHARGE_SAVE',   /OVERCHARGE_SAVE = Fraction\(75, 100\)/);
 
 if (failures.length) {
   console.error('CONSTANT DRIFT DETECTED — the balance proof no longer describes the game:\n');

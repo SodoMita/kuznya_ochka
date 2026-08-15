@@ -94,55 +94,6 @@ function bakeGrid(sec: SectorDef): void {
   c.globalAlpha = 1;
 }
 
-/* Ruined-skyline layer: silhouettes, rim light, lit windows and antenna masts.
-   Static for a sector + viewport, so it is baked once. */
-let skyCv: HTMLCanvasElement | null = null;
-let skyKey = '';
-
-function bakeSky(sec: SectorDef): void {
-  var key = sec.path + '|' + W + '|' + H + '|' + dpr + '|' + S.sectorGen;
-  if (key === skyKey && skyCv) return;
-  skyKey = key;
-  if (!skyCv) skyCv = document.createElement('canvas');
-  skyCv.width = Math.max(1, Math.round(W * dpr));
-  skyCv.height = Math.max(1, Math.round(H * dpr));
-  var c = skyCv.getContext('2d');
-  if (!c) { skyCv = null; return; }
-  c.setTransform(dpr, 0, 0, dpr, 0, 0);
-  c.clearRect(0, 0, W, H);
-  /* far haze layer */
-  for (var i = 0; i < S.sky.length; i++) {
-    var skf = S.sky[i];
-    var fh = skf.h * H * .62, fx = skf.x * W + W * .012;
-    c.fillStyle = 'rgba(0,0,0,.13)';
-    c.fillRect(fx, H - fh, skf.w * W * .8 + 1, fh);
-  }
-  /* near solid layer */
-  for (var j = 0; j < S.sky.length; j++) {
-    var sk = S.sky[j];
-    var bx = sk.x * W, bw = sk.w * W + 1, bh = sk.h * H, by = H - bh;
-    c.fillStyle = 'rgba(0,0,0,.30)';
-    c.fillRect(bx, by, bw, bh);
-    /* rim light on the left edge separates overlapping towers */
-    c.fillStyle = shadeA(sec.path, .3, .16);
-    c.fillRect(bx, by, 1, bh);
-    /* a couple of lit windows per building — deterministic from index */
-    if (bw > 9 && bh > 14) {
-      var wc = ((j * 7) % 3) + 1;
-      for (var wI = 0; wI < wc; wI++) {
-        var wy = by + 5 + ((j * 13 + wI * 29) % Math.max(1, Math.floor(bh - 10)));
-        var wx = bx + 2 + ((j * 5 + wI * 11) % Math.max(1, Math.floor(bw - 5)));
-        c.fillStyle = hexA('#ffb45e', .14);
-        c.fillRect(wx, wy, 1.5, 2);
-      }
-    }
-    if (sk.ant) {
-      c.fillStyle = 'rgba(0,0,0,.30)';
-      c.fillRect(bx + bw * .5 - .5, by - 5, 1, 5);              /* mast */
-    }
-  }
-}
-
 /* Scorch marks: baked where hostiles died this sector. */
 let scorchCv: HTMLCanvasElement | null = null;
 let scorchKey = '';
@@ -203,23 +154,6 @@ export function draw(): void {
     ctx.fillRect(m.x, m.y, m.r, m.r);
   }
   ctx.restore();
-
-  /* ruined skyline — static silhouette blitted from a baked layer, with only
-     the blinking antenna beacons drawn live on top */
-  bakeSky(sec);
-  if (skyCv) ctx.drawImage(skyCv, 0, 0, W, H);
-  for (i = 0; i < S.sky.length; i++) {
-    var skb = S.sky[i];
-    if (!skb.ant) continue;
-    var bx2 = skb.x * W, bw2 = skb.w * W + 1, by2 = H - skb.h * H;
-    var apu = (Math.sin(S.time * 2 + i * 2) + 1) / 2;
-    ctx.fillStyle = hexA('#e5484d', .25 + .5 * apu);
-    ctx.fillRect(bx2 + bw2 * .5 - 1, by2 - 7, 2, 3);
-    if (apu > .6) {                                            /* soft beacon halo */
-      ctx.fillStyle = hexA('#e5484d', (apu - .6) * .22);
-      ctx.fillRect(bx2 + bw2 * .5 - 3.5, by2 - 9, 7, 7);
-    }
-  }
 
   /* rising forge embers — with glow */
   for (i = 0; i < S.embers.length; i++) {

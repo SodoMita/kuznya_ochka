@@ -11,7 +11,8 @@ import { hud, toast, applySettingsBody } from './hud';
 import { draw } from './render';
 import { fixedUpdate } from './sim';
 import { spawnEnemy } from './enemies';
-import { towerMhp } from './economy';
+import { towerMhp, scavMult, boardCostMult } from './economy';
+import { effCost } from './deck';
 import { loadSettings, loadRun, loadHistory, loadBest, hasSave, saveRun, clearSave } from './persist';
 
 /* deterministic test/debug hook — lets the verification harnesses exercise
@@ -27,6 +28,11 @@ import { loadSettings, loadRun, loadHistory, loadBest, hasSave, saveRun, clearSa
     });
   },
   debugSpawn: function (type: string) { spawnEnemy(type); },
+  /* formula hooks the balance crosscheck proves against */
+  effCost: effCost,
+  boardCostMult: boardCostMult,
+  scavMult: scavMult,
+  towerMhp: towerMhp,
   saveRun: saveRun,
   loadRun: loadRun,
   clearSave: clearSave
@@ -79,6 +85,20 @@ if (S.pendingEnemies) {
   });
   S.pendingEnemies = null;
   if (S.phase === 'wave' && !S.enemies.length && !S.spawnQ.length) S.phase = 'build';
+}
+/* restored towers: project unit coords once the real viewport is known */
+if (S.pendingTowers) {
+  S.towers = S.pendingTowers.map(function (pt) {
+    var mhp = towerMhp({ i: pt.i, lvl: pt.lvl } as any);
+    return {
+      x: clamp(pt.x * W, 14, W - 14), y: clamp(pt.y * H, 14, H - 14),
+      i: pt.i, lvl: pt.lvl, cool: 0, ang: -Math.PI / 2, flash: 0, slow: 0,
+      tgt: pt.tgt, inv: { fe: pt.inv.fe, cu: pt.inv.cu, si: pt.inv.si }, mods: pt.mods.slice(),
+      hp: Math.min(pt.hp, mhp), mhp: mhp, kills: pt.kills, caps: pt.caps, dealt: pt.dealt,
+      dropT: 0, jam: 0
+    };
+  });
+  S.pendingTowers = null;
 }
 if (resumed) toast('RUN RESUMED — SEED ' + S.seed + ' · WAVE ' + S.wave);
 

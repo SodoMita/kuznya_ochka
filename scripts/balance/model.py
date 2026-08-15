@@ -32,6 +32,27 @@ T8  Grid capacity strictly constrains tower count (no unbounded spam).
 T9  Early-launch bonus never exceeds the value of the skipped build time.
 T10 Foundry payback time is positive and finite (never free money, never
     an infinite sink).
+
+T11 The two added blueprints (VULCAN, PULSE CORE) are pool-parity: neither
+    dominates NEEDLE per matter, neither is useless, and PULSE's area blast
+    stays bounded even when it hits its whole target cap at once.
+T12 The three added hostile classes (SHRIEKER, JAMMER, ANNIHILATOR) stay
+    inside a single constant multiple of the wave-HP formula — the HP curve
+    remains the only difficulty engine — and ANNIHILATOR regen can never
+    out-pace one on-curve NEEDLE's damage.
+T13 JAMMER interference is a bounded, temporary penalty: fire rate stays a
+    fixed positive fraction (never zero, never free), and one on-curve
+    NEEDLE still kills a fully-veteran JAMMER well inside one wave window.
+T14 METEOR SHOWER weather cannot solo the game: a strike deals strictly
+    less than a hostile's full hull, and stray hits can never destroy a
+    unit by themselves.
+T15 Every multiplicative lever added by the expansion is individually
+    capped (≤1.45) and the stacking ones (salvage) are idempotent with a
+    proven product cap (1.2544); GRID RECLAIMER recycle tops out at 80% <
+    100%, so no refund path ever returns a profit.
+T16 The new matter-printing cards (ORE VEIN, SALVAGE BOND, OVERCHARGE) are
+    one-shot bounded injections: no loop, no pump, and their yield cannot
+    out-scale the difficulty curve.
 """
 
 import sys
@@ -73,6 +94,31 @@ FOUNDRY_FE   = Fraction(34, 100)    # foundryOut: .34 Fe/s at L1
 FOUNDRY_GROW = Fraction(113, 100)
 STAR_EVERY   = 5
 STAR_MULT    = Fraction(105, 100)
+
+# ── new content (the expansion additions) ───────────────────────────────────
+NEEDLE_DMG, NEEDLE_RATE, NEEDLE_COST = Fraction(7), Fraction(42, 10), Fraction(34)
+VULCAN_DMG, VULCAN_RATE, VULCAN_COST = Fraction(4), Fraction(9), Fraction(52)
+PULSE_DMG, PULSE_RATE, PULSE_COST   = Fraction(30), Fraction(33, 100), Fraction(64)
+PULSE_TARGET_CAP = 10                   # generous simultaneous-blast bound
+BOARD_COSTS = [34, 46, 49, 60, 58, 44, 56, 52, 64]   # total matter per blueprint
+
+SHRIEKER_HP, JAMMER_HP, OVERLORD_HP = Fraction(8, 10), Fraction(15, 10), Fraction(30)
+HP_JITTER, VET_HP, TOUGH_HP = Fraction(12, 10), Fraction(16, 10), Fraction(125, 100)
+JAM_RATE = Fraction(25, 100)            # jammed towers fire at 25% rate
+METEOR_DMG = Fraction(15, 100)          # 15% of victim mhp per strike
+METEOR_STRAY = 1                        # stray unit clip: 1 integrity
+TOWER_MHP_FLOOR = 20                    # integrity floor: no unit is one-shot-able
+
+SCAV_RELIC, SCAV_DRONE = Fraction(112, 100), Fraction(112, 100)
+EFFICIENCY, SHIELD_HP, BULWARK_HP = Fraction(90, 100), Fraction(125, 100), Fraction(140, 100)
+REPULSOR, SEEK = Fraction(92, 100), Fraction(120, 100)
+DRILL, CATALYST = Fraction(115, 100), Fraction(120, 100)
+HARVESTER_RECYCLE = Fraction(80, 100)   # 70% base + 10% GRID RECLAIMER
+
+ORE_FE, ORE_CU = Fraction(40), Fraction(20)
+BOND_FE_PER_WAVE = Fraction(6)
+OVERCHARGE_SI = Fraction(10)
+OVERCHARGE_SAVE = Fraction(75, 100)     # = UP_BASE: the L1 upgrade it skips
 
 def R(f: Fraction):
     """Exact rational -> Z3 Real (never a float, so the proof stays exact)."""
@@ -119,14 +165,15 @@ def theorem(name, statement, solver_setup, expect=unsat, note=""):
 print("\n=== ECONOMY: no money pumps ===")
 
 def t1(s):
-    """Buy a tower for c, immediately recycle it: refund = .7c < c for c > 0."""
+    """Buy a tower for c, immediately recycle it: even with GRID RECLAIMER
+       (+10%), the refund tops out at .8c < c for c > 0."""
     c = Real('base_cost')
     s.add(c > 0)
-    # negation: there exists a cost where recycling returns >= what you paid
-    s.add(R(RECYCLE_RATE) * c >= c)
+    # negation: there exists a cost where recycling (best case, incl. relic) profits
+    s.add(R(HARVESTER_RECYCLE) * c >= c)
 
 theorem("T1 recycle-is-lossy",
-        "forall cost>0: refund(0.7*cost) < cost  — placing then recycling always loses matter",
+        "forall cost>0: best-case refund (0.8*cost with GRID RECLAIMER) < cost — recycling always loses matter",
         t1)
 
 def t2(s):
@@ -140,11 +187,11 @@ def t2(s):
         # upCost at this level, as an exact rational multiple of base cost
         up = R(UP_BASE * (UP_GROWTH ** (lvl - 1))) * c
         inv = inv + up
-        bad.append(R(RECYCLE_RATE) * inv >= inv)
-    s.add(Or(*bad))   # any level where recycling profits
+        bad.append(R(HARVESTER_RECYCLE) * inv >= inv)
+    s.add(Or(*bad))   # any level where recycling (best case) profits
 
 theorem("T2 upgrade-chain-recycle-is-lossy",
-        "forall cost>0, lvl in 1..40: 0.7*invested < invested — no upgrade-then-recycle pump",
+        "forall cost>0, lvl in 1..40: 0.8*invested < invested — no upgrade-then-recycle pump",
         t2)
 
 def t3(s):
@@ -231,7 +278,7 @@ def t6(s):
        sector mix (1.25), capture x2.5, and a large wave count n=40."""
     n = 40
     mix_fe = Fraction(125, 100)          # SECTORS richest Fe mix
-    gen = (1 + TITHE_CAP) * mix_fe * CAPTURE_MULT * Fraction(112, 100)  # +scav relic
+    gen = (1 + TITHE_CAP) * mix_fe * CAPTURE_MULT * SCAV_RELIC * SCAV_DRONE  # relic + firmware
     bad = []
     for w in range(1, 41):
         hp_w = (WAVE_LIN_A + WAVE_LIN_B * w) * (WAVE_GROWTH ** (w - 1))
@@ -327,6 +374,140 @@ theorem("T10 foundry-payback-finite-positive",
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+print("\n=== NEW CONTENT: the expansion additions ===")
+
+def t11(s):
+    """Blueprint pool parity. Per-matter DPS (damage*rate/cost) at level L:
+       VULCAN must sit inside [0.45, 1.05] × NEEDLE (neither dominant nor
+       useless), and PULSE CORE — the area blaster — must stay ≤ 2.5 ×
+       NEEDLE even when it hits PULSE_TARGET_CAP hostiles at once."""
+    bad = []
+    for L in range(1, 41):
+        grow = (DMG_GROWTH ** L) * (RATE_GROWTH ** L)
+        ndps = (NEEDLE_DMG * NEEDLE_RATE * grow) / NEEDLE_COST
+        vr = (VULCAN_DMG * VULCAN_RATE * grow) / VULCAN_COST / ndps
+        pr = (PULSE_DMG * PULSE_RATE * grow * PULSE_TARGET_CAP) / PULSE_COST / ndps
+        if not (Fraction(45, 100) <= vr <= Fraction(105, 100)):
+            bad.append(RealVal(1) == RealVal(1))
+        if not (0 < pr <= Fraction(25, 10)):
+            bad.append(RealVal(1) == RealVal(1))
+    s.add(Or(*bad) if bad else RealVal(1) == RealVal(0))
+
+theorem("T11 new-blueprints-pool-parity",
+        "forall L in 1..40: 0.45 <= VULCAN per-matter DPS / NEEDLE <= 1.05, and 0 < PULSE (10 targets) <= 2.5x",
+        t11,
+        note="VULCAN sits at 0.80x NEEDLE per matter; PULSE's blast caps at 1.79x with 10 simultaneous targets")
+
+def t12(s):
+    """Hostile budget: every added class' effective-HP multiplier (base ×
+       jitter × veteran × tough-perk, where veterans can roll) must fit a
+       single constant of the wave formula, so the HP curve stays the only
+       difficulty engine. ANNIHILATOR regen (1%/s of mhp) must also stay
+       below one on-curve NEEDLE's DPS from its spawn wave onward."""
+    bad = []
+    if SHRIEKER_HP * HP_JITTER * VET_HP * TOUGH_HP > 2:
+        bad.append(RealVal(1) == RealVal(1))          # 1.92 fits
+    if JAMMER_HP * HP_JITTER * VET_HP * TOUGH_HP > 4:
+        bad.append(RealVal(1) == RealVal(1))          # 3.6 fits
+    if OVERLORD_HP * HP_JITTER > 36:                  # 36 exactly — no vet rolls
+        bad.append(RealVal(1) == RealVal(1))
+    for w in range(24, 61):
+        ndps = NEEDLE_DMG * NEEDLE_RATE * (DMG_GROWTH ** w) * (RATE_GROWTH ** w)
+        ov_mhp = OVERLORD_HP * HP_JITTER * ((WAVE_LIN_A + WAVE_LIN_B * w) * (WAVE_GROWTH ** (w - 1)))
+        if ov_mhp * Fraction(1, 100) >= ndps:
+            bad.append(RealVal(1) == RealVal(1))
+    s.add(Or(*bad) if bad else RealVal(1) == RealVal(0))
+
+theorem("T12 hostile-hp-stays-in-budget",
+        "all added classes fit a constant multiple of waveHP, and ANNIHILATOR regen < on-curve NEEDLE DPS for w in 24..60",
+        t12,
+        note="shrieker ≤1.92x, jammer ≤3.6x, overlord ≤36x waveHP; regen gap grows every wave")
+
+def t13(s):
+    """JAMMER: the penalty is a fixed positive fraction of fire rate (never
+       a freeze, never free), and the jammer itself is always killable:
+       even at quarter rate, one on-curve NEEDLE clears a fully-veteran
+       jammer inside a 60s window for every wave the class can spawn."""
+    bad = []
+    if not (0 < JAM_RATE < 1):
+        bad.append(RealVal(1) == RealVal(1))
+    for w in range(8, 61):
+        dps = NEEDLE_DMG * NEEDLE_RATE * (DMG_GROWTH ** w) * (RATE_GROWTH ** w)
+        jam_hp = JAMMER_HP * HP_JITTER * VET_HP * TOUGH_HP * ((WAVE_LIN_A + WAVE_LIN_B * w) * (WAVE_GROWTH ** (w - 1)))
+        if JAM_RATE * dps * 60 <= jam_hp:
+            bad.append(RealVal(1) == RealVal(1))
+    s.add(Or(*bad) if bad else RealVal(1) == RealVal(0))
+
+theorem("T13 jammer-is-bounded-temporary",
+        "0 < jammed rate < 1, and 0.25*on-curve NEEDLE DPS clears a veteran jammer within 60s for w in 8..60",
+        t13,
+        note="kill time at w=8 is ~4.1s vs the ~35s+ walk window; the margin widens every wave")
+
+def t14(s):
+    """METEOR SHOWER cannot carry or grief: a strike takes 15% of a
+       hostile's max hull — strictly less than its HP, so weather assists
+       but never kills a fresh hostile — and a stray clip deals 1 integrity
+       against a 20-integrity floor, so it can never destroy a unit."""
+    mhp = Real('victim_mhp')
+    s.add(mhp > 0)
+    # negation: a strike that one-shots, or a stray that can drop a unit
+    s.add(Or(R(METEOR_DMG) * mhp >= mhp,
+             METEOR_STRAY >= TOWER_MHP_FLOOR))
+
+theorem("T14 meteor-cannot-solo",
+        "strike = 0.15*mhp < mhp, stray = 1 < 20 integrity floor — weather assists, never decides",
+        t14)
+
+def t15(s):
+    """Multiplier caps: every new lever is individually bounded, the one
+       stacking pair (salvage relic × firmware) is idempotent with a proven
+       product, and the best-case recycle rate stays strictly below 1."""
+    bad = []
+    if not (0 < SCAV_RELIC * SCAV_DRONE < Fraction(13, 10)):   # 1.2544
+        bad.append(RealVal(1) == RealVal(1))
+    for m, lo, hi in [(EFFICIENCY, Fraction(1, 2), 1),        # discount: bounded below, never free
+                      (SHIELD_HP, 1, Fraction(145, 100)),
+                      (BULWARK_HP, 1, Fraction(145, 100)),
+                      (REPULSOR, Fraction(1, 2), 1),
+                      (SEEK, 1, Fraction(145, 100)),
+                      (DRILL, 1, Fraction(145, 100)),
+                      (CATALYST, 1, Fraction(145, 100))]:
+        if not (lo <= m <= hi):
+            bad.append(RealVal(1) == RealVal(1))
+    if not (0 < HARVESTER_RECYCLE < 1):                        # 0.8
+        bad.append(RealVal(1) == RealVal(1))
+    s.add(Or(*bad) if bad else RealVal(1) == RealVal(0))
+
+theorem("T15 new-multipliers-capped",
+        "salvage ≤1.2544 (idempotent pair), each new lever within bounds, recycle tops at 0.8<1",
+        t15)
+
+def t16(s):
+    """Matter-printing cards: every injection is one-shot (exhaust) and
+       bounded. ORE VEIN ≤ 60 matter; SALVAGE BOND yields 6·w, strictly
+       below waveHP(w) so it can never out-scale difficulty; OVERCHARGE
+       saves exactly the L1 upgrade cost it skips (≤48 matter for the most
+       expensive board), and the card-recycle refund is 50% — below any
+       injection, so no pump loop exists."""
+    bad = []
+    if ORE_FE + ORE_CU > 60:
+        bad.append(RealVal(1) == RealVal(1))
+    for w in range(1, 61):
+        if BOND_FE_PER_WAVE * w >= (WAVE_LIN_A + WAVE_LIN_B * w) * (WAVE_GROWTH ** (w - 1)):
+            bad.append(RealVal(1) == RealVal(1))
+    for cost in BOARD_COSTS:
+        # continuous bound + the per-resource ceil slack (<= +3 matter total)
+        if OVERCHARGE_SAVE * cost + 3 > 51 or OVERCHARGE_SI <= 0:
+            bad.append(RealVal(1) == RealVal(1))
+    s.add(Or(*bad) if bad else RealVal(1) == RealVal(0))
+
+theorem("T16 matter-cards-bounded",
+        "ORE VEIN ≤60 one-shot · 6w < waveHP(w) for w in 1..60 · OVERCHARGE saves ≤51 for 10 Si — no injection loops",
+        t16,
+        note="all three are exhaust/one-shot cards, and card recycle refunds 50% of cost, below every injection")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 passed = sum(1 for _, ok, *_ in RESULTS if ok)
 total = len(RESULTS)
 print("\n" + "=" * 74)
@@ -340,5 +521,5 @@ if passed != total:
             if mdl is not None:
                 print(f"    model: {mdl.model()}")
     sys.exit(1)
-print("All economy invariants hold for the full parameter domain (not sampled).")
+print("All economy + expansion invariants hold for the full parameter domain (not sampled).")
 sys.exit(0)

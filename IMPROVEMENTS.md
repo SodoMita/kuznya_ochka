@@ -23,7 +23,7 @@ raster images, baked render layers, formal-balance constant pins). Verified by
 | B002 | Auto-save & resume | The run serializes to localStorage on wave launch, wave clear, drafts and deploys; booting restores it (unit-coordinate towers survive viewport changes). |
 | B003 | Run history ledger | The last 10 runs (seed, outcome, wave, score, kills, date) are recorded and browsable in the archive modal. |
 | B004 | Score system | Kills, captures, waves, streaks, medals and objectives feed a live score chip; the best score persists. |
-| B005 | Endless escalation | After all 12 sectors fall, victory offers endless escalation with waves compounding forever. |
+| B005 | Endless escalation | After all 14 sectors fall, victory offers endless escalation with waves compounding forever. |
 | B006 | Medals gallery | A dedicated modal shows all 15 commendations, earned and unearned, with per-medal criteria tooltips. |
 | B007 | Relic ledger | The archive lists every owned relic with its description and the full collection count. |
 | B008 | Blueprint & hostile codex | Every blueprint (with current rank, DPS and deck count) and every hostile class (with stats) is documented in-game. |
@@ -303,3 +303,23 @@ raster images, baked render layers, formal-balance constant pins). Verified by
 | S098 | `__FZ` hook is harmless at runtime (no network, no perf cost). |
 | S099 | Particle FX all respect the density setting (burst/ring/sparks/debris/dust). |
 | S100 | Pause label, speed label and doctrine label all refresh through one `hud()` path. |
+
+---
+
+## Repair pass — portrait, skyline, cards, proof coverage
+
+Fixes applied on top of the 100+100 build (all verified by `npm run verify`):
+
+| # | Fix | What was wrong / what changed |
+| --- | --- | --- |
+| F01 | **Skyscrapers removed** | The background building silhouettes were flat billboards with no perspective. Deleted the `bakeSky` layer, the `S.sky` data, antenna beacons and the `SkyBuilding` type; the sector-tinted gradient + forge haze carry the depth. |
+| F02 | **Portrait layout rebuilt** | ≤560px now stacks the deck as hand row / controls strip / unit panel; the header chips scroll instead of colliding, the pile bar scrolls instead of wrapping, the unit panel wraps into two columns, and a ≤380px tier compacts the control strip. |
+| F03 | **Card art direction from the image generator** | AI-generated card concepts (thick solid type ribbon with an angled cut, color-tinted body, glowing hex emblem badge, brighter color-matched cost strip, vignette) implemented in pure CSS/SVG — no raster anywhere. |
+| F04 | **Resume tower misplacement** | `loadRun()` projected saved towers against the placeholder 320×240 viewport before the first resize. Towers now restore through a `pendingTowers` queue projected after the real viewport is sized. |
+| F05 | **14-sector world wired in** | NULL HORIZON and OBSIDIAN VEINS were dead data: the world graph had 12 hardcoded nodes. The graph now spans all 14 sectors, victory fires at 14 cleared, and all texts/ledgers updated. |
+| F06 | **GRID RECLAIMER inconsistency** | The relic boosted SELL ALL (+10%) but not single RECYCLE. Single recycle now honors it (70%→80%, still provably lossy). |
+| F07 | **Jammer rate vs docs** | Code cut fire rate to 40% while every manual said "quarter". Code now matches the documented 25%, and T13 proves the jammer is still killable under it. |
+| F08 | **Draft Mk label** | Blueprint-upgrade offers showed "Mk.N+2" in the title but "Now Mk.N+1" in the body. Both now agree. |
+| F09 | **Unit panel DOM churn** | `renderUnit()` rewrote innerHTML every HUD tick; it now skips via a change-signature. |
+| F10 | **Proof extended to the expansion** | `model.py` grew T11–T16 (blueprint pool parity, hostile HP budget + regen, jammer bounds, meteor bounds, multiplier caps, matter-card bounds), T1/T2/T6 now use the worst-case refund/salvage constants, the extractor pins 30+ new constants to `src/*.ts`, and the crosscheck exercises VULCAN/PULSE CORE formulas plus the multiplier caps in the built game. **16/16 proved.** |
+| F11 | **Smoke coverage** | New assertions: save/load roundtrip preserves tower unit-coords through the deferred queue, world graph has 14 nodes, no `sky` state, hand cards render the emblem badge. |

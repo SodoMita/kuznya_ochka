@@ -220,7 +220,7 @@ export function renderCards(): void {
       '<div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div>' +
       (i < 9 ? '<span class="key">' + (i + 1) + '</span>' : '') +
       '<div class="hd"><strong>' + d.name + '</strong></div>' +
-      '<div class="icon">' + glyph + '</div>' +
+      '<div class="icon"><i>' + glyph + '</i></div>' +
       '<p title="' + d.desc + '">' + d.desc + '</p>' +
       '<div class="tags">' + tagStr(d) + '</div>' +
       '<div class="cst">' + costHtml(d.cost) + '</div>' + rankTag +
@@ -340,12 +340,28 @@ export function openDeckModal(): void {
   Snd.play('ui');
 }
 
+let unitSig = '';
 export function renderUnit(): void {
   var t = S.selTower;
   var has = !!(t && S.towers.indexOf(t) >= 0);
-  $('tgtRow').style.display = has ? 'grid' : 'none';
   var md = selModule();
   var rk = selTargetedSkill();
+  /* cheap change-signature — skips all DOM writes while the panel is static
+     (renderUnit runs on every HUD tick; this keeps 60Hz free of layout churn) */
+  var sig = (t && has) ?
+    t.i + '|' + t.lvl + '|' + t.hp.toFixed(1) + '|' + t.mhp + '|' + t.kills + '|' + t.caps + '|' +
+    t.dealt.toFixed(0) + '|' + t.tgt + '|' + t.mods.join(',') + '|' + t.inv.fe + ',' + t.inv.cu + ',' + t.inv.si +
+    '|' + S.towers.length + '|' + (S.ranks[CARDS[t.i].id] || 0) :
+    '-|' + (md ? md.id : '') + '|' + (rk ? rk.id : '');
+  sig += '|' + (md ? md.id : '') + '|' + (rk ? rk.id + canAfford(rk.cost) : '') + '|' + S.towers.length;
+  if (t && has) {
+    var stS = stats(t);
+    sig += '|' + (stS.dmg * stS.rate).toFixed(1) + '|' + stS.range.toFixed(0) + '|' + stS.stars;
+    sig += '|' + upCost(t).fe + ',' + upCost(t).cu + ',' + upCost(t).si;
+  }
+  if (sig === unitSig) return;
+  unitSig = sig;
+  $('tgtRow').style.display = has ? 'grid' : 'none';
   $('sellAllBtn').style.display = has ? '' : 'none';
   $('upAllBtn').style.display = has ? '' : 'none';
   if (!t || !has) {
@@ -457,7 +473,7 @@ function renderHistoryTab(): void {
   $('histInfo').innerHTML =
     'CURRENT RUN · seed <b style="color:var(--amber)">' + S.seed + '</b> · wave ' + S.wave +
     ' · score <b style="color:var(--gold)">' + fmt(S.score) + '</b> (best ' + fmt(S.best) + ')' +
-    ' · sectors ' + secs + '/12 · kills ' + S.stat.kills + ' · captures ' + S.stat.captures +
+    ' · sectors ' + secs + '/14 · kills ' + S.stat.kills + ' · captures ' + S.stat.captures +
     ' · leaks ' + S.stat.leaks + ' · towers lost ' + S.stat.towerLoss + ' · salvaged ' + fmt(S.stat.salvaged);
 }
 

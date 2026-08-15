@@ -106,6 +106,40 @@ if (card) {
      `X5 buy+upgrade+recycle was NOT lossy: paid ${investedFe}Fe, got ${refundFe}Fe back`);
 }
 
+/* ── X6: expansion blueprints follow the formulas the model proves ──────── */
+const FZ = window.__FZ;
+FZ.debugDeploy(7, 300, 300);   /* VULCAN (data index 7) */
+FZ.debugDeploy(8, 340, 300);   /* PULSE CORE (data index 8) */
+tick(6);
+const newTowers = FZ.S.towers.filter((t) => t.i === 7 || t.i === 8);
+ok(newTowers.length === 2, `X6 expected 2 expansion towers deployed (got ${newTowers.length})`);
+for (const t of newTowers) {
+  if (t.i === 7) {
+    near(t._st.dmg, 4, 0.01, 'X6 VULCAN damage formula mismatch');
+    near(t._st.rate, 9, 0.01, 'X6 VULCAN rate formula mismatch');
+  } else {
+    near(t._st.dmg, 30, 0.01, 'X6 PULSE CORE damage formula mismatch');
+    near(t._st.rate, 0.33, 0.01, 'X6 PULSE CORE rate formula mismatch');
+  }
+}
+
+/* ── X7: expansion multipliers match the model's caps exactly ───────────── */
+FZ.S.relics.scav = true;
+FZ.S.powers.power_drone = 1;
+near(FZ.scavMult(), 1.2544, 1e-9, 'X7 scavMult should be 1.12*1.12 (relic × firmware)');
+FZ.S.relics.scav = false;
+FZ.S.powers.power_drone = 0;
+FZ.S.powers.power_efficiency = 1;
+near(FZ.boardCostMult(), 0.9, 1e-9, 'X7 BLUEPRINT EFFICIENCY discount mismatch');
+const cheap = FZ.effCost({ fe: 100, cu: 100, si: 100 });
+near(cheap.fe + cheap.cu + cheap.si, 270, 1, 'X7 effCost 10% discount mismatch');
+FZ.S.powers.power_efficiency = 0;
+FZ.S.relics.bulwark = true;
+FZ.S.powers.power_shield = 1;
+near(FZ.towerMhp({ i: 0, lvl: 1 }), 35, 0.01, 'X7 integrity boosts mismatch (20×1.4×1.25)');
+FZ.S.relics.bulwark = false;
+FZ.S.powers.power_shield = 0;
+
 if (problems.length) {
   console.error('CROSSCHECK FAILED — the model does not match the running game:\n');
   [...new Set(problems)].forEach((p) => console.error('  · ' + p));

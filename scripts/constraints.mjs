@@ -68,7 +68,7 @@ for (const [re, label] of [[/\.shadowBlur\s*=/g, 'ctx.shadowBlur'], [/ctx\.filte
   const m = html.match(re);
   if (m) fail.push(`C4 expensive per-draw canvas op: ${label} ×${m.length}`);
 }
-for (const fn of ['bakeRoads', 'bakeGrid', 'bakeSky']) {
+for (const fn of ['bakeRoads', 'bakeGrid']) {
   if (!html.includes(fn)) fail.push(`C4 static-layer bake missing: ${fn}()`);
 }
 

@@ -2,7 +2,7 @@
 import type {
   Tower, Enemy, Shot, Beam, Part, FloatTxt, Ring, Mote, Spot, WorldNode,
   DraftOffer, GhostState, RouteNode, WeatherEvent, AbilityState, StreakState,
-  SkyBuilding, Ember, CardInst, Settings, SectorObjective, RunRecord, Confirm, ToastItem
+  Ember, CardInst, Settings, SectorObjective, RunRecord, Confirm, ToastItem
 } from './types';
 
 export interface GameState {
@@ -54,7 +54,6 @@ export interface GameState {
   /* screen FX */
   screenFlash: { col: string; a: number };
   gridPulse: { x: number; y: number; col: string; a: number; r: number } | null;
-  sky: SkyBuilding[];
   embers: Ember[];
   cleared: Record<number, boolean>;
   nodes: RouteNode[];         // route-network nodes (unit + pixel coords)
@@ -90,6 +89,7 @@ export interface GameState {
   endStatsShown: boolean;
   scorch: { x: number; y: number; seed: number }[];  // baked kill-site scorch marks (per sector)
   pendingEnemies: Enemy[] | null;                    // saved enemies awaiting route rebuild after resume
+  pendingTowers: { x: number; y: number; i: number; lvl: number; tgt: string; inv: { fe: number; cu: number; si: number }; mods: string[]; hp: number; kills: number; caps: number; dealt: number }[] | null;  // saved towers awaiting viewport projection after resume
 }
 
 /** A brand-new run state for a given seed. */
@@ -142,7 +142,6 @@ export function freshState(seed: number): GameState {
     event: null,
     screenFlash: { col: '', a: 0 },
     gridPulse: null,
-    sky: [],
     embers: [],
     cleared: {},
     nodes: [],
@@ -179,7 +178,8 @@ export function freshState(seed: number): GameState {
     meteorT: 0,
     endStatsShown: false,
     scorch: [],
-    pendingEnemies: null
+    pendingEnemies: null,
+    pendingTowers: null
   };
 }
 

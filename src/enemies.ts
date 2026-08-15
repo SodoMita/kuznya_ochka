@@ -184,7 +184,7 @@ export function endWave(): void {
       banner('SECTOR CLEARED', 'ROUTE NETWORK EXPANDED');
       Snd.play('fanfare');
       if (Object.keys(S.cleared).length >= 3) award('sector3');
-      if (Object.keys(S.cleared).length >= 12 && !S.victoryShown) {
+      if (Object.keys(S.cleared).length >= 14 && !S.victoryShown) {
         S.victoryShown = true;
         setTimeout(function () { showEnd(true); }, 900);
       }

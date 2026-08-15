@@ -38,7 +38,7 @@ The game logic is written in **TypeScript**, split by concern under `src/`:
 | `enemies.ts` | wave composition, spawning, kills, leaks, sector clears, **objectives** |
 | `sim.ts` | the fixed-60Hz simulation step |
 | `fx.ts` | particles, floating text, rings |
-| `render.ts` | battlefield canvas rendering + baked static layers (roads/grid/skyline/scorch) |
+| `render.ts` | battlefield canvas rendering + baked static layers (roads/grid/scorch) |
 | `hud.ts` | DOM HUD: chips, phase bar, cards, unit panel, toasts, medals/archive/settings modals |
 | `draft.ts` | salvage-cache draft offers (with a SKIP option) |
 | `modals.ts` | modal open/close plumbing + generic confirm dialogs |
@@ -70,8 +70,9 @@ npm test            # headless jsdom smoke test of the built index.html
 npm run gencheck    # generator quality check: 400 seeds, asserts crossings/loops/spawns
 npm run rendercheck # render harness: drives many game states, asserts no NaN coords,
                     # balanced save/restore and well-formed gradients across ~3M canvas ops
-npm run balance     # formal balance proof (Z3): 10 economy theorems + constant-drift
-                    # guard + live-game crosscheck   [needs z3-solver, dev-only]
+npm run balance     # formal balance proof (Z3): 16 theorems (economy + expansion
+                    # content) + constant-drift guard + live-game crosscheck
+                    # [needs z3-solver, dev-only]
 npm run verify      # build + test + rendercheck + gencheck + balance
 ```
 
@@ -80,7 +81,7 @@ npm run verify      # build + test + rendercheck + gencheck + balance
 | Constraint | How it is enforced |
 | --- | --- |
 | Ships as **one HTML file**, no fetches | `index.html` is fully self-contained: no `<link>`, no `<script src>`, no `@import`, no `fetch`/XHR/WebSocket. Verified booting from `file://` with all network APIs throwing. |
-| **Fast** | Static road/grid/skyline/scorch layers are baked and blitted; gradients cached; no `shadowBlur` anywhere. Sim+draw costs ~0.15 ms/frame (≈1% of a 60 Hz budget) under battle load. |
+| **Fast** | Static road/grid/scorch layers are baked and blitted; gradients cached; no `shadowBlur` anywhere. Sim+draw costs ~0.15 ms/frame (≈1% of a 60 Hz budget) under battle load. |
 | **Proven balanced** | `npm run balance` — see `scripts/balance/`. |
 | **No raster images** | Zero image files in the repo and zero `data:image` URIs; every visual is canvas vector drawing, CSS, or inline SVG. |
 
@@ -148,25 +149,41 @@ Verify with `npm run gencheck` (400 seeds, currently 100% crossings / 100% loops
 
 ## Balance verification
 
-The economy is **formally verified in Z3** rather than only playtested — see
-`scripts/balance/README.md`. Ten theorems (no money pump, no runaway snowball,
-monotone difficulty, grid-bounded board state, …) are discharged over the whole
-parameter domain using exact rational arithmetic. A constant-extractor keeps
-the model pinned to `src/*.ts`, and a crosscheck drives the built game to
-confirm the shipped build really obeys the proven formulas.
+The game is **formally verified in Z3/SMT** rather than only playtested — see
+`scripts/balance/README.md`. Sixteen theorems are discharged over the whole
+parameter domain using exact rational arithmetic:
+
+- **Economy (T1–T10):** no money pump, no upgrade-then-recycle pump,
+  upgrade efficiency decays monotonically, wave HP strictly increases, a fixed
+  build eventually loses, bounty can't fund runaway growth, capture is better
+  but bounded, grid caps board state, early-launch is priced, foundry payback
+  is positive and finite.
+- **Expansion content (T11–T16):** VULCAN/PULSE CORE pool parity vs NEEDLE at
+  every level, added hostile classes stay inside a constant multiple of the
+  wave-HP formula, ANNIHILATOR regen < on-curve NEEDLE DPS, JAMMER penalty is
+  bounded and its host always killable, METEOR SHOWER can never solo the game,
+  every new multiplier is capped, and the matter-printing cards are one-shot
+  bounded injections with no pump loop.
+
+A constant-extractor re-reads every balance-critical number straight from
+`src/*.ts` and fails the build if the proof drifts from the game; a crosscheck
+drives the shipped build in jsdom to confirm the live formulas match the model.
 
 ## Rendering
 
 The battlefield is drawn on a single 2D canvas at a fixed 60Hz. Presentation is layered:
 
-- **Baked static layers.** The road network (seven stroke passes), the survey grid, the ruined
-  skyline and the kill-site **scorch decals** are static for a given sector + viewport, so each is
-  rendered once into an offscreen canvas and blitted per frame. They are keyed on `S.sectorGen`
+- **Baked static layers.** The road network (seven stroke passes), the survey grid and the
+  kill-site **scorch decals** are static for a given sector + viewport: each is rendered once
+  into an offscreen canvas and blitted per frame. They are keyed on `S.sectorGen`
   (bumped by `genSector()`) plus size/DPR, so regenerating or resizing a sector invalidates them.
+  (The old background skyscraper silhouettes were removed — their flat, billboarded perspective
+  read wrong against the isometric-leaning battlefield, and the sector-tinted gradient + forge
+  haze carry the depth on their own.)
 - **Cached gradients.** Gradients resolve against the transform in effect when they are *used*,
   so any gradient with constant local coordinates (tower chassis, core housing, spawn gates) is
   built once via `lgrad()`/`rgrad()` and reused, keeping the loop allocation-free.
-- **Live passes only for motion:** flow chevrons, beacons, embers, weather overlays, projectiles,
+- **Live passes only for motion:** flow chevrons, embers, weather overlays, projectiles,
   particles, beams, floating text and the phase/danger overlays.
 
 Net result: the richer art is *cheaper* per frame than the flat version it replaced

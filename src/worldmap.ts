@@ -1,4 +1,4 @@
-/* World route canvas: draw the 12-sector graph and handle travel picks. */
+/* World route canvas: draw the 14-sector graph and handle travel picks. */
 import { S } from './state';
 import { wcv, wctx, dpr } from './view';
 import { SECTORS, HAZNAMES, HAZCODE, HAZCOL } from './data';

@@ -197,32 +197,45 @@ button:focus-visible{outline:1px solid var(--teal);outline-offset:1px}
 .spd button:active{transform:translateY(1px)}
 #spdVal{color:var(--gold);font-weight:700;font-size:10.5px;font-variant-numeric:tabular-nums}
 /* ---------- HAND CARDS ---------- */
-/* StS-style: kind ribbon, body, keyword tags, cost footer. `currentColor` is the card's type/tower color. */
+/* StS-style: chunky kind ribbon, tinted body, glowing emblem badge, keyword
+   tags, cost footer. `currentColor` is the card's type/tower color. The body
+   and chrome are tinted with the card color (color-mix) instead of staying
+   neutral — cards read as belonging to their school at a glance. */
 .card{
   position:relative;flex:1 0 104px;max-width:140px;min-width:0;overflow:hidden;cursor:pointer;
   display:flex;flex-direction:column;padding:0 0 4px;border-radius:var(--rad);
-  border:1px solid var(--line);border-top:2px solid currentColor;
+  border:1px solid #2c3a42;border-top:2px solid currentColor;
+  border-color:color-mix(in srgb,currentColor 48%,#10171b);
   background:linear-gradient(172deg,#222c33,#161e22 72%);
-  box-shadow:var(--sh1),var(--inset);
+  background:linear-gradient(172deg,color-mix(in srgb,currentColor 14%,#1b242a),color-mix(in srgb,currentColor 6%,#0f1418) 72%);
+  box-shadow:var(--sh1),var(--inset),inset 0 0 18px #0008;
   transition:border-color .14s,transform .14s var(--ease),box-shadow .14s,filter .14s;
 }
-/* colored wash bleeding down from the card's type ribbon */
-.card::before{content:'';position:absolute;left:0;right:0;top:0;height:34px;pointer-events:none;
-  background:linear-gradient(currentColor,transparent);opacity:.13}
-.card:hover{border-color:var(--amber);transform:translateY(-4px);box-shadow:0 8px 22px #000b,var(--inset);z-index:2}
+.card:hover{border-color:var(--amber);transform:translateY(-4px);box-shadow:0 8px 22px #000b,var(--inset),inset 0 0 18px #0008;z-index:2}
 .card.sel{
   border-color:var(--teal);transform:translateY(-6px);z-index:3;
   box-shadow:inset 0 0 0 1px var(--teal),0 0 20px #3ec9b04d,0 10px 24px #000b}
-.card.sel::before{opacity:.2}
 .card.broke{opacity:.45;filter:saturate(.4) brightness(.9)}
-.card.broke:hover{border-color:var(--red);transform:none;box-shadow:var(--sh1)}
+.card.broke:hover{border-color:var(--red);transform:none;box-shadow:var(--sh1),inset 0 0 18px #0008}
 .card.deal{animation:deal .34s var(--ease) backwards}
 @keyframes deal{from{opacity:0;transform:translateY(20px) scale(.92) rotate(-2deg)}}
-.card .kind{position:relative;font-size:6px;letter-spacing:1.5px;padding:2px 5px 1px;color:#0f1517;background:currentColor;
-  white-space:nowrap;overflow:hidden;font-weight:700}
+/* chunky solid type ribbon with an angled cut — matches the draft offers */
+.card .kind{position:relative;font-size:7px;letter-spacing:2px;padding:3px 6px 2px;color:#0f1517;font-weight:700;
+  white-space:nowrap;overflow:hidden;background:currentColor;
+  background:linear-gradient(currentColor,color-mix(in srgb,currentColor 72%,#000));
+  clip-path:polygon(0 0,100% 0,100% 58%,89% 100%,0 100%)}
 .card .kind i{font-style:normal;color:#0f1517}
-.card .hd{position:relative;display:flex;align-items:center;gap:5px;min-width:0;padding:5px 5px 0}
-.card svg{flex:0 0 14px;height:14px;filter:drop-shadow(0 0 6px currentColor)}
+.card .hd{position:relative;display:flex;align-items:center;gap:5px;min-width:0;padding:4px 5px 0}
+/* emblem badge: the card glyph sits in a glowing hex plate */
+.card .icon{position:relative;display:flex;align-items:center;justify-content:center;height:26px;margin:2px 5px 0}
+.card .icon::before{content:'';position:absolute;left:50%;top:50%;width:44px;height:34px;transform:translate(-50%,-50%);
+  background:radial-gradient(closest-side,color-mix(in srgb,currentColor 30%,transparent),transparent 72%)}
+.card .icon i{display:flex;align-items:center;justify-content:center;width:24px;height:24px;
+  background:color-mix(in srgb,currentColor 14%,#0b1114);
+  border:1px solid color-mix(in srgb,currentColor 60%,transparent);
+  clip-path:polygon(50% 0,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);
+  filter:drop-shadow(0 0 5px color-mix(in srgb,currentColor 50%,transparent))}
+.card svg{width:15px;height:15px;display:block;filter:drop-shadow(0 0 6px currentColor)}
 .card strong{font-family:var(--disp);font-size:10.5px;letter-spacing:.3px;color:var(--ink);white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis;font-weight:400}
 .card .key{margin-left:auto;font-size:7px;color:var(--dim2);border:1px solid var(--line2);border-radius:2px;padding:0 3px;flex:0 0 auto;
@@ -231,8 +244,11 @@ button:focus-visible{outline:1px solid var(--teal);outline-offset:1px}
 .card .tags{position:relative;padding:3px 5px 0;font-size:6.5px;letter-spacing:1px;line-height:1.5;min-height:10px}
 .card .tags em{font-style:normal;margin-right:4px;white-space:nowrap;cursor:help}
 .tag-ex{color:var(--red)}.tag-eth{color:var(--violet)}.tag-ret{color:var(--teal)}.tag-inn{color:var(--steel)}.tag-con{color:var(--gold)}
-.card .cst{position:relative;margin-top:auto;padding:4px 5px 1px;font-size:7.5px;font-weight:700;letter-spacing:.2px;white-space:nowrap;
-  border-top:1px solid var(--line2);font-variant-numeric:tabular-nums}
+/* brighter color-matched cost strip */
+.card .cst{position:relative;margin-top:auto;padding:4px 5px 2px;font-size:7.5px;font-weight:700;letter-spacing:.2px;white-space:nowrap;
+  border-top:1px solid color-mix(in srgb,currentColor 42%,#141b20);
+  background:linear-gradient(color-mix(in srgb,currentColor 16%,#0c1215),color-mix(in srgb,currentColor 5%,#0c1215));
+  font-variant-numeric:tabular-nums}
 .cst .fe{color:var(--copper)}.cst .cu{color:var(--amber)}.cst .si{color:var(--steel)}
 .cst .free{color:var(--dim2);font-weight:400}
 .cst .lack{color:var(--red);text-shadow:0 0 8px #e5484d55}
@@ -420,19 +436,66 @@ body.noline #app::after{display:none}
 }
 /* ---------- PORTRAIT / SMALL ---------- */
 @media (max-width:560px){
-  #app{grid-template-rows:42px minmax(0,1fr) 222px}
-  #brand{font-size:15px}#brand span{display:none}
-  .chip{padding:2px 5px}.chip b{font-size:10.5px}.chip i{display:none}
-  #hbtns button{padding:4px 7px;font-size:8px}
-  #deck{grid-template-areas:"L C" "L R";grid-template-columns:130px minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:6px;padding:6px}
-  .card{flex-basis:88px;max-width:114px}
-  #deckR{flex-direction:row;gap:6px;align-items:stretch}
-  #unitBox{flex:1;padding:6px;gap:4px}
+  #app{grid-template-rows:40px minmax(0,1fr) 238px}
+  /* header — compact controls, chips scroll horizontally instead of colliding */
+  #hud{gap:5px;padding:0 5px}
+  #brand{font-size:13px;letter-spacing:.2px}#brand span{display:none}
+  #chips{justify-content:flex-start;gap:3px;overflow-x:auto;scrollbar-width:none;padding:2px 0;flex:1 1 auto}
+  #chips::-webkit-scrollbar{display:none}
+  .chip{padding:2px 4px;flex:0 0 auto}.chip b{font-size:10px}.chip i{display:none}
+  #hbtns{gap:2px;flex:0 0 auto}
+  #hbtns button{padding:3px 4px;font-size:7.5px;letter-spacing:.5px}
+  /* deck — three stacked rows: hand / controls strip / unit panel */
+  #deck{grid-template-areas:"C C" "L L" "R R";grid-template-columns:1fr 1fr;
+    grid-template-rows:minmax(0,1fr) 34px auto;gap:5px;padding:5px}
+  #deckL{flex-direction:row;align-items:stretch;gap:5px;min-width:0;overflow-x:auto;scrollbar-width:none}
+  #deckL::-webkit-scrollbar{display:none}
+  #startBtn{flex:1 0 92px;font-size:12px;padding:3px 2px}
+  #startBtn div{font-size:6.5px;letter-spacing:.5px;margin-top:2px}
+  #timebar{flex:1 0 56px;margin:auto 0}
+  #deckL .row2{grid-template-columns:1fr 1fr;flex:0 0 118px;gap:3px}
+  #deckL .sq{font-size:7px;letter-spacing:.4px;padding:2px 3px;min-height:24px;white-space:nowrap;overflow:hidden}
+  .spd{grid-template-columns:26px 30px 26px;flex:0 0 auto;gap:3px}
+  .spd button{font-size:9px;padding:2px 0}
+  #spdVal{font-size:8.5px}
+  /* hand cards — single row, text cut to the essentials */
+  .card{flex-basis:84px;max-width:110px}
+  .card p{display:none}
+  /* unit panel — two-column wrap so it stays short */
+  #deckR{min-height:0}
+  #unitBox{flex:1;padding:5px;gap:3px;flex-direction:row;flex-wrap:wrap;align-items:center;align-content:flex-start}
+  #unitHead{flex:1 1 42%;font-size:11px}
+  #unitMods{flex:1 1 50%;font-size:6.5px;text-align:right;overflow:hidden}
   #unitStats{display:none}
+  #tgtRow{flex:0 0 100%}
+  #modBtn,#recalBtn{flex:1 1 100%}
+  #unitBox .row2{flex:1 1 45%;min-width:0}
+  #unitBox .sq{min-height:24px;font-size:8px;padding:3px 2px}
+  /* pile bar scrolls instead of wrapping */
+  #pileBar{gap:3px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;flex:0 0 18px}
+  #pileBar::-webkit-scrollbar{display:none}
+  #pileBar button{font-size:6.5px;padding:2px 5px}
+  #pileInfo{margin-left:3px}
+  /* battlefield chrome */
+  #abils button{font-size:11px;min-width:62px;padding:6px 7px 5px}
+  #objChip{right:7px;top:32px;max-width:180px;font-size:7px}
   #phaseBig{font-size:17px}
+  #stInfo b{font-size:10.5px}
   #banner{font-size:26px}
+  /* modals */
+  .modal{padding:8px}
+  .panel{padding:12px}
   #offers{grid-template-columns:1fr}
+  #worldCv{height:200px}
   #hint{font-size:7px;letter-spacing:1px}
+}
+@media (max-width:380px){
+  /* extra-tight header + control strip for narrow phones */
+  #hbtns button{padding:3px 3px}
+  #startBtn{flex-basis:76px}
+  #timebar{flex-basis:44px}
+  #deckL .row2{flex-basis:100px}
+  .spd{grid-template-columns:24px 28px 24px}
 }
 @media (max-height:430px) and (min-width:561px){
   #app{grid-template-rows:38px minmax(0,1fr) 118px}
@@ -558,7 +621,7 @@ body.noline #app::after{display:none}
     <div class="panel">
       <button class="close" data-close="mapModal">CLOSE</button>
       <h2>WORLD ROUTE</h2>
-      <div class="sub">12 PROCEDURAL SECTORS · CLEAR WAVE 12 TO OPEN ADJACENT ROUTES</div>
+      <div class="sub">14 PROCEDURAL SECTORS · CLEAR WAVE 12 TO OPEN ADJACENT ROUTES</div>
       <canvas id="worldCv"></canvas>
       <div id="nodeInfo">select a sector to inspect · bars show local salvage mix (Fe/Cu/Si)</div>
       <button id="retreatBtn">⟲ RETREAT — ABANDON SECTOR, KEEP THE DECK</button>
@@ -570,7 +633,7 @@ body.noline #app::after{display:none}
       <h2>FIELD MANUAL</h2>
       <div class="sub">ECONOMY · DOCTRINE · BALANCE LEDGER</div>
       <h3 class="sec">OBJECTIVE</h3>
-      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, nine blueprints, thirteen hostile classes, twenty-six relics, thirteen modules, two field abilities. Survive wave 12 to clear a sector and open the world route. Every sector also carries a <b style="color:var(--teal)">bonus objective</b> (top-right chip): sealed hull, capture quotas, blitz launches or zero unit losses — paid in bonus grid, matter and score. Runs auto-save and resume; score feeds the archive.</p>
+      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, nine blueprints, thirteen hostile classes, twenty-six relics, thirteen modules, two field abilities — all routed through a 14-sector world. Survive wave 12 to clear a sector and open the world route. Every sector also carries a <b style="color:var(--teal)">bonus objective</b> (top-right chip): sealed hull, capture quotas, blitz launches or zero unit losses — paid in bonus grid, matter and score. Runs auto-save and resume; score feeds the archive.</p>
       <h3 class="sec">THE CIRCUIT DECK</h3>
       <p>You fight with a <b style="color:var(--teal)">deck of cards</b>, drawn Slay-the-Spire style. Your run starts with 10 cards; salvage caches add more. Each fabrication window is a <b>turn</b>: your old hand is discarded and you draw 5 (Autoloader: +1). Playing a card costs matter, not energy — your resources are the mana pool.</p>
       <p><b style="color:var(--steel)">CIRCUIT BOARDS</b> are the only way to build: select one and tap the field to print its unit — the board is consumed into the discard pile and cycles back on reshuffle. <b style="color:var(--teal)">SUBROUTINES</b> are one-shot skills, including hand-control circuits that discard weak cards or recycle cards from discard. <b style="color:var(--gold)">FIRMWARE</b> installs a sector-wide modifier and always exhausts. <b style="color:#b18cd9">CORRUPTIONS</b> are unplayable curse cards: risky black-box technology adds them permanently, while CLEAN ROOM can purge them.</p>
@@ -605,6 +668,10 @@ body.noline #app::after{display:none}
         <tr><td>Rail / Aegis</td><td>Rail: 150-range sniper, ignores 80% armor, Si-hungry. Aegis: 30% slow field, +2%/level (cap 50%), stacks with beams by taking the max</td></tr>
         <tr><td>Mortar</td><td>lobbed shells, area splash: 60% of shell damage to everything within 34px, halves armor — the swarm answer</td></tr>
         <tr><td>Modules</td><td>one module per unit per kind · install cost ≈ blueprint cost · exhausts each sector — a targeted spike, never an infinite stack</td></tr>
+        <tr><td>Vulcan</td><td>36 DPS · 52 matter — 0.80× NEEDLE per matter at every level (Z3-proven pool parity) · jammed rate quarters to 9</td></tr>
+        <tr><td>Pulse Core</td><td>9.9 DPS blast · 64 matter — area denial; even 10 simultaneous targets stay ≤1.79× NEEDLE per matter</td></tr>
+        <tr><td>Hostiles</td><td>shrieker ≤1.92× · jammer ≤3.6× · annihilator ≤36× of the wave-HP formula — the curve stays the only difficulty engine</td></tr>
+        <tr><td>Weather</td><td>meteor strikes take 15% of a hostile's hull and stray clips deal 1 integrity — assists, never decides</td></tr>
         <tr><td>Scrap streak</td><td>kills within 2.2s chain: +1% salvage per link, cap +25% (Tithe: +40%) — density pays</td></tr>
         <tr><td>Abilities</td><td>Surge/Weld are matter-sink pressure valves with hard recharge timers — no spam loop possible</td></tr>
         <tr><td>Elites</td><td>veteran rolls scale 3%→25%: +60% hull vs +70% bounty keeps them net-positive but never farmable</td></tr>
@@ -747,7 +814,6 @@ body.noline #app::after{display:none}
       event: null,
       screenFlash: { col: "", a: 0 },
       gridPulse: null,
-      sky: [],
       embers: [],
       cleared: {},
       nodes: [],
@@ -792,7 +858,8 @@ body.noline #app::after{display:none}
       meteorT: 0,
       endStatsShown: false,
       scorch: [],
-      pendingEnemies: null
+      pendingEnemies: null,
+      pendingTowers: null
     };
   }
   var S = freshState((Date.now() ^ 390057) >>> 0);
@@ -1570,14 +1637,6 @@ body.noline #app::after{display:none}
     for (let i = 0; i < 14; i++) {
       S.embers.push({ x: Math.random() * W, y: Math.random() * H, vy: 6 + Math.random() * 12, ph: Math.random() * 6.28 });
     }
-    S.sky = [];
-    const sr = mulberry32(S.seed + S.sector * 104729 >>> 0);
-    let skx = -0.02;
-    while (skx < 1.02) {
-      const skw = 0.04 + sr() * 0.08;
-      S.sky.push({ x: skx, w: skw, h: 0.05 + sr() * 0.17, ant: sr() < 0.35 });
-      skx += skw + sr() * 0.04;
-    }
   }
   function genSpots(r) {
     S.spots = [];
@@ -2176,27 +2235,19 @@ body.noline #app::after{display:none}
       S.objective = sh.objective || null;
       S.spawnIdx = sh.spawnIdx || 0;
       S.enemies = [];
-      S.towers = sh.towers.map(function(t) {
-        var mhp = towerMhp({ i: t.i, lvl: t.lvl });
+      S.pendingTowers = sh.towers.map(function(t) {
         return {
-          x: t.x * W,
-          y: t.y * H,
+          x: t.x,
+          y: t.y,
           i: t.i,
           lvl: t.lvl,
-          cool: 0,
-          ang: -Math.PI / 2,
-          flash: 0,
-          slow: 0,
           tgt: t.tgt,
           inv: { fe: t.inv.fe, cu: t.inv.cu, si: t.inv.si },
           mods: t.mods.slice(),
-          hp: Math.min(t.hp, mhp),
-          mhp,
+          hp: t.hp,
           kills: t.kills,
           caps: t.caps,
-          dealt: t.dealt,
-          dropT: 0,
-          jam: 0
+          dealt: t.dealt
         };
       });
       S.pendingEnemies = sh.enemies;
@@ -2306,7 +2357,7 @@ body.noline #app::after{display:none}
         ribbon = '<span class="okind">BLUEPRINT UPGRADE</span>';
         glyph = GLYPHS[c.id];
         name = c.name + " Mk." + (S.ranks[o.id] + 2);
-        desc = "Permanent +5% damage & output for every " + c.name + " unit, current and future. Now Mk." + (S.ranks[o.id] + 1) + ".";
+        desc = "Permanent +5% damage & output for every " + c.name + " unit, current and future. Now Mk." + (S.ranks[o.id] + 2) + ".";
       } else {
         var r = RELICS.filter(function(x) {
           return x.id === o.id;
@@ -2375,7 +2426,7 @@ body.noline #app::after{display:none}
   // src/world.ts
   function genWorld() {
     var r = mulberry32((S.seed ^ 2654435769) >>> 0);
-    var layers = [[0, 1], [2, 3, 4], [5, 6, 7, 8], [9, 10, 11]];
+    var layers = [[0, 1], [2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12, 13]];
     S.worldNodes = [];
     S.worldEdges = [];
     for (var li = 0; li < layers.length; li++) {
@@ -2687,7 +2738,7 @@ body.noline #app::after{display:none}
     saveBest();
     $("endTitle").textContent = win ? "FRONT SECURED" : "CORE OFFLINE";
     $("endTitle").style.color = win ? "#3ec9b0" : "#e5484d";
-    $("endSub").textContent = win ? "ALL 12 SECTORS CLEARED" : "SECTOR " + pad2(S.sector + 1) + " LOST";
+    $("endSub").textContent = win ? "ALL 14 SECTORS CLEARED" : "SECTOR " + pad2(S.sector + 1) + " LOST";
     var relicCount = RELICS.filter(function(r) {
       return S.relics[r.id];
     }).length;
@@ -2912,7 +2963,7 @@ body.noline #app::after{display:none}
         banner("SECTOR CLEARED", "ROUTE NETWORK EXPANDED");
         Snd.play("fanfare");
         if (Object.keys(S.cleared).length >= 3) award("sector3");
-        if (Object.keys(S.cleared).length >= 12 && !S.victoryShown) {
+        if (Object.keys(S.cleared).length >= 14 && !S.victoryShown) {
           S.victoryShown = true;
           setTimeout(function() {
             showEnd(true);
@@ -3962,7 +4013,7 @@ body.noline #app::after{display:none}
       var rankTag = d.kind === "board" && S.ranks[CARDS[d.tower].id] ? '<span class="rank">Mk.' + (S.ranks[CARDS[d.tower].id] + 1) + "</span>" : "";
       var isNew = !seenUids[ci.uid];
       if (isNew) dealt++;
-      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + "</i></div>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + '<div class="hd"><strong>' + d.name + '</strong></div><div class="icon">' + glyph + '</div><p title="' + d.desc + '">' + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "curse" ? "UNPLAYABLE" : d.kind === "module" ? "\u25B8 TAP A UNIT TO INSTALL" : isTargetedSkill(d) ? "\u25B8 TAP A UNIT TO CAST" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
+      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + "</i></div>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + '<div class="hd"><strong>' + d.name + '</strong></div><div class="icon"><i>' + glyph + '</i></div><p title="' + d.desc + '">' + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "curse" ? "UNPLAYABLE" : d.kind === "module" ? "\u25B8 TAP A UNIT TO INSTALL" : isTargetedSkill(d) ? "\u25B8 TAP A UNIT TO CAST" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
     }
     if (!S.hand.length) {
       h = '<div id="handEmpty">HAND EMPTY \u2014 NEW CARDS DEALT NEXT FABRICATION WINDOW \xB7 [D] LEDGER</div>';
@@ -4072,12 +4123,22 @@ body.noline #app::after{display:none}
     openModal("deckModal");
     Snd.play("ui");
   }
+  var unitSig = "";
   function renderUnit() {
     var t = S.selTower;
     var has = !!(t && S.towers.indexOf(t) >= 0);
-    $("tgtRow").style.display = has ? "grid" : "none";
     var md = selModule();
     var rk = selTargetedSkill();
+    var sig = t && has ? t.i + "|" + t.lvl + "|" + t.hp.toFixed(1) + "|" + t.mhp + "|" + t.kills + "|" + t.caps + "|" + t.dealt.toFixed(0) + "|" + t.tgt + "|" + t.mods.join(",") + "|" + t.inv.fe + "," + t.inv.cu + "," + t.inv.si + "|" + S.towers.length + "|" + (S.ranks[CARDS[t.i].id] || 0) : "-|" + (md ? md.id : "") + "|" + (rk ? rk.id : "");
+    sig += "|" + (md ? md.id : "") + "|" + (rk ? rk.id + canAfford(rk.cost) : "") + "|" + S.towers.length;
+    if (t && has) {
+      var stS = stats(t);
+      sig += "|" + (stS.dmg * stS.rate).toFixed(1) + "|" + stS.range.toFixed(0) + "|" + stS.stars;
+      sig += "|" + upCost(t).fe + "," + upCost(t).cu + "," + upCost(t).si;
+    }
+    if (sig === unitSig) return;
+    unitSig = sig;
+    $("tgtRow").style.display = has ? "grid" : "none";
     $("sellAllBtn").style.display = has ? "" : "none";
     $("upAllBtn").style.display = has ? "" : "none";
     if (!t || !has) {
@@ -4166,7 +4227,7 @@ body.noline #app::after{display:none}
     }).join("") : '<tr><td colspan="6">NO RUNS RECORDED YET \u2014 GO BREAK SOMETHING</td></tr>';
     $("histBody").innerHTML = rows;
     var secs = Object.keys(S.cleared).length;
-    $("histInfo").innerHTML = 'CURRENT RUN \xB7 seed <b style="color:var(--amber)">' + S.seed + "</b> \xB7 wave " + S.wave + ' \xB7 score <b style="color:var(--gold)">' + fmt(S.score) + "</b> (best " + fmt(S.best) + ") \xB7 sectors " + secs + "/12 \xB7 kills " + S.stat.kills + " \xB7 captures " + S.stat.captures + " \xB7 leaks " + S.stat.leaks + " \xB7 towers lost " + S.stat.towerLoss + " \xB7 salvaged " + fmt(S.stat.salvaged);
+    $("histInfo").innerHTML = 'CURRENT RUN \xB7 seed <b style="color:var(--amber)">' + S.seed + "</b> \xB7 wave " + S.wave + ' \xB7 score <b style="color:var(--gold)">' + fmt(S.score) + "</b> (best " + fmt(S.best) + ") \xB7 sectors " + secs + "/14 \xB7 kills " + S.stat.kills + " \xB7 captures " + S.stat.captures + " \xB7 leaks " + S.stat.leaks + " \xB7 towers lost " + S.stat.towerLoss + " \xB7 salvaged " + fmt(S.stat.salvaged);
   }
   function renderRelicsTab() {
     var owned = RELICS.filter(function(r) {
@@ -4890,7 +4951,8 @@ body.noline #app::after{display:none}
     const t = S.selTower;
     if (!t || S.towers.indexOf(t) < 0) return;
     var doRecycle = function() {
-      gainRes({ fe: t.inv.fe * 0.7, cu: t.inv.cu * 0.7, si: t.inv.si * 0.7 }, t.x, t.y);
+      var rm = 0.7 + (S.relics.harvester ? 0.1 : 0);
+      gainRes({ fe: t.inv.fe * rm, cu: t.inv.cu * rm, si: t.inv.si * rm }, t.x, t.y);
       S.towers = S.towers.filter(function(x) {
         return x !== t;
       });
@@ -5388,50 +5450,6 @@ body.noline #app::after{display:none}
     c.stroke();
     c.globalAlpha = 1;
   }
-  var skyCv = null;
-  var skyKey = "";
-  function bakeSky(sec) {
-    var key = sec.path + "|" + W + "|" + H + "|" + dpr + "|" + S.sectorGen;
-    if (key === skyKey && skyCv) return;
-    skyKey = key;
-    if (!skyCv) skyCv = document.createElement("canvas");
-    skyCv.width = Math.max(1, Math.round(W * dpr));
-    skyCv.height = Math.max(1, Math.round(H * dpr));
-    var c = skyCv.getContext("2d");
-    if (!c) {
-      skyCv = null;
-      return;
-    }
-    c.setTransform(dpr, 0, 0, dpr, 0, 0);
-    c.clearRect(0, 0, W, H);
-    for (var i = 0; i < S.sky.length; i++) {
-      var skf = S.sky[i];
-      var fh = skf.h * H * 0.62, fx = skf.x * W + W * 0.012;
-      c.fillStyle = "rgba(0,0,0,.13)";
-      c.fillRect(fx, H - fh, skf.w * W * 0.8 + 1, fh);
-    }
-    for (var j = 0; j < S.sky.length; j++) {
-      var sk = S.sky[j];
-      var bx = sk.x * W, bw = sk.w * W + 1, bh = sk.h * H, by = H - bh;
-      c.fillStyle = "rgba(0,0,0,.30)";
-      c.fillRect(bx, by, bw, bh);
-      c.fillStyle = shadeA(sec.path, 0.3, 0.16);
-      c.fillRect(bx, by, 1, bh);
-      if (bw > 9 && bh > 14) {
-        var wc = j * 7 % 3 + 1;
-        for (var wI = 0; wI < wc; wI++) {
-          var wy = by + 5 + (j * 13 + wI * 29) % Math.max(1, Math.floor(bh - 10));
-          var wx = bx + 2 + (j * 5 + wI * 11) % Math.max(1, Math.floor(bw - 5));
-          c.fillStyle = hexA("#ffb45e", 0.14);
-          c.fillRect(wx, wy, 1.5, 2);
-        }
-      }
-      if (sk.ant) {
-        c.fillStyle = "rgba(0,0,0,.30)";
-        c.fillRect(bx + bw * 0.5 - 0.5, by - 5, 1, 5);
-      }
-    }
-  }
   var scorchCv = null;
   var scorchKey = "";
   function bakeScorch() {
@@ -5488,20 +5506,6 @@ body.noline #app::after{display:none}
       ctx.fillRect(m.x, m.y, m.r, m.r);
     }
     ctx.restore();
-    bakeSky(sec);
-    if (skyCv) ctx.drawImage(skyCv, 0, 0, W, H);
-    for (i = 0; i < S.sky.length; i++) {
-      var skb = S.sky[i];
-      if (!skb.ant) continue;
-      var bx2 = skb.x * W, bw2 = skb.w * W + 1, by2 = H - skb.h * H;
-      var apu = (Math.sin(S.time * 2 + i * 2) + 1) / 2;
-      ctx.fillStyle = hexA("#e5484d", 0.25 + 0.5 * apu);
-      ctx.fillRect(bx2 + bw2 * 0.5 - 1, by2 - 7, 2, 3);
-      if (apu > 0.6) {
-        ctx.fillStyle = hexA("#e5484d", (apu - 0.6) * 0.22);
-        ctx.fillRect(bx2 + bw2 * 0.5 - 3.5, by2 - 9, 7, 7);
-      }
-    }
     for (i = 0; i < S.embers.length; i++) {
       var em = S.embers[i];
       em.y -= em.vy * 0.016;
@@ -6920,7 +6924,7 @@ body.noline #app::after{display:none}
       if (t.flash > 0) t.flash -= dt;
       if ((t.selF || 0) > 0) t.selF = (t.selF || 0) - dt * 3;
       s = t._st;
-      var jamRate = t.jam ? 0.4 : 1;
+      var jamRate = t.jam ? 0.25 : 1;
       if (c.id === "aegis") {
         var as = Math.min(0.5, (hasMod(t, "cryo") ? 0.45 : 0.3) + 0.02 * (t.lvl - 1));
         if (t.jam) as *= 0.5;
@@ -7169,6 +7173,11 @@ body.noline #app::after{display:none}
     debugSpawn: function(type) {
       spawnEnemy(type);
     },
+    /* formula hooks the balance crosscheck proves against */
+    effCost,
+    boardCostMult,
+    scavMult,
+    towerMhp,
     saveRun,
     loadRun,
     clearSave
@@ -7246,6 +7255,32 @@ body.noline #app::after{display:none}
     });
     S.pendingEnemies = null;
     if (S.phase === "wave" && !S.enemies.length && !S.spawnQ.length) S.phase = "build";
+  }
+  if (S.pendingTowers) {
+    S.towers = S.pendingTowers.map(function(pt) {
+      var mhp = towerMhp({ i: pt.i, lvl: pt.lvl });
+      return {
+        x: clamp(pt.x * W, 14, W - 14),
+        y: clamp(pt.y * H, 14, H - 14),
+        i: pt.i,
+        lvl: pt.lvl,
+        cool: 0,
+        ang: -Math.PI / 2,
+        flash: 0,
+        slow: 0,
+        tgt: pt.tgt,
+        inv: { fe: pt.inv.fe, cu: pt.inv.cu, si: pt.inv.si },
+        mods: pt.mods.slice(),
+        hp: Math.min(pt.hp, mhp),
+        mhp,
+        kills: pt.kills,
+        caps: pt.caps,
+        dealt: pt.dealt,
+        dropT: 0,
+        jam: 0
+      };
+    });
+    S.pendingTowers = null;
   }
   if (resumed) toast("RUN RESUMED \u2014 SEED " + S.seed + " \xB7 WAVE " + S.wave);
   addEventListener("resize", function() {
