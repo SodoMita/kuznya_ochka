@@ -63,7 +63,19 @@ npm test            # headless jsdom smoke test of the built index.html
 npm run gencheck    # generator quality check: 400 seeds, asserts crossings/loops/spawns
 npm run rendercheck # render harness: drives many game states, asserts no NaN coords,
                     # balanced save/restore and well-formed gradients across ~3M canvas ops
+npm run balance     # formal balance proof (Z3): 10 economy theorems + constant-drift
+                    # guard + live-game crosscheck   [needs z3-solver, dev-only]
+npm run verify      # build + test + rendercheck + gencheck + balance
 ```
+
+### Hard constraints this build holds to
+
+| Constraint | How it is enforced |
+| --- | --- |
+| Ships as **one HTML file**, no fetches | `index.html` is fully self-contained: no `<link>`, no `<script src>`, no `@import`, no `fetch`/XHR/WebSocket. Verified booting from `file://` with all network APIs throwing. |
+| **Fast** | Static road/grid/skyline layers are baked and blitted; gradients cached; no `shadowBlur` anywhere. Sim+draw costs ~0.15 ms/frame (≈1% of a 60 Hz budget) under battle load. |
+| **Proven balanced** | `npm run balance` — see `scripts/balance/`. |
+| **No raster images** | Zero image files in the repo and zero `data:image` URIs; every visual is canvas vector drawing, CSS, or inline SVG. |
 
 ## Feature set
 
@@ -122,6 +134,15 @@ Each sector is a small **route network** (a connected graph), not a single path:
   if the strict pass starves.
 
 Verify with `npm run gencheck` (400 seeds, currently 100% crossings / 100% loops / 100% multi-spawn).
+
+## Balance verification
+
+The economy is **formally verified in Z3** rather than only playtested — see
+`scripts/balance/README.md`. Ten theorems (no money pump, no runaway snowball,
+monotone difficulty, grid-bounded board state, …) are discharged over the whole
+parameter domain using exact rational arithmetic. A constant-extractor keeps
+the model pinned to `src/*.ts`, and a crosscheck drives the built game to
+confirm the shipped build really obeys the proven formulas.
 
 ## Rendering
 
