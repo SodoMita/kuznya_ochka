@@ -1,7 +1,7 @@
 /* DOM HUD: resource chips, phase bar, the card hand, unit panel, toasts. */
 import { S } from './state';
 import { $, fmt, pad2 } from './utils';
-import { CARDS, GLYPHS, KIND_LABEL, TGT_LABEL, HAZNAMES, MEDALS } from './data';
+import { CARDS, GLYPHS, KIND_LABEL, KIND_COL, TGT_LABEL, HAZNAMES, MEDALS } from './data';
 import { sector, canAfford, usedGrid, upCost, gridCap } from './economy';
 import { stats, foundryOut, nextWaveStr, hasMod } from './towers';
 import { defOf, defById, canPlayDef, playCard, handSize, HAND_CAP, modById, selModule, isTargetedSkill, selTargetedSkill } from './deck';
@@ -105,8 +105,6 @@ function handSignature(): string {
   }).join('|') + '·' + S.hand.length + '·' + S.selCard;
 }
 
-const KIND_COL: Record<string, string> = { board: '#9fb6c9', skill: '#3ec9b0', power: '#ffd23f', curse: '#b18cd9', module: '#c78bff' };
-
 const TAG_TIP: Record<string, string> = {
   INNATE: 'guaranteed in the sector\u2019s opening hand',
   RETAIN: 'not discarded when the turn ends',
@@ -149,7 +147,7 @@ export function renderCards(): void {
     var ci = S.hand[i], d = defOf(ci);
     var col = d.kind === 'board' ? CARDS[d.tower!].col : d.kind === 'module' ? modById(d.module!).col : KIND_COL[d.kind];
     var chk = canPlayDef(d);
-    var glyph = d.kind === 'board' ? GLYPHS[CARDS[d.tower!].id] : d.kind === 'module' ? GLYPHS.mod : '';
+    var glyph = d.kind === 'board' ? GLYPHS[CARDS[d.tower!].id] : d.kind === 'module' ? GLYPHS.mod : (GLYPHS['k_' + d.kind] || '');
     var rankTag = d.kind === 'board' && S.ranks[CARDS[d.tower!].id] ? '<span class="rank">Mk.' + (S.ranks[CARDS[d.tower!].id] + 1) + '</span>' : '';
     var isNew = !seenUids[ci.uid];
     if (isNew) dealt++;
@@ -157,7 +155,9 @@ export function renderCards(): void {
       '" data-card="' + i + '" style="color:' + col + (isNew ? ';animation-delay:' + ((dealt - 1) * 45) + 'ms' : '') + '"' +
       (chk.ok ? '' : ' title="' + chk.why + '"') + '>' +
       '<div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div>' +
-      '<div class="hd">' + glyph + '<strong>' + d.name + '</strong>' + (i < 9 ? '<span class="key">' + (i + 1) + '</span>' : '') + '</div>' +
+      (i < 9 ? '<span class="key">' + (i + 1) + '</span>' : '') +
+      '<div class="hd"><strong>' + d.name + '</strong></div>' +
+      '<div class="icon">' + glyph + '</div>' +
       '<p>' + d.desc + '</p>' +
       '<div class="tags">' + tagStr(d) + '</div>' +
       '<div class="cst">' + costHtml(d.cost) + '</div>' + rankTag +

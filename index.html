@@ -314,6 +314,11 @@ button:focus-visible{outline:1px solid var(--teal);outline-offset:1px}
 .offer b{display:block;font-family:var(--disp);font-size:14.5px;letter-spacing:.5px;font-weight:400;color:var(--ink);margin:3px 0 5px}
 .offer p{font-size:8px;margin:0;color:var(--dim);line-height:1.45}
 .offer .pick{margin-top:8px;font-size:7px;letter-spacing:2px;color:var(--amber);opacity:0;transition:.15s}
+.offer .okind{display:block;font-size:6px;letter-spacing:1.5px;margin:0 -8px 7px;padding:2px 8px 1px;color:#0f1517;background:currentColor;clip-path:polygon(0 0,100% 0,100% 40%,88% 100%,0 100%)}
+.offer:hover.rarwrap, .offer:hover{border-color:var(--amber)}
+.offer b svg{flex:0 0 14px;height:14px;filter:drop-shadow(0 0 3px currentColor)}
+.offer .tags{margin-top:5px;font-size:6px;letter-spacing:.8px;line-height:1.7}
+.offer .tags em{font-style:normal;margin-right:3px;white-space:nowrap;border:1px solid currentColor;padding:0 2px}
 .offer:hover .pick{opacity:1}
 /* deck ledger */
 #deckList{display:flex;flex-direction:column;gap:11px}
@@ -369,6 +374,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   #app{grid-template-rows:38px minmax(0,1fr) 118px}
   #deck{padding:6px;gap:6px}
   .card p{display:none}
+  .card .icon{display:none}
   #unitStats{display:none}
 }
 @media (min-width:561px) and (max-width:700px){
@@ -678,7 +684,11 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     rail: '<svg viewBox="0 0 16 16"><path d="M1 13L13 3M13 3l2-2M13 3v3M10 6v3M3 15h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
     aegis: '<svg viewBox="0 0 16 16"><path d="M8 1l6 3v4c0 3.5-2.7 6-6 7-3.3-1-6-3.5-6-7V4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="7.5" r="1.6" fill="currentColor"/></svg>',
     mortar: '<svg viewBox="0 0 16 16"><path d="M3 13h10M4 13V9l3-2h4l2 2v4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 4l2-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
-    mod: '<svg viewBox="0 0 16 16"><path d="M10 2l4 4-6 6-3 1-1-3 6-8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="4" cy="12" r="1.3" fill="currentColor"/></svg>'
+    mod: '<svg viewBox="0 0 16 16"><path d="M10 2l4 4-6 6-3 1-1-3 6-8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="4" cy="12" r="1.3" fill="currentColor"/></svg>',
+    /* generic card-kind schematics — subroutine / firmware / corruption */
+    k_skill: '<svg viewBox="0 0 16 16"><path d="M5 4L2 8l3 4M11 4l3 4-3 4M9.5 3l-3 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    k_power: '<svg viewBox="0 0 16 16"><rect x="4" y="4" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 1v3M10 1v3M6 12v3M10 12v3M1 6h3M1 10h3M12 6h3M12 10h3" stroke="currentColor" stroke-width="1.2"/></svg>',
+    k_curse: '<svg viewBox="0 0 16 16"><path d="M8 2v6M8 11v.5M2.5 13.5L8 2l5.5 11.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>'
   };
   var CARDS = [
     { id: "needle", name: "NEEDLE", desc: "rapid kinetic sentry", cost: { fe: 24, cu: 8, si: 2 }, dmg: 7, rate: 4.2, range: 92, draw: 1, col: "#d9e2b0" },
@@ -790,6 +800,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     curse: "CORRUPTION",
     module: "MODULE"
   };
+  var KIND_COL = { board: "#9fb6c9", skill: "#3ec9b0", power: "#ffd23f", curse: "#b18cd9", module: "#c78bff" };
   var RELICS = [
     { id: "cap", name: "CAPACITOR BANK", desc: "+8 grid capacity, immediately", rar: 1 },
     { id: "scav", name: "SCAVENGER PROTOCOL", desc: "+12% salvage from every source", rar: 1 },
@@ -1662,31 +1673,41 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     var h = "";
     for (var i = 0; i < S.draftOffers.length; i++) {
       var o = S.draftOffers[i], name, desc, pick = "\u25B8 INSTALL", rn = ["COMMON", "ADVANCED", "PROTOTYPE"][o.rar];
+      var col = "", ribbon = "", glyph = "", tags = "";
       if (o.kind === "card") {
         var d = defById(o.id);
         var flags = [];
-        if (d.exhaust) flags.push("EXHAUST");
-        if (d.ethereal) flags.push("ETHEREAL");
-        if (d.retain) flags.push("RETAIN");
-        if (d.innate) flags.push("INNATE");
-        if (d.consume) flags.push("CONSUME");
+        if (d.innate) flags.push('<em class="tag-inn">INNATE</em>');
+        if (d.retain) flags.push('<em class="tag-ret">RETAIN</em>');
+        if (d.ethereal) flags.push('<em class="tag-eth">ETHEREAL</em>');
+        if (d.exhaust) flags.push('<em class="tag-ex">EXHAUST</em>');
+        if (d.consume) flags.push('<em class="tag-con">CONSUME</em>');
+        col = d.kind === "board" ? CARDS[d.tower].col : KIND_COL[d.kind];
+        ribbon = '<span class="okind">' + KIND_LABEL[d.kind] + "</span>";
+        glyph = d.kind === "board" ? GLYPHS[CARDS[d.tower].id] : GLYPHS["k_" + d.kind] || "";
+        tags = flags.length ? '<div class="tags">' + flags.join("") + "</div>" : "";
         name = d.name;
-        desc = KIND_LABEL[d.kind] + (flags.length ? " \xB7 " + flags.join(" \xB7 ") : "") + " \u2014 " + d.desc + ". Added to your circuit deck.";
+        desc = d.desc + ". Added to your circuit deck.";
         pick = "\u25B8 ADD TO DECK";
       } else if (o.kind === "rank") {
         var c = CARDS.filter(function(x) {
           return x.id === o.id;
         })[0];
+        col = c.col;
+        ribbon = '<span class="okind">BLUEPRINT UPGRADE</span>';
+        glyph = GLYPHS[c.id];
         name = c.name + " Mk." + (S.ranks[o.id] + 2);
         desc = "Permanent +5% damage & output for every " + c.name + " unit, current and future.";
       } else {
         var r = RELICS.filter(function(x) {
           return x.id === o.id;
         })[0];
+        col = "#ffa02f";
+        ribbon = '<span class="okind">RELIC</span>';
         name = r.name;
         desc = r.desc;
       }
-      h += '<div class="offer" data-off="' + i + '"><span class="rar r' + o.rar + '">' + rn + "</span><b>" + name + "</b><p>" + desc + '</p><div class="pick">' + pick + "</div></div>";
+      h += '<div class="offer" data-off="' + i + '" style="color:' + col + '">' + ribbon + '<span class="rar r' + o.rar + '">' + rn + "</span><b>" + (glyph || "") + name + "</b><p>" + desc + "</p>" + tags + '<div class="pick">' + pick + "</div></div>";
     }
     $("offers").innerHTML = h;
     var nodes = $("offers").children;
@@ -2868,7 +2889,6 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       return (canPlayDef(d).ok ? "1" : "0") + (S.res.fe >= d.cost.fe ? "" : "f") + (S.res.cu >= d.cost.cu ? "" : "c") + (S.res.si >= d.cost.si ? "" : "s");
     }).join("|") + "\xB7" + S.hand.length + "\xB7" + S.selCard;
   }
-  var KIND_COL = { board: "#9fb6c9", skill: "#3ec9b0", power: "#ffd23f", curse: "#b18cd9", module: "#c78bff" };
   var TAG_TIP = {
     INNATE: "guaranteed in the sector\u2019s opening hand",
     RETAIN: "not discarded when the turn ends",
@@ -2904,11 +2924,11 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       var ci = S.hand[i], d = defOf(ci);
       var col = d.kind === "board" ? CARDS[d.tower].col : d.kind === "module" ? modById(d.module).col : KIND_COL[d.kind];
       var chk = canPlayDef(d);
-      var glyph = d.kind === "board" ? GLYPHS[CARDS[d.tower].id] : d.kind === "module" ? GLYPHS.mod : "";
+      var glyph = d.kind === "board" ? GLYPHS[CARDS[d.tower].id] : d.kind === "module" ? GLYPHS.mod : GLYPHS["k_" + d.kind] || "";
       var rankTag = d.kind === "board" && S.ranks[CARDS[d.tower].id] ? '<span class="rank">Mk.' + (S.ranks[CARDS[d.tower].id] + 1) + "</span>" : "";
       var isNew = !seenUids[ci.uid];
       if (isNew) dealt++;
-      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div><div class="hd">' + glyph + "<strong>" + d.name + "</strong>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + "</div><p>" + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "curse" ? "UNPLAYABLE" : d.kind === "module" ? "\u25B8 TAP A UNIT TO INSTALL" : isTargetedSkill(d) ? "\u25B8 TAP A UNIT TO CAST" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
+      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + "</i></div>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + '<div class="hd"><strong>' + d.name + '</strong></div><div class="icon">' + glyph + "</div><p>" + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "curse" ? "UNPLAYABLE" : d.kind === "module" ? "\u25B8 TAP A UNIT TO INSTALL" : isTargetedSkill(d) ? "\u25B8 TAP A UNIT TO CAST" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
     }
     if (!S.hand.length) {
       h = '<div id="handEmpty">HAND EMPTY \u2014 NEW CARDS DEALT NEXT FABRICATION WINDOW</div>';
@@ -3794,6 +3814,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     var sec = sector(), i;
     ctx.fillStyle = bgFill(sec);
     ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
     var hzk = sec.path + "|" + H;
     if (hzk !== hzKey || !hzGrad) {
       hzKey = hzk;
@@ -4240,7 +4261,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     ctx.lineCap = "round";
     ctx.strokeStyle = "rgba(200,191,168,.42)";
     ctx.lineWidth = 1.5;
-    ctx.setLineDash([4, 9]);
+    ctx.setLineDash([5, 8]);
     ctx.lineDashOffset = -S.time * 26;
     strokeEdges();
     ctx.setLineDash([]);

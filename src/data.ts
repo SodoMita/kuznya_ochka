@@ -11,7 +11,11 @@ export const GLYPHS: Record<string, string> = {
   rail: '<svg viewBox="0 0 16 16"><path d="M1 13L13 3M13 3l2-2M13 3v3M10 6v3M3 15h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
   aegis: '<svg viewBox="0 0 16 16"><path d="M8 1l6 3v4c0 3.5-2.7 6-6 7-3.3-1-6-3.5-6-7V4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="7.5" r="1.6" fill="currentColor"/></svg>',
   mortar: '<svg viewBox="0 0 16 16"><path d="M3 13h10M4 13V9l3-2h4l2 2v4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 4l2-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
-  mod: '<svg viewBox="0 0 16 16"><path d="M10 2l4 4-6 6-3 1-1-3 6-8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="4" cy="12" r="1.3" fill="currentColor"/></svg>'
+  mod: '<svg viewBox="0 0 16 16"><path d="M10 2l4 4-6 6-3 1-1-3 6-8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="4" cy="12" r="1.3" fill="currentColor"/></svg>',
+  /* generic card-kind schematics — subroutine / firmware / corruption */
+  k_skill: '<svg viewBox="0 0 16 16"><path d="M5 4L2 8l3 4M11 4l3 4-3 4M9.5 3l-3 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  k_power: '<svg viewBox="0 0 16 16"><rect x="4" y="4" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 1v3M10 1v3M6 12v3M10 12v3M1 6h3M1 10h3M12 6h3M12 10h3" stroke="currentColor" stroke-width="1.2"/></svg>',
+  k_curse: '<svg viewBox="0 0 16 16"><path d="M8 2v6M8 11v.5M2.5 13.5L8 2l5.5 11.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>'
 };
 
 export const CARDS: Card[] = [
@@ -129,6 +133,9 @@ export const STARTER_DECK: string[] = [
 export const KIND_LABEL: Record<string, string> = {
   board: 'CIRCUIT BOARD', skill: 'SUBROUTINE', power: 'FIRMWARE', curse: 'CORRUPTION', module: 'MODULE'
 };
+
+/** Accent color per card kind (boards use their tower's color instead). */
+export const KIND_COL: Record<string, string> = { board: '#9fb6c9', skill: '#3ec9b0', power: '#ffd23f', curse: '#b18cd9', module: '#c78bff' };
 
 export const RELICS: Relic[] = [
   { id: 'cap', name: 'CAPACITOR BANK', desc: '+8 grid capacity, immediately', rar: 1 },

@@ -147,6 +147,7 @@ export function draw(): void {
   var sec = sector(), i;
   ctx.fillStyle = bgFill(sec);
   ctx.fillRect(0, 0, W, H);
+  ctx.globalAlpha = 1;
 
   /* horizon glow — a warm forge haze sitting behind the ruins */
   var hzk = sec.path + '|' + H;
@@ -654,7 +655,7 @@ function drawPath(sec: SectorDef): void {
   ctx.lineCap = 'round';
   ctx.strokeStyle = 'rgba(200,191,168,.42)';
   ctx.lineWidth = 1.5;
-  ctx.setLineDash([4, 9]);
+  ctx.setLineDash([5, 8]);
   ctx.lineDashOffset = -S.time * 26;
   strokeEdges();
   ctx.setLineDash([]);
