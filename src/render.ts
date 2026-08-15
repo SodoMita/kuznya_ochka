@@ -5,7 +5,7 @@ import { CARDS, TGT_LABEL } from './data';
 import { hexA, clamp } from './utils';
 import { sector, canAfford, usedGrid, gridCap, capZone } from './economy';
 import { stats } from './towers';
-import { selBoard } from './deck';
+import { selBoard, modById } from './deck';
 import type { Tower, Enemy, SectorDef } from './types';
 
 export function draw(): void {
@@ -197,6 +197,11 @@ export function draw(): void {
       ctx.moveTo(sh.x, sh.y);
       ctx.lineTo(mx, my);
       ctx.lineTo(sh.tx, sh.ty);
+    } else if (sh.kind === 3) {
+      /* lobbed shell: curved arc */
+      var cx = (sh.x + sh.tx) / 2, cy = Math.min(sh.y, sh.ty) - 14;
+      ctx.moveTo(sh.x, sh.y);
+      ctx.quadraticCurveTo(cx, cy, sh.tx, sh.ty);
     } else {
       ctx.moveTo(sh.x, sh.y);
       ctx.lineTo(sh.tx, sh.ty);
@@ -466,6 +471,12 @@ function drawTower(t: Tower): void {
       ctx.fillRect(12, -2.6, 2, 5.2);
       ctx.fillStyle = '#8a6a20';
       ctx.fillRect(-6, -3, 5, 6);
+    } else if (c.id === 'mortar') {
+      ctx.fillStyle = c.col;
+      ctx.fillRect(-5, -2.5, 9, 5);
+      ctx.fillRect(2, -2.6, 11, 2.2);
+      ctx.fillStyle = '#8f6bb8';
+      ctx.fillRect(11, -3, 2, 3);
     } else {
       ctx.fillRect(2, -1, 11, 2);
     }
@@ -535,6 +546,19 @@ function drawTower(t: Tower): void {
     ctx.textAlign = 'center';
     ctx.fillText('★'.repeat(Math.min(stx, 4)) + (stx > 4 ? stx : ''), t.x, t.y + 23);
     ctx.textAlign = 'left';
+  }
+  /* installed module badges — colored dots above the unit */
+  if (t.mods.length) {
+    var rowW = t.mods.length * 5 - 1;
+    for (var mk = 0; mk < t.mods.length; mk++) {
+      var mc = modById(t.mods[mk]).col;
+      ctx.fillStyle = mc;
+      ctx.strokeStyle = '#0d1012';
+      ctx.lineWidth = .5;
+      var mx = t.x - rowW / 2 + mk * 5;
+      ctx.fillRect(mx, t.y - 21, 3, 3);
+      ctx.strokeRect(mx, t.y - 21, 3, 3);
+    }
   }
   /* surge overdrive frame */
   if (S.time < S.ability.surge.until) {
@@ -613,6 +637,13 @@ function drawEnemy(e: Enemy): void {
     ctx.beginPath();
     ctx.arc(0, 0, e.size * .45, 0, 7);
     ctx.fill();
+  } else if (e.type === 'reaver') {
+    ctx.fillRect(-e.size, -e.size * .7, e.size * 2, e.size * 1.4);
+    ctx.strokeStyle = '#5f7a3a';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-e.size + 1.5, -e.size * .7 + 1.5, e.size * 2 - 3, e.size * 1.4 - 3);
+    ctx.fillStyle = '#2f4a1e';
+    ctx.fillRect(-e.size + 3, -e.size * .7 + 3, e.size * 2 - 6, e.size * 1.4 - 6);
   } else {
     ctx.fillRect(-e.size, -e.size * .75, e.size * 2, e.size * 1.5);
     ctx.fillStyle = '#8a4a30';
@@ -623,6 +654,14 @@ function drawEnemy(e: Enemy): void {
     ctx.fillStyle = '#fff';
     ctx.fillRect(-e.size, -e.size, e.size * 2, e.size * 2);
     ctx.globalAlpha = 1;
+  }
+  /* burn DoT glow from flamethrower modules */
+  if (e.burnT > 0) {
+    var bf = (Math.sin(S.time * 14 + e.d * .1) + 1) / 2;
+    ctx.fillStyle = hexA('#ff8a3d', .28 + .28 * bf);
+    ctx.beginPath();
+    ctx.arc(0, 0, e.size + 3, 0, 7);
+    ctx.fill();
   }
   ctx.rotate(-(e.ang || 0));
   /* capture-eligible marker */
@@ -641,6 +680,11 @@ function drawEnemy(e: Enemy): void {
     ctx.strokeStyle = 'rgba(62,201,176,.55)';
     ctx.lineWidth = 1;
     ctx.strokeRect(-e.size - 2, -e.size - 2, e.size * 2 + 4, e.size * 2 + 4);
+  }
+  if (e.frozen) {
+    ctx.strokeStyle = hexA('#8fd8ff', .5 + Math.sin(S.time * 8) * .3);
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(-e.size - 2.5, -e.size - 2.5, e.size * 2 + 5, e.size * 2 + 5);
   }
   if (e.vet) {
     ctx.strokeStyle = '#ffd23f';

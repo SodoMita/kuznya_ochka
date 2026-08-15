@@ -3,8 +3,8 @@ import { S } from './state';
 import { $, fmt, pad2 } from './utils';
 import { CARDS, GLYPHS, KIND_LABEL, TGT_LABEL, HAZNAMES, MEDALS } from './data';
 import { sector, canAfford, usedGrid, upCost, gridCap } from './economy';
-import { stats, foundryOut, nextWaveStr } from './towers';
-import { defOf, defById, canPlayDef, playCard, handSize, HAND_CAP } from './deck';
+import { stats, foundryOut, nextWaveStr, hasMod } from './towers';
+import { defOf, defById, canPlayDef, playCard, handSize, HAND_CAP, modById, selModule } from './deck';
 import type { CardInst, DeckCardDef, Cost } from './types';
 import { openModal } from './modals';
 import { Snd } from './audio';
@@ -101,7 +101,7 @@ function handSignature(): string {
   }).join('|') + '·' + S.hand.length + '·' + S.selCard;
 }
 
-const KIND_COL: Record<string, string> = { board: '#9fb6c9', skill: '#3ec9b0', power: '#ffd23f' };
+const KIND_COL: Record<string, string> = { board: '#9fb6c9', skill: '#3ec9b0', power: '#ffd23f', module: '#c78bff' };
 
 const TAG_TIP: Record<string, string> = {
   INNATE: 'guaranteed in the sector\u2019s opening hand',
@@ -143,9 +143,9 @@ export function renderCards(): void {
   var h = '', dealt = 0;
   for (var i = 0; i < S.hand.length; i++) {
     var ci = S.hand[i], d = defOf(ci);
-    var col = d.kind === 'board' ? CARDS[d.tower!].col : KIND_COL[d.kind];
+    var col = d.kind === 'board' ? CARDS[d.tower!].col : d.kind === 'module' ? modById(d.module!).col : KIND_COL[d.kind];
     var chk = canPlayDef(d);
-    var glyph = d.kind === 'board' ? GLYPHS[CARDS[d.tower!].id] : '';
+    var glyph = d.kind === 'board' ? GLYPHS[CARDS[d.tower!].id] : d.kind === 'module' ? GLYPHS.mod : '';
     var rankTag = d.kind === 'board' && S.ranks[CARDS[d.tower!].id] ? '<span class="rank">Mk.' + (S.ranks[CARDS[d.tower!].id] + 1) + '</span>' : '';
     var isNew = !seenUids[ci.uid];
     if (isNew) dealt++;
@@ -157,7 +157,7 @@ export function renderCards(): void {
       '<p>' + d.desc + '</p>' +
       '<div class="tags">' + tagStr(d) + '</div>' +
       '<div class="cst">' + costHtml(d.cost) + '</div>' + rankTag +
-      '<div class="play">' + (d.kind === 'board' ? '▸ TAP FIELD TO PRINT' : '▸ TAP AGAIN TO RUN') + '</div>' +
+      '<div class="play">' + (d.kind === 'board' ? '▸ TAP FIELD TO PRINT' : d.kind === 'module' ? '▸ TAP A UNIT TO INSTALL' : '▸ TAP AGAIN TO RUN') + '</div>' +
       '</div>';
   }
   if (!S.hand.length) {
@@ -191,12 +191,12 @@ function cardTap(i: number): void {
   if (!ci) return;
   var d = defOf(ci);
   if (S.selCard === i) {
-    if (d.kind === 'board') { S.selCard = null; hud(true); return; }  /* toggle off */
+    if (d.kind === 'board' || d.kind === 'module') { S.selCard = null; hud(true); return; }  /* toggle off */
     var res = playHandCard(i);
     if (!res) return;
   } else {
     S.selCard = i;
-    S.selTower = null;
+    if (d.kind !== 'module') S.selTower = null;   /* keep the unit selected so the INSTALL button stays live */
     Snd.play('ui');
   }
   hud(true);
@@ -230,7 +230,7 @@ function renderPiles(): void {
 }
 
 function miniCard(d: DeckCardDef, n: number): string {
-  var col = d.kind === 'board' ? CARDS[d.tower!].col : KIND_COL[d.kind];
+  var col = d.kind === 'board' ? CARDS[d.tower!].col : d.kind === 'module' ? modById(d.module!).col : KIND_COL[d.kind];
   var flags: string[] = [];
   if (d.exhaust) flags.push('EXH');
   if (d.ethereal) flags.push('ETH');
@@ -271,21 +271,46 @@ export function renderUnit(): void {
   var t = S.selTower;
   var has = !!(t && S.towers.indexOf(t) >= 0);
   $('tgtRow').style.display = has ? 'grid' : 'none';
+  var md = selModule();
   if (!t || !has) {
     $('unitHead').textContent = 'NO UNIT SELECTED';
-    $('unitStats').textContent = 'tap near a unit — nearest one is grabbed · tap again to release';
+    $('unitStats').textContent = md ? 'MODULE READY — SELECT A COMPATIBLE UNIT TO INSTALL' : 'tap near a unit — nearest one is grabbed · tap again to release';
+    $('unitMods').innerHTML = '';
+    $('modBtn').style.display = 'none';
     $('upCost').textContent = '—';
     $('recVal').textContent = '—';
     return;
   }
   var c = CARDS[t.i], st = stats(t), uc = upCost(t);
+  /* installed modules + INSTALL button state */
+  var modHtml = t.mods.map(function (id) {
+    var m = modById(id);
+    return '<em style="color:' + m.col + '">' + m.name + '</em>';
+  }).join(' · ');
+  $('unitMods').innerHTML = t.mods.length ? '<b>MODS</b> ' + modHtml : '';
+  var compat = !!(md && md.forIds.indexOf(c.id) >= 0);
+  var dup = !!(md && hasMod(t, md.id));
+  $('modBtn').style.display = md ? 'block' : 'none';
+  $('modBtn').classList.toggle('on', compat);
+  $('modBtn').classList.toggle('broke', !compat || dup);
+  if (md) {
+    ($('modBtn').querySelector('span') as HTMLElement).textContent =
+      compat ? (dup ? 'MODULE INSTALLED' : 'INSTALL ' + md.name.toUpperCase()) : (md.name.toUpperCase() + ' ×');
+    ($('modBtn').querySelector('small') as HTMLElement).textContent =
+      compat && !dup ? '▸ tap field unit or press here' : compat ? 'one per unit' : 'needs ' + md.forIds.join('/').toUpperCase();
+  } else {
+    ($('modBtn').querySelector('span') as HTMLElement).textContent = 'INSTALL MODULE';
+    ($('modBtn').querySelector('small') as HTMLElement).textContent = '—';
+  }
   $('unitHead').textContent = c.name + ' · L' + t.lvl + (S.ranks[c.id] ? ' Mk.' + (S.ranks[c.id] + 1) : '') +
     (st.stars ? ' · ' + '★'.repeat(Math.min(st.stars, 5)) + (st.stars > 5 ? '+' + (st.stars - 5) : '') : '');
   if (c.id === 'foundry') {
     var o = foundryOut(t);
     $('unitStats').textContent = 'refines ' + o.fe.toFixed(2) + 'Fe ' + o.cu.toFixed(2) + 'Cu ' + o.si.toFixed(2) + 'Si /s · aura +8% rate';
   } else if (c.id === 'aegis') {
-    $('unitStats').textContent = 'slow field ' + Math.round(Math.min(50, 30 + 2 * (t.lvl - 1))) + '% · rng ' + Math.round(st.range) + ' · grid ' + (c.draw + .3 * (t.lvl - 1)).toFixed(1);
+    $('unitStats').textContent = 'slow field ' + Math.round(Math.min(50, 30 + 2 * (t.lvl - 1))) + '% · rng ' + Math.round(st.range) +
+      (hasMod(t, 'static') ? ' · zaps ' + (2 + .5 * (t.lvl - 1)).toFixed(1) + '/s' : '') +
+      ' · grid ' + (c.draw + .3 * (t.lvl - 1)).toFixed(1);
   } else {
     $('unitStats').textContent = 'dps ' + (st.dmg * st.rate).toFixed(1) + ' · rng ' + Math.round(st.range) + ' · grid ' + (c.draw + .3 * (t.lvl - 1)).toFixed(1) + ' · tgt ' + TGT_LABEL[t.tgt];
   }

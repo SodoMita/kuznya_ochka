@@ -7,8 +7,8 @@
    guaranteed in the sector's opening hand · CONSUME = torn from the deck
    permanently. A "turn" is one full fabrication-window + wave cycle. */
 import { S } from './state';
-import { DECK_CARDS, CARDS, STARTER_DECK } from './data';
-import type { CardInst, DeckCardDef, Card } from './types';
+import { DECK_CARDS, CARDS, STARTER_DECK, MODULES } from './data';
+import type { CardInst, DeckCardDef, Card, ModuleDef, Enemy } from './types';
 import { canAfford, spend, gainRes, usedGrid, gridCap } from './economy';
 import { burst, float } from './fx';
 import { Snd } from './audio';
@@ -21,12 +21,20 @@ let uidC = 1;
 const DEFS: Record<string, DeckCardDef> = {};
 DECK_CARDS.forEach(function (d) { DEFS[d.id] = d; });
 
+const MODDEFS: Record<string, ModuleDef> = {};
+MODULES.forEach(function (m) { MODDEFS[m.id] = m; });
+
 export function defOf(ci: CardInst): DeckCardDef {
   return DEFS[ci.id];
 }
 
 export function defById(id: string): DeckCardDef {
   return DEFS[id];
+}
+
+/** The module definition behind a module id (e.g. 'flame'). */
+export function modById(id: string): ModuleDef {
+  return MODDEFS[id];
 }
 
 function shuffleInPlace<T>(a: T[]): T[] {
@@ -129,6 +137,17 @@ export function selBoard(): Card | null {
   return CARDS[d.tower];
 }
 
+/** The upgrade module behind the currently selected hand card (or null when
+    nothing is selected / the selection is not a module card). */
+export function selModule(): ModuleDef | null {
+  if (S.selCard == null) return null;
+  var ci = S.hand[S.selCard];
+  if (!ci) return null;
+  var d = defOf(ci);
+  if (d.kind !== 'module' || !d.module) return null;
+  return modById(d.module);
+}
+
 export function canPlayDef(d: DeckCardDef): { ok: boolean; why?: string } {
   if (!canAfford(d.cost)) return { ok: false, why: 'INSUFFICIENT MATTER' };
   if (d.kind === 'board') {
@@ -136,6 +155,9 @@ export function canPlayDef(d: DeckCardDef): { ok: boolean; why?: string } {
     if (usedGrid() + c.draw > gridCap()) return { ok: false, why: 'GRID CAPACITY EXCEEDED' };
   }
   if (d.id === 'skill_weld' && S.core >= S.coreMax) return { ok: false, why: 'CORE AT FULL INTEGRITY' };
+  if (d.id === 'skill_recal' && (!S.selTower || S.towers.indexOf(S.selTower) < 0)) {
+    return { ok: false, why: 'SELECT A UNIT TO RECALIBRATE' };
+  }
   return { ok: true };
 }
 
@@ -151,6 +173,7 @@ export function playCard(handIdx: number): { ok: boolean; msg: string } {
   if (!ci) return { ok: false, msg: 'NO CARD' };
   var d = defOf(ci);
   if (d.kind === 'board') return { ok: false, msg: 'SELECT A FOUNDATION TO DEPLOY' };
+  if (d.kind === 'module') return { ok: false, msg: 'SELECT A COMPATIBLE UNIT TO INSTALL' };
   var chk = canPlayDef(d);
   if (!chk.ok) return { ok: false, msg: chk.why! };
   spend(d.cost);
@@ -236,6 +259,41 @@ export function playCard(handIdx: number): { ok: boolean; msg: string } {
       float(cp.x, cp.y - 16, '+5 MAX CORE', '#3ec9b0');
       Snd.play('weld');
       msg += ' — +5 MAX CORE (CONSUMED FROM DECK)';
+      break;
+    case 'skill_barrage': {
+      var targets: Enemy[] = [];
+      for (i = 0; i < S.enemies.length; i++) {
+        if (!S.enemies[i].dead) targets.push(S.enemies[i]);
+      }
+      var hits = 0;
+      for (i = 0; i < 3 && targets.length; i++) {
+        var pick = targets.splice(Math.floor(Math.random() * targets.length), 1)[0];
+        pick.hp -= 45;
+        pick.flash = .08;
+        S.shots.push({ x: cp.x, y: cp.y - 30, tx: pick.x, ty: pick.y, life: .18, col: '#c9a6e0', kind: 3 });
+        hits++;
+        if (pick.hp <= 0) killEnemy(pick, false);
+      }
+      S.shake = Math.max(S.shake, 4);
+      Snd.play('boom', true);
+      msg += hits ? ' — ' + hits + ' SHELL' + (hits > 1 ? 'S' : '') + ' ON TARGET' : ' — NO HOSTILES TO STRIKE (EXHAUSTED)';
+      break;
+    }
+    case 'skill_deepfreeze':
+      for (i = 0; i < S.enemies.length; i++) {
+        var fe = S.enemies[i];
+        if (!fe.dead) fe.slowT = Math.max(fe.slowT, 6);
+      }
+      S.rings.push({ x: cp.x, y: cp.y, r: 8, max: 80, col: '#8fd8ff' });
+      Snd.play('weld');
+      msg += ' — ALL HOSTILES SLOWED 60% FOR 6s';
+      break;
+    case 'skill_recal':
+      var rt = S.selTower!;
+      rt.lvl++;
+      burst(rt.x, rt.y, '#ffd23f', 8);
+      Snd.play('upgrade');
+      msg += ' — ' + CARDS[rt.i].name + ' +1 LEVEL';
       break;
     default:
       break;

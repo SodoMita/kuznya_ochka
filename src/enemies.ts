@@ -30,6 +30,7 @@ export function compFor(w: number): string[] {
   if (w >= 4) { types.push('gilded'); wts.push(.55 + (sector().gild || .3)); }
   if (w >= 7) { types.push('phase'); wts.push(1.1 + w * .08); }
   if (w >= 11) { types.push('carrier'); wts.push(1.1); }
+  if (w >= 6) { types.push('reaver'); wts.push(.6 + w * .05 + (sector().reaver || 0)); }
   var haz = sector().haz;
   if (haz === 0 && w >= 3) wts[types.indexOf('plated')] *= 2;
   if (haz === 1 && w >= 5) wts[types.indexOf('swarm')] *= 2;
@@ -37,6 +38,7 @@ export function compFor(w: number): string[] {
   if (haz === 3 && w >= 7) wts[types.indexOf('phase')] *= 2;
   if (haz === 4 && w >= 4) wts[types.indexOf('gilded')] *= 3;
   if (haz === 5 && w >= 11) wts[types.indexOf('carrier')] *= 2;
+  if (haz === 6 && w >= 6) wts[types.indexOf('reaver')] *= 3;
   var tot = 0;
   wts.forEach(function (x) { tot += x; });
   var out: string[] = [], n = 7 + Math.floor(1.35 * w), i;
@@ -83,7 +85,11 @@ export function spawnEnemy(type: string): void {
     col: e.col,
     regen: e.regen || 0,
     slow: 0,
+    slowT: 0,
+    frozen: false,
     flash: 0,
+    burn: 0,
+    burnT: 0,
     beamT: -1,
     x: rp.pts[0].x,
     y: rp.pts[0].y,
@@ -166,7 +172,7 @@ export function killEnemy(e: Enemy, captured: boolean): void {
     si: e.mhp * .0045 * rw * mix.si * sc * mult
   };
   if (captured) {
-    if (e.type === 'titan') b.si += 1;
+    if (e.type === 'titan') b.si += 1 + (S.relics.shrine ? 4 : 0);
     S.gridMax += S.relics.magnet ? .9 : .4;
     S.stat.captures++;
     S.rings.push({ x: e.x, y: e.y, r: 4, max: 34, col: '#3ec9b0' });

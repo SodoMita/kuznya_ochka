@@ -2,10 +2,12 @@
 import { S } from './state';
 import { CARDS } from './data';
 import type { Tower, Enemy, TowerStats } from './types';
-import { stats, foundryOut, pickTarget } from './towers';
+import { stats, foundryOut, pickTarget, hasMod } from './towers';
 import { spawnEnemy, killEnemy, leak, launchWave, endWave } from './enemies';
 import { pointOnPoly } from './sectors';
 import { capZone } from './economy';
+import { burst } from './fx';
+import { award } from './hud';
 import { Snd } from './audio';
 
 export function fixedUpdate(dt: number): void {
@@ -54,6 +56,11 @@ export function fixedUpdate(dt: number): void {
     var en0 = S.enemies[i];
     en0.slow = 0;
     en0.bm = 0;
+    en0.frozen = !!(S.event && S.event.id === 'frost');
+    if (en0.slowT > 0) {
+      en0.slowT -= dt;
+      en0.slow = Math.max(en0.slow, .6);
+    }
   }
   var slowAmt = S.relics.tread ? .72 : .55;
   for (i = S.beams.length - 1; i >= 0; i--) {
@@ -65,8 +72,9 @@ export function fixedUpdate(dt: number): void {
     if (gone) { S.beams.splice(i, 1); continue; }
     e.slow = Math.max(e.slow, slowAmt);
     e.bm = 1;
-    e.hp -= st.dmg * st.rate * .35 * dt;   /* beam rasp — 35% of harvester DPS */
-    bm.t += dt / (S.relics.lace ? .64 : .85);
+    var rasp = .35 * (hasMod(t, 'grasp') ? 1.25 : 1);
+    e.hp -= st.dmg * st.rate * rasp * dt;   /* beam rasp — 35% of harvester DPS */
+    bm.t += dt / ((S.relics.lace ? .64 : .85) / (hasMod(t, 'grasp') ? 1.6 : 1));
     if (e.hp <= 0) { killEnemy(e, true); S.beams.splice(i, 1); continue; }
     if (bm.t >= 1) { killEnemy(e, true); S.beams.splice(i, 1); }
   }
@@ -82,10 +90,17 @@ export function fixedUpdate(dt: number): void {
     s = t._st!;
     /* aegis: no guns — project a slow field every tick (stacks with beams via max) */
     if (c.id === 'aegis') {
-      var as = Math.min(.5, .30 + .02 * (t.lvl - 1));
+      var as = Math.min(.5, (hasMod(t, 'cryo') ? .45 : .30) + .02 * (t.lvl - 1));
+      var zap = hasMod(t, 'static') ? (2 + .5 * (t.lvl - 1)) : 0;
       for (j = 0; j < S.enemies.length; j++) {
         e = S.enemies[j];
-        if (!e.dead && Math.hypot(e.x - t.x, e.y - t.y) <= s.range) e.slow = Math.max(e.slow, as);
+        if (!e.dead && Math.hypot(e.x - t.x, e.y - t.y) <= s.range) {
+          e.slow = Math.max(e.slow, as);
+          if (zap) {
+            e.hp -= zap * dt;
+            e.flash = Math.max(e.flash, .05);
+          }
+        }
       }
       continue;
     }
@@ -102,7 +117,28 @@ export function fixedUpdate(dt: number): void {
       }
       continue;
     }
-    var dmg = s.dmg * (1 - inR.armor * (c.id === 'arc' ? .35 : c.id === 'rail' ? .2 : 1));
+    /* mortar: lobbed shell with area splash */
+    if (c.id === 'mortar') {
+      var splR = 34 * (S.relics.flak ? 1.4 : 1) * (hasMod(t, 'frag') ? 1.5 : 1);
+      var splDmg = s.dmg * .6 * (hasMod(t, 'frag') ? 1.25 : 1);
+      inR.hp -= s.dmg * (1 - inR.armor);
+      inR.flash = .05;
+      S.shots.push({ x: t.x, y: t.y, tx: inR.x, ty: inR.y, life: .16, col: c.col, kind: 3 });
+      for (j = 0; j < S.enemies.length; j++) {
+        var e3 = S.enemies[j];
+        if (e3.dead || e3 === inR) continue;
+        if (Math.hypot(e3.x - inR.x, e3.y - inR.y) <= splR) {
+          e3.hp -= splDmg * (1 - e3.armor * .5);
+          e3.flash = .06;
+          if (e3.hp <= 0) killEnemy(e3, false);
+        }
+      }
+      burst(inR.x, inR.y, '#c9a6e0', 8);
+      Snd.play('boom', true);
+      if (inR.hp <= 0) killEnemy(inR, false);
+      continue;
+    }
+    var dmg = s.dmg * (1 - inR.armor * (c.id === 'arc' ? .35 : c.id === 'rail' ? (hasMod(t, 'railcoil') ? 0 : .2) : (c.id === 'needle' && hasMod(t, 'hollow') ? .4 : 1)));
     inR.hp -= dmg;
     inR.flash = .05;
     S.shots.push({
@@ -111,14 +147,22 @@ export function fixedUpdate(dt: number): void {
       col: c.col,
       kind: c.id === 'arc' ? 1 : (c.id === 'rail' ? 2 : 0)
     });
+    /* flamethrower head: needle shots ignite — 40% of the shot burns 2.5s */
+    if (c.id === 'needle' && hasMod(t, 'flame')) {
+      inR.burn = Math.max(inR.burn, dmg * .4 / 2.5);
+      inR.burnT = 2.5;
+    }
     if (c.id === 'arc') {
       Snd.play('arc', true);
       var chained = 0;
-      for (j = 0; j < S.enemies.length && chained < 2 + (S.relics.lattice ? 1 : 0); j++) {
+      var chainMax = 2 + (S.relics.lattice ? 1 : 0) + (S.relics.shock ? 1 : 0) + (S.powers.power_reactor || 0) + (hasMod(t, 'tesla') ? 2 : 0);
+      var chainRng = hasMod(t, 'tesla') ? 64 : 46;
+      var falloff = hasMod(t, 'tesla') ? 1 : .36;
+      for (j = 0; j < S.enemies.length && chained < chainMax; j++) {
         var e2 = S.enemies[j];
         if (e2 === inR || e2.dead) continue;
-        if (Math.hypot(e2.x - inR.x, e2.y - inR.y) < 46) {
-          e2.hp -= dmg * .36;
+        if (Math.hypot(e2.x - inR.x, e2.y - inR.y) < chainRng) {
+          e2.hp -= dmg * falloff;
           e2.flash = .05;
           chained++;
           S.shots.push({ x: inR.x, y: inR.y, tx: e2.x, ty: e2.y, life: .09, col: '#bdeef7', kind: 1 });
@@ -135,6 +179,18 @@ export function fixedUpdate(dt: number): void {
     if (e.dead) { S.enemies.splice(i, 1); continue; }
     if (e.flash > 0) e.flash -= dt;
     if (e.regen) e.hp = Math.min(e.mhp, e.hp + e.mhp * e.regen * dt);
+    /* burn DoT from flamethrower modules */
+    if (e.burnT > 0) {
+      e.burnT -= dt;
+      e.hp -= e.burn * dt;
+      e.flash = Math.max(e.flash, .04);
+      if (e.hp <= 0) {
+        S.stat.burnKills++;
+        if (S.stat.burnKills >= 10) award('burn10');
+        killEnemy(e, false);
+        continue;
+      }
+    }
     if (e.type === 'phase') {
       e.ph = (e.ph || 0) + dt;
       if (e.ph >= 2.5) {
@@ -143,7 +199,8 @@ export function fixedUpdate(dt: number): void {
         S.rings.push({ x: e.x, y: e.y, r: 2, max: 16, col: '#7fa8d9' });
       }
     }
-    e.d += e.sp * (1 - e.slow) * (S.event && S.event.id === 'grav' ? .85 : 1) * dt;
+    var slowTot = Math.min(.9, e.slow + (e.frozen ? .1 : 0));
+    e.d += e.sp * (1 - slowTot) * (S.event && S.event.id === 'grav' ? .85 : 1) * dt;
     var p = pointOnPoly(e.routePx, e.routeLen, e.d);
     e.x = p.x;
     e.y = p.y;

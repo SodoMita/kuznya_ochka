@@ -1,11 +1,11 @@
 /* Procedural route-network generation.
 
    Every sector is a small graph (nodes + undirected edges) with one CORE and
-   1–3 spawn gates. Four archetypes — grid, radial, river, web — are picked by
-   seed, so sectors get real shape variety: loops, crossings and multiple
-   sources instead of a single zig-zag. Enemies pathfind from a spawn gate to
-   the CORE (shortest path, occasionally jittered so swarms wander scenic
-   loops). Foundations keep a safe distance from every road.
+   1–3 spawn gates. Five archetypes — grid, radial, river, web, loops — are
+   picked by seed, so sectors get real shape variety: loops, crossings and
+   multiple sources instead of a single zig-zag. Enemies pathfind from a spawn
+   gate to the CORE (shortest path, occasionally jittered so swarms wander
+   scenic loops). Foundations keep a safe distance from every road.
 */
 import { S } from './state';
 import { W, H } from './view';
@@ -163,6 +163,49 @@ function genRiver(r: () => number): GenResult {
   edges.push([side, mid], [side, Math.min(mid + 2, n - 1)]);
   const spawnCands = [0, side];
   return { nodes, edges, core: n - 1, spawnCands, forced: [side] };
+}
+
+/** A chain of tight roundabouts strung together — long, multi-loop switchbacks
+    with off-ramps between cells. */
+function genLoops(r: () => number): GenResult {
+  const landscape = W >= H;
+  const cells = 4 + Math.floor(r() * 2);
+  const nodes: RouteNode[] = [];
+  const edges: [number, number][] = [];
+  const gx0 = .06, gx1 = .94;
+  const span = gx1 - gx0;
+  const cw = span / cells;
+  for (let c = 0; c < cells; c++) {
+    const cx = gx0 + cw * (c + .5) + jittered(r, .02);
+    const cy = landscape ? .5 + jittered(r, .12) : .5 + jittered(r, .12);
+    const base = nodes.length;
+    const rx = landscape ? cw * .34 : .18 + r() * .08;
+    const ry = landscape ? .16 + r() * .1 : cw * .34;
+    const m = 5 + Math.floor(r() * 3);   /* 5–7 points per roundabout */
+    for (let k = 0; k < m; k++) {
+      const a = k / m * Math.PI * 2 - Math.PI / 2;
+      nodes.push({
+        x: clamp(cx + Math.cos(a) * rx + jittered(r, .015), .06, .94),
+        y: clamp(cy + Math.sin(a) * ry + jittered(r, .015), .1, .9),
+        px: 0, py: 0, kind: 'junc'
+      });
+    }
+    for (let k = 0; k < m; k++) edges.push([base + k, base + ((k + 1) % m)]);
+    if (c > 0) {
+      const prev = base - 1;
+      /* two off-ramps link this roundabout to the previous one → real loops */
+      edges.push([prev, base], [prev - 2, base + 1]);
+    }
+  }
+  const last = nodes.length - 1;
+  let core = 0;
+  for (let i = 1; i < nodes.length; i++) {
+    if (nodes[i].x > nodes[core].x) core = i;
+  }
+  const spawnCands: number[] = [];
+  for (let i = 0; i < nodes.length; i++) if (nodes[i].x < nodes[core].x - .12) spawnCands.push(i);
+  if (!spawnCands.length) spawnCands.push(0, 1);
+  return { nodes, edges, core, spawnCands };
 }
 
 /** Random scatter with 2-nearest-neighbor edges + random chords → organic loops & crossings. */
@@ -326,7 +369,7 @@ function assemble(r: () => number, gen: (r: () => number) => GenResult) {
 
 export function genSector(): void {
   const r = mulberry32((S.seed + S.sector * 7919) >>> 0);
-  const gens: ((r: () => number) => GenResult)[] = [genGrid, genRadial, genRiver, genWeb];
+  const gens: ((r: () => number) => GenResult)[] = [genGrid, genRadial, genRiver, genWeb, genLoops];
   const g = assemble(r, gens[Math.floor(r() * gens.length)]);
   S.nodes = g.nodes;
   S.edges = g.edges;

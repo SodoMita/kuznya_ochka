@@ -18,10 +18,11 @@ export interface Card {
   col: string;
 }
 
-export type DeckCardKind = 'board' | 'skill' | 'power';
+export type DeckCardKind = 'board' | 'skill' | 'power' | 'module';
 
 /** A Slay-the-Spire style card definition. Boards deploy towers, skills fire
-    one-shot effects, powers install sector-wide modifiers. */
+    one-shot effects, powers install sector-wide modifiers, modules bolt an
+    upgrade onto a deployed unit. */
 export interface DeckCardDef {
   id: string;
   name: string;
@@ -30,11 +31,24 @@ export interface DeckCardDef {
   cost: Cost;           // matter cost to play (boards: the build cost)
   rar: number;          // 0 common · 1 uncommon · 2 rare
   tower?: number;       // boards only: index into CARDS
+  module?: string;      // modules only: id into MODULES
   exhaust?: boolean;    // removed for the rest of the sector after play
   ethereal?: boolean;   // exhausts if still in hand when the turn ends
   innate?: boolean;     // guaranteed in the opening hand
   retain?: boolean;     // not discarded when the turn ends
   consume?: boolean;    // removed from the deck permanently after play
+}
+
+/** A per-unit upgrade module — bolted onto one deployed tower by a MODULE card.
+    `forIds` lists which tower blueprints accept it (one module of a kind per unit). */
+export interface ModuleDef {
+  id: string;
+  name: string;
+  forIds: string[];     // compatible tower ids (CARDS[].id)
+  desc: string;         // effect summary shown on the card / panel
+  cost: Cost;           // matter cost to bolt on
+  rar: number;          // 0 common · 1 uncommon · 2 rare
+  col: string;          // accent color
 }
 
 /** A physical copy of a card in one of the piles. */
@@ -75,6 +89,7 @@ export interface SectorDef {
   path: string;
   haz: number;
   gild?: number;        // gilded-enemy weight bonus
+  reaver?: number;      // reaver-enemy weight bonus
 }
 
 export interface Tower {
@@ -85,8 +100,10 @@ export interface Tower {
   cool: number;
   ang: number;
   flash: number;
+  slow: number;         // active deepfreeze slow (0..0.6)
   tgt: string;          // targeting doctrine id (TGTS)
   inv: Cost;            // total invested matter (for recycling)
+  mods: string[];       // installed module ids (one of each kind per unit)
   selF?: number;        // selection flash decay
   _st?: TowerStats;     // per-tick cached stats (set by sim)
 }
@@ -110,7 +127,11 @@ export interface Enemy {
   col: string;
   regen: number;
   slow: number;
+  slowT: number;        // seconds of deepfreeze slow remaining
+  frozen: boolean;      // HARD FROST weather: extra +10% slow
   flash: number;
+  burn: number;         // active burn DoT (dps from flamethrower modules)
+  burnT: number;        // seconds of burn remaining
   beamT: number;
   x: number;
   y: number;

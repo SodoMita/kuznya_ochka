@@ -83,7 +83,8 @@ function handCard(name) {
 assert(doc.querySelectorAll('#cards .card').length === 5, '5-card opening hand rendered (got ' + doc.querySelectorAll('#cards .card').length + ')');
 assert(!!handCard('NEEDLE BOARD'), 'innate NEEDLE BOARD in opening hand');
 assert(!!handCard('FOUNDRY BOARD'), 'innate FOUNDRY BOARD in opening hand');
-assert($('vDraw').textContent === '5', 'draw pile holds the other 5 cards (got ' + $('vDraw').textContent + ')');
+assert(!!handCard('FLAMETHROWER HEAD'), 'innate FLAMETHROWER HEAD module in opening hand');
+assert($('vDraw').textContent === '6', 'draw pile holds the other 6 cards (got ' + $('vDraw').textContent + ')');
 assert($('vDisc').textContent === '0', 'discard pile empty at boot');
 assert($('vExh').textContent === '0', 'exhaust pile empty at boot');
 assert($('vFe').textContent === '120', 'initial iron = 120 (got ' + $('vFe').textContent + ')');
@@ -106,6 +107,18 @@ const gridAfterPlace = $('vW').textContent;
 click($('upBtn'));
 assert($('unitHead').textContent.indexOf('L2') >= 0, 'needle upgraded to L2');
 assert($('vW').textContent !== gridAfterPlace, 'grid usage changed after upgrade');
+
+/* --- install the FLAMETHROWER HEAD module onto the selected needle --- */
+const flame = handCard('FLAMETHROWER HEAD');
+assert(!!flame, 'flamethrower module card in hand');
+const feBeforeMod = parseInt($('vFe').textContent, 10);
+click(flame);                        /* select the module card (unit stays selected) */
+assert($('modBtn').style.display !== 'none', 'INSTALL button appears for the selected unit');
+assert($('unitMods').textContent === '', 'unit has no modules yet');
+click($('modBtn'));                  /* bolt the module on */
+assert($('unitMods').textContent.indexOf('FLAMETHROWER HEAD') >= 0, 'flamethrower installed (got ' + $('unitMods').textContent + ')');
+assert(parseInt($('vFe').textContent, 10) === feBeforeMod - 14, 'module cost 14 Fe deducted (got ' + $('vFe').textContent + ')');
+assert($('vExh').textContent === '1', 'module card exhausted after install (got ' + $('vExh').textContent + ')');
 click($('recBtn'));
 assert($('unitHead').textContent.indexOf('NO UNIT') >= 0, 'recycle deselects unit');
 
@@ -160,6 +173,9 @@ click($('spdUp'));
 assert($('spdVal').textContent === '2×', 'speed bumped to 2×');
 click($('helpBtn'));
 assert($('helpModal').classList.contains('open'), 'help modal opens');
+assert($('helpModal').textContent.indexOf('Mortar') >= 0, 'help manual documents the MORTAR blueprint');
+assert($('helpModal').textContent.indexOf('REAVER') >= 0, 'help manual documents the REAVER class');
+assert($('helpModal').textContent.indexOf('SOLAR FLARE') >= 0, 'help manual documents new weather events');
 doc.querySelector('[data-close="helpModal"]').dispatchEvent(
   new window.MouseEvent('pointerdown', { bubbles: true, cancelable: true })
 );
@@ -178,5 +194,5 @@ assert(sawFabrication, 'back to fabrication between waves (got ' + $('phaseBig')
 const handAfterTurn = doc.querySelectorAll('#cards .card').length;
 assert(handAfterTurn === 5, 'new turn deals a fresh 5-card hand (got ' + handAfterTurn + ')');
 
-console.log('SMOKE TEST PASSED ✓ (boot, deck piles, board deploy, subroutines, wave 1, doctrine/pause/speed/modals, turn redraw)');
+console.log('SMOKE TEST PASSED ✓ (boot, deck piles, board deploy, module install, subroutines, wave 1, doctrine/pause/speed/modals, turn redraw)');
 process.exit(0);

@@ -45,7 +45,7 @@ export interface GameState {
   spawnT: number;
   time: number;
   shake: number;
-  stat: { kills: number; captures: number; leaks: number; waves: number; salvaged: number; gilds: number; surges: number };
+  stat: { kills: number; captures: number; leaks: number; waves: number; salvaged: number; gilds: number; surges: number; burnKills: number };
   streak: StreakState;
   medals: Record<string, boolean>;
   ability: AbilityState;
@@ -109,7 +109,7 @@ export const S: GameState = {
   spawnT: 0,
   time: 0,
   shake: 0,
-  stat: { kills: 0, captures: 0, leaks: 0, waves: 0, salvaged: 0, gilds: 0, surges: 0 },
+  stat: { kills: 0, captures: 0, leaks: 0, waves: 0, salvaged: 0, gilds: 0, surges: 0, burnKills: 0 },
   streak: { n: 0, t: 0 },
   medals: {},
   ability: { surge: { cd: 0, until: 0 }, weld: { cd: 0 } },

@@ -130,6 +130,13 @@ button{font-family:var(--mono);color:var(--ink);touch-action:manipulation;user-s
 #unitBox{border:1px solid var(--line);background:var(--panel);padding:6px;flex:1;display:flex;flex-direction:column;gap:4px;min-height:0}
 #unitHead{font-family:var(--disp);font-size:13px;letter-spacing:.5px;color:var(--teal);line-height:1.1}
 #unitStats{font-size:8px;color:var(--dim);letter-spacing:.4px;line-height:1.4}
+#unitMods{font-size:7px;letter-spacing:.6px;color:var(--dim);line-height:1.5;min-height:0}
+#unitMods b{color:var(--gold);margin-right:3px}
+#unitMods em{font-style:normal;white-space:nowrap}
+#modBtn{border-color:#7a5b22;background:linear-gradient(#2c2a14,#232014);color:var(--gold);font-family:var(--disp);font-size:11px;letter-spacing:1px}
+#modBtn small{display:block;font-size:7px;color:#b39a55;margin-top:2px;letter-spacing:.3px;font-family:var(--mono)}
+#modBtn.on{border-color:var(--gold);color:var(--gold)}
+#modBtn.broke{opacity:.55;filter:grayscale(.6);border-color:var(--line)}
 #upBtn{border-color:#7a5b22;background:linear-gradient(#3a2f14,#2c2410);color:var(--gold)}
 #upBtn:hover{border-color:var(--gold)}
 #upBtn small{display:block;font-size:7px;color:#b39a55;margin-top:2px;letter-spacing:.3px}
@@ -225,7 +232,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     <div id="stInfo"><b id="sectorName">SECTOR 01 · RUST BASIN</b><span id="sectorMix">SALVAGE Fe-heavy</span></div>
     <div id="banner"></div>
     <div id="toast"></div>
-    <div id="hint">SELECT A CARD [1-9] · BOARDS: TAP FIELD TO PRINT — SKILLS: TAP CARD AGAIN TO RUN · [D] DECK · [SPACE] LAUNCH</div>
+    <div id="hint">SELECT A CARD [1-9] · BOARDS: TAP FIELD TO PRINT · MODULES: TAP A UNIT TO INSTALL — SKILLS: TAP CARD AGAIN TO RUN · [D] DECK · [SPACE] LAUNCH</div>
     <div id="abils">
       <button id="abilSurge" title="All units +50% fire rate for 8s — costs 40 Fe">SURGE<small id="surgeCd">READY · 40Fe</small></button>
       <button id="abilWeld" title="Restore 3 core integrity — costs 30 Fe 15 Cu">WELD<small id="weldCd">READY · 30Fe 15Cu</small></button>
@@ -258,6 +265,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       <div id="unitBox">
         <div id="unitHead">NO UNIT SELECTED</div>
         <div id="unitStats">tap near a unit — nearest one is grabbed</div>
+        <div id="unitMods"></div>
         <div id="tgtRow">
           <button data-tgt="first" title="furthest along route">1ST</button>
           <button data-tgt="last" title="closest to your gate">LST</button>
@@ -266,6 +274,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
           <button data-tgt="near" title="nearest unit">NEAR</button>
           <button data-tgt="far" title="farthest unit">FAR</button>
         </div>
+        <button id="modBtn" class="sq" style="display:none"><span>INSTALL MODULE</span><small>—</small></button>
         <div class="row2">
           <button id="upBtn" class="sq">UPGRADE<small id="upCost">—</small></button>
           <button id="recBtn" class="sq warn">RECYCLE<small id="recVal" style="display:block;font-size:7px;color:#8f9aa0;margin-top:2px">—</small></button>
@@ -305,7 +314,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       <h2>FIELD MANUAL</h2>
       <div class="sub">ECONOMY · DOCTRINE · BALANCE LEDGER</div>
       <h3 class="sec">OBJECTIVE</h3>
-      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, nine hostile classes, eighteen relics, two field abilities. Survive wave 12 to clear a sector and open the world route.</p>
+      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, seven blueprints, ten hostile classes, twenty-one relics, eleven modules, two field abilities. Survive wave 12 to clear a sector and open the world route.</p>
       <h3 class="sec">THE CIRCUIT DECK</h3>
       <p>You fight with a <b style="color:var(--teal)">deck of cards</b>, drawn Slay-the-Spire style. Your run starts with 10 cards; salvage caches add more. Each fabrication window is a <b>turn</b>: your old hand is discarded and you draw 5 (Autoloader: +1). Playing a card costs matter, not energy — your resources are the mana pool.</p>
       <p><b style="color:var(--steel)">CIRCUIT BOARDS</b> are the only way to build: select one and tap the field to print its unit — the board is consumed into the discard pile and cycles back on reshuffle. <b style="color:var(--teal)">SUBROUTINES</b> are one-shot skills (matter, draws, heals, EMP). <b style="color:var(--gold)">FIRMWARE</b> installs a sector-wide modifier and always exhausts.</p>
@@ -313,13 +322,15 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       <h3 class="sec">SALVAGE DOCTRINES [M]</h3>
       <p><b style="color:var(--copper)">LOOT</b> — Harvesters fire normally; every wreck drops base salvage.<br>
       <b style="color:var(--teal)">CAPTURE</b> — Harvesters lock a tractor beam on units inside the <b style="color:var(--teal)">teal 30% zone</b> shown on every hull bar. The beam channels just 0.85s, slows the victim 55%, and rasps at 35% of Harvester DPS. While a target is beamed, <b style="color:var(--teal)">allied units hold fire on it</b> whenever another target is in range, and the beam tolerates integrity drift up to 40%. Completed captures yield <b style="color:var(--teal)">×2.5 salvage, +0.4 grid capacity</b> and bonus Silicon from Titans; escapes or forced kills fail the capture.</p>
+      <h3 class="sec">UNIT MODULES</h3>
+      <p><b style="color:#c78bff">MODULE</b> cards bolt a permanent upgrade onto <b>one deployed unit</b>: select the card, then tap a compatible unit on the field (or pick the unit and press <b style="color:var(--gold)">INSTALL</b> in the unit panel). One module of a kind per unit; modules exhaust after use, so each card copy installs once per sector. Examples: <b style="color:#ff8a3d">FLAMETHROWER HEAD</b> makes Needle rounds ignite hosts (40% of each shot burns over 2.5s) · <b style="color:#8fd8ff">TESLA FRAME</b> lets arcs chain two extra full-strength jumps · <b style="color:#e0854e">SMELTER BELLY</b> boosts a Foundry's output and makes its aura grant damage · <b style="color:#ffd23f">RAILGUN COIL</b> makes Rail ignore armor entirely · <b style="color:#7fd8c8">CRYO GRID</b> deepens the Aegis slow field · <b style="color:#3ec9b0">HYDRAULIC GRASP</b> speeds up Harvester captures · <b style="color:#c9a6e0">HOLLOW-POINT AMMO</b> lets Needles punch armor · <b style="color:#c9a6e0">FRAG SHELLS</b> widens Mortar splash · <b style="color:#8fd8ff">STATIC GRID</b> makes the Aegis field zap hosts · <b style="color:#9fb6c9">RANGEFINDER SCOPE</b> / <b style="color:#ffd23f">OVERVOLT CAPACITOR</b> stretch range and fire rate on any gun turret.</p>
       <h3 class="sec">FIRE DOCTRINES [T]</h3>
       <p>Every combat unit carries its own targeting order: <b>1ST</b> furthest along the route · <b>LST</b> closest to your gate · <b>MAX</b> strongest hull · <b>MIN</b> weakest hull · <b>NEAR</b> / <b>FAR</b> by distance from the unit. The active doctrine is badged above each unit — select one and use the chips in the unit panel or <kbd>T</kbd> to cycle. <kbd>E</kbd> cycles selection through deployed units, right-click cancels a placement.</p>
       <h3 class="sec">THREAT INDEX</h3>
-      <p><b style="color:#c9714a">SCRAPLET</b> fodder · <b style="color:#8d9aa5">PLATED</b> 25% armor, leaks 2 · <b style="color:#d8a24a">SWARM</b> fast, fragile, many · <b style="color:#7ac98a">REGEN</b> rebuilds 1.2% hull/s — fight the capture zone · <b style="color:#ffd23f">GILDED</b> fast loot-piñata worth ×3, capture priority · <b style="color:#7fa8d9">PHASE</b> blinks +36px every 2.5s, telegraphs before jumping · <b style="color:#e5484d">TITAN</b> every 8th wave, armored, leaks 5, bonus Silicon on capture. Every 5th wave is a RUSH (double spawn rate), every 12th an ASSAULT.</p>
+      <p><b style="color:#c9714a">SCRAPLET</b> fodder · <b style="color:#8d9aa5">PLATED</b> 25% armor, leaks 2 · <b style="color:#d8a24a">SWARM</b> fast, fragile, many · <b style="color:#7ac98a">REGEN</b> rebuilds 1.2% hull/s — fight the capture zone · <b style="color:#ffd23f">GILDED</b> fast loot-piñata worth ×3, capture priority · <b style="color:#7fa8d9">PHASE</b> blinks +36px every 2.5s, telegraphs before jumping · <b style="color:#b8e986">REAVER</b> heavy 50%-armor linebreaker, drops rich salvage · <b style="color:#e5484d">TITAN</b> every 8th wave, armored, leaks 5, bonus Silicon on capture. Every 5th wave is a RUSH (double spawn rate), every 12th an ASSAULT.</p>
       <p><b style="color:#a58a6a">CARRIER</b> leaks 3 and splits into three swarmlets when destroyed (capture it intact to deny the split) · <b style="color:#8a2a30">DREAD</b> leads every 12th wave — armored, regenerating, leaking 6. Any spawn can roll <b style="color:#ffd23f">VETERAN</b>: +60% hull, +70% bounty, gold frame.</p>
       <h3 class="sec">FIELD ABILITIES &amp; WEATHER</h3>
-      <p><b style="color:var(--gold)">SURGE</b> (40 Fe, 45s recharge): every unit fires 50% faster for 8s — golden overdrive frames show who's boosted. <b style="color:var(--teal)">WELD</b> (30 Fe 15 Cu, 60s): +3 core integrity. Waves can roll weather: <b>ION STORM</b> +40% arc damage · <b>GRAV SHEAR</b> hostiles −15% speed · <b>RUST WIND</b> foundries +40%. Units calibrate every 5 levels (★), gaining +5% damage and rate per star.</p>
+      <p><b style="color:var(--gold)">SURGE</b> (40 Fe, 45s recharge): every unit fires 50% faster for 8s — golden overdrive frames show who's boosted. <b style="color:var(--teal)">WELD</b> (30 Fe 15 Cu, 60s): +3 core integrity. Waves can roll weather: <b>ION STORM</b> +40% arc damage · <b>GRAV SHEAR</b> hostiles −15% speed · <b>RUST WIND</b> foundries +40% · <b>SOLAR FLARE</b> all units +15% damage · <b>HARD FROST</b> hostiles −10% speed (frost frames). Units calibrate every 5 levels (★), gaining +5% damage and rate per star.</p>
       <h3 class="sec">BALANCE LEDGER</h3>
       <table class="bal">
         <tr><td>Wave HP</td><td>(34+11w) × 1.058^(w−1) — compounds forever</td></tr>
@@ -329,6 +340,8 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
         <tr><td>Foundry</td><td>0.34 Fe / 0.12 Cu / 0.05 Si per s × 1.13^L · boosts fire rate of units within 92px (+8% each, max +24%)</td></tr>
         <tr><td>Early launch</td><td>+0.8 Fe per skipped fabrication second — aggression is paid, turtling is not</td></tr>
         <tr><td>Rail / Aegis</td><td>Rail: 150-range sniper, ignores 80% armor, Si-hungry. Aegis: 30% slow field, +2%/level (cap 50%), stacks with beams by taking the max</td></tr>
+        <tr><td>Mortar</td><td>lobbed shells, area splash: 60% of shell damage to everything within 34px, halves armor — the swarm answer</td></tr>
+        <tr><td>Modules</td><td>one module per unit per kind · install cost ≈ blueprint cost · exhausts each sector — a targeted spike, never an infinite stack</td></tr>
         <tr><td>Scrap streak</td><td>kills within 2.2s chain: +1% salvage per link, cap +25% (Tithe: +40%) — density pays</td></tr>
         <tr><td>Abilities</td><td>Surge/Weld are matter-sink pressure valves with hard recharge timers — no spam loop possible</td></tr>
         <tr><td>Elites</td><td>veteran rolls scale 3%→25%: +60% hull vs +70% bounty keeps them net-positive but never farmable</td></tr>

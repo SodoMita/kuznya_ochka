@@ -1,7 +1,7 @@
-/* Units: stat scaling, targeting, placement. */
+/* Units: stat scaling, targeting, placement, upgrade modules. */
 import { S } from './state';
-import { CARDS } from './data';
-import type { Tower, TowerStats, Enemy, Cost } from './types';
+import { CARDS, RKEYS } from './data';
+import type { Tower, TowerStats, Enemy, Cost, Card } from './types';
 import { W, H } from './view';
 import { distToRoutePx } from './sectors';
 import { canAfford, spend, usedGrid, capZone, gridCap } from './economy';
@@ -9,12 +9,26 @@ import { burst } from './fx';
 import { toast, hud } from './hud';
 import { Snd } from './audio';
 import { compFor } from './enemies';
-import { selBoard, defOf, resolveAfterPlay, powerDmgMult, powerFoundryMult } from './deck';
+import { selBoard, selModule, defOf, resolveAfterPlay, powerDmgMult, powerFoundryMult } from './deck';
 
 export function supplyAt(t: Tower): number {
   var n = 0;
   S.towers.forEach(function (o) {
     if (o !== t && CARDS[o.i].id === 'foundry' && Math.hypot(o.x - t.x, o.y - t.y) <= 92) n++;
+  });
+  return 1 + .08 * Math.min(3, n);
+}
+
+/** Whether a unit carries a given module. */
+export function hasMod(t: Tower, id: string): boolean {
+  return t.mods.indexOf(id) >= 0;
+}
+
+/** Damage bonus from nearby SMELTER BELLY foundries (+8% each, max +24%). */
+export function foundryDmgBoost(t: Tower): number {
+  var n = 0;
+  S.towers.forEach(function (o) {
+    if (o !== t && CARDS[o.i].id === 'foundry' && hasMod(o, 'smelter') && Math.hypot(o.x - t.x, o.y - t.y) <= 92) n++;
   });
   return 1 + .08 * Math.min(3, n);
 }
@@ -27,14 +41,24 @@ export function stats(t: Tower): TowerStats {
   if (c.id === 'needle' && S.relics.twin) rate *= 1.2;
   if (S.time < S.ability.surge.until) rate *= 1.5;
   if (c.id === 'arc' && S.event && S.event.id === 'ion') dmg *= 1.4;
+  if (c.id === 'arc' && S.relics.shock) dmg *= 1.15;
+  if (S.event && S.event.id === 'solar') dmg *= 1.15;
+  /* upgrade modules */
+  if (hasMod(t, 'overvolt')) rate *= 1.2;
+  if (hasMod(t, 'railcoil')) dmg *= 1.25;
+  if (c.id !== 'foundry' && c.id !== 'aegis') dmg *= foundryDmgBoost(t);
   var range = c.range * (1 + .04 * L) * (S.relics.cryo ? 1.12 : 1);
   if (c.id === 'rail' && S.relics.lens) range *= 1.25;
+  if (hasMod(t, 'scope')) range *= 1.35;
+  if (hasMod(t, 'cryo')) range *= 1.25;
+  if (S.powers.power_seek) range *= 1.2;
   return { dmg: dmg, rate: rate, range: range, stars: Math.floor(L / 5) };
 }
 
 export function foundryOut(t: Tower): Cost {
   var m = Math.pow(1.13, t.lvl - 1) * Math.pow(1.05, S.ranks.foundry) * (S.relics.metal ? 1.18 : 1) * powerFoundryMult();
   if (S.event && S.event.id === 'rust') m *= 1.4;
+  if (hasMod(t, 'smelter')) m *= 1.6;
   return { fe: .34 * m, cu: .12 * m, si: .05 * m };
 }
 
@@ -84,6 +108,16 @@ export function canPlace(x: number, y: number): boolean {
   return true;
 }
 
+/** The blueprint behind a deployed unit. */
+export function towerCard(t: Tower): Card {
+  return CARDS[t.i];
+}
+
+/** The current slow magnitude of a unit (deepfreeze/overclock field). */
+export function towerSlow(t: Tower): number {
+  return t.slow;
+}
+
 /** Play the selected circuit-board card from the hand: consumes the card
     (→ discard/exhaust pile) and prints the unit on the field. */
 export function placeTower(x: number, y: number): void {
@@ -96,8 +130,8 @@ export function placeTower(x: number, y: number): void {
   if (!canPlace(x, y)) { toast('FOUNDATION BLOCKED'); Snd.play('error'); return; }
   spend(d.cost);
   var t: Tower = {
-    x: x, y: y, i: d.tower!, lvl: 1, cool: 0, ang: -Math.PI / 2, flash: 0,
-    tgt: 'first', inv: { fe: d.cost.fe, cu: d.cost.cu, si: d.cost.si }
+    x: x, y: y, i: d.tower!, lvl: 1, cool: 0, ang: -Math.PI / 2, flash: 0, slow: 0,
+    tgt: 'first', inv: { fe: d.cost.fe, cu: d.cost.cu, si: d.cost.si }, mods: []
   };
   S.towers.push(t);
   S.selTower = t;
@@ -110,5 +144,37 @@ export function placeTower(x: number, y: number): void {
   toast(d.name + (d.consume ? ' — CONSUMED FROM DECK' : d.exhaust ? ' — EXHAUSTED THIS SECTOR' : ' → DISCARD PILE'));
   burst(x, y, '#8fa0a6', 8);
   Snd.play('place');
+  hud(true);
+}
+
+/** Bolt the selected MODULE card onto a deployed unit (handled by field taps
+    and the unit-panel INSTALL button). Enforces blueprint compatibility, one
+    module of a kind per unit, and matter cost. */
+export function installModule(t: Tower): void {
+  var md = selModule();
+  if (!md || S.selCard == null) { toast('SELECT A MODULE CARD FIRST'); Snd.play('error'); return; }
+  if (S.towers.indexOf(t) < 0) { toast('UNIT OFFLINE'); Snd.play('error'); return; }
+  var handIdx = S.selCard;
+  var d = defOf(S.hand[handIdx]);
+  var c = CARDS[t.i];
+  if (md.forIds.indexOf(c.id) < 0) {
+    toast('INCOMPATIBLE — ' + md.name + ' FITS ' + md.forIds.join('/').toUpperCase());
+    Snd.play('error');
+    return;
+  }
+  if (hasMod(t, md.id)) { toast(c.name + ' ALREADY HAS ' + md.name); Snd.play('error'); return; }
+  if (!canAfford(d.cost)) { toast('INSUFFICIENT MATTER'); Snd.play('error'); return; }
+  spend(d.cost);
+  RKEYS.forEach(function (k) { t.inv[k] += d.cost[k]; });
+  t.mods.push(md.id);
+  resolveAfterPlay(handIdx);
+  /* QoL: chain-install — auto-select another copy of the same module card */
+  for (var k = 0; k < S.hand.length; k++) {
+    if (S.hand[k].id === d.id) { S.selCard = k; break; }
+  }
+  S.selTower = t;
+  burst(t.x, t.y, md.col, 10);
+  toast(md.name + ' → ' + c.name + (d.exhaust ? ' (EXHAUSTED THIS SECTOR)' : ''));
+  Snd.play('upgrade');
   hud(true);
 }
