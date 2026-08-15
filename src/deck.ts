@@ -8,7 +8,7 @@
    permanently. A "turn" is one full fabrication-window + wave cycle. */
 import { S } from './state';
 import { DECK_CARDS, CARDS, STARTER_DECK, MODULES } from './data';
-import type { CardInst, DeckCardDef, Card, ModuleDef, Enemy } from './types';
+import type { CardInst, DeckCardDef, Card, ModuleDef, Enemy, Cost, Tower } from './types';
 import { canAfford, spend, gainRes, usedGrid, gridCap } from './economy';
 import { burst, float } from './fx';
 import { Snd } from './audio';
@@ -148,6 +148,20 @@ export function selModule(): ModuleDef | null {
   return modById(d.module);
 }
 
+/** Targeted skills resolve on a unit you tap AFTER selecting the card. */
+export function isTargetedSkill(d: DeckCardDef): boolean {
+  return d.id === 'skill_recal';
+}
+
+/** The targeted-skill def behind the selected hand card (or null). */
+export function selTargetedSkill(): DeckCardDef | null {
+  if (S.selCard == null) return null;
+  var ci = S.hand[S.selCard];
+  if (!ci) return null;
+  var d = defOf(ci);
+  return isTargetedSkill(d) ? d : null;
+}
+
 export function canPlayDef(d: DeckCardDef): { ok: boolean; why?: string } {
   if (!canAfford(d.cost)) return { ok: false, why: 'INSUFFICIENT MATTER' };
   if (d.kind === 'board') {
@@ -155,9 +169,6 @@ export function canPlayDef(d: DeckCardDef): { ok: boolean; why?: string } {
     if (usedGrid() + c.draw > gridCap()) return { ok: false, why: 'GRID CAPACITY EXCEEDED' };
   }
   if (d.id === 'skill_weld' && S.core >= S.coreMax) return { ok: false, why: 'CORE AT FULL INTEGRITY' };
-  if (d.id === 'skill_recal' && (!S.selTower || S.towers.indexOf(S.selTower) < 0)) {
-    return { ok: false, why: 'SELECT A UNIT TO RECALIBRATE' };
-  }
   return { ok: true };
 }
 
@@ -174,6 +185,7 @@ export function playCard(handIdx: number): { ok: boolean; msg: string } {
   var d = defOf(ci);
   if (d.kind === 'board') return { ok: false, msg: 'SELECT A FOUNDATION TO DEPLOY' };
   if (d.kind === 'module') return { ok: false, msg: 'SELECT A COMPATIBLE UNIT TO INSTALL' };
+  if (isTargetedSkill(d)) return { ok: false, msg: 'SELECT A UNIT TO RECALIBRATE' };
   var chk = canPlayDef(d);
   if (!chk.ok) return { ok: false, msg: chk.why! };
   spend(d.cost);
@@ -288,13 +300,6 @@ export function playCard(handIdx: number): { ok: boolean; msg: string } {
       Snd.play('weld');
       msg += ' — ALL HOSTILES SLOWED 60% FOR 6s';
       break;
-    case 'skill_recal':
-      var rt = S.selTower!;
-      rt.lvl++;
-      burst(rt.x, rt.y, '#ffd23f', 8);
-      Snd.play('upgrade');
-      msg += ' — ' + CARDS[rt.i].name + ' +1 LEVEL';
-      break;
     default:
       break;
   }
@@ -310,4 +315,57 @@ export function powerDmgMult(): number {
 
 export function powerFoundryMult(): number {
   return 1 + .25 * (S.powers.power_reserve || 0);
+}
+
+/** Toss the selected hand card into the discard pile (ETHEREAL cards burn
+    into the exhaust pile instead). Returns a toast message, or '' if nothing
+    was selected. */
+export function discardSelCard(): string {
+  if (S.selCard == null) return '';
+  var ci = S.hand[S.selCard];
+  if (!ci) { S.selCard = null; return ''; }
+  var d = defOf(ci);
+  S.hand.splice(S.selCard, 1);
+  if (d.ethereal) S.exhaustPile.push(ci);
+  else S.discardPile.push(ci);
+  S.selCard = null;
+  return d.name + (d.ethereal ? ' — BURNED (ETHEREAL)' : ' → DISCARD PILE');
+}
+
+/** Tear the selected hand card out of the deck permanently for a 50% matter
+    refund. Returns a toast message, or '' if nothing was selected. */
+export function recycleSelCard(): string {
+  if (S.selCard == null) return '';
+  var ci = S.hand[S.selCard];
+  if (!ci) { S.selCard = null; return ''; }
+  var d = defOf(ci);
+  S.hand.splice(S.selCard, 1);
+  S.deck = S.deck.filter(function (c) { return c !== ci; });
+  var cp = corePt();
+  var refund: Cost = {
+    fe: Math.ceil(d.cost.fe * .5),
+    cu: Math.ceil(d.cost.cu * .5),
+    si: Math.ceil(d.cost.si * .5)
+  };
+  var bits: string[] = [];
+  if (refund.fe) bits.push('+' + refund.fe + 'Fe');
+  if (refund.cu) bits.push('+' + refund.cu + 'Cu');
+  if (refund.si) bits.push('+' + refund.si + 'Si');
+  if (bits.length) gainRes(refund, cp.x, cp.y - 12);
+  S.selCard = null;
+  return d.name + ' TORN FROM DECK' + (bits.length ? ' · ' + bits.join(' ') : '');
+}
+
+/** Apply the selected RECALIBRATE card to a unit (+1 level, free, exhausts). */
+export function castRecalibrate(t: Tower): string {
+  if (S.selCard == null) return 'SELECT RECALIBRATE FIRST';
+  var d = defOf(S.hand[S.selCard]);
+  if (!isTargetedSkill(d)) return 'SELECT RECALIBRATE FIRST';
+  if (!canAfford(d.cost)) return 'INSUFFICIENT MATTER';
+  spend(d.cost);
+  t.lvl++;
+  resolveAfterPlay(S.selCard);
+  burst(t.x, t.y, '#ffd23f', 8);
+  Snd.play('upgrade');
+  return d.name + ' — ' + CARDS[t.i].name + ' +1 LEVEL';
 }

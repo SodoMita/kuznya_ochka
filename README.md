@@ -78,6 +78,12 @@ harder), STATIC GRID (Aegis zaps), RANGEFINDER SCOPE (+35% range) and OVERVOLT C
 rate). Install by tapping a unit with the module selected, or via the INSTALL button in the
 unit panel.
 
+**Targeted skills** (RECALIBRATE: selected unit +1 level, free) resolve the same way —
+select the card, then tap the unit. **Card management:** with any card selected, the
+**✕ DISCARD** and **♻ RECYCLE** buttons in the pile bar toss the card into the discard
+pile (ethereal cards burn instead) or tear it out of the deck permanently for a 50%
+matter refund.
+
 **MORTAR** is a seventh blueprint: lobbed shells that deal 60% area splash within 34px (halved
 armor), making it the swarm answer. **REAVERS** are a tenth hostile class — heavy 50%-armor
 linebreakers that roll from wave 6 and dominate the new REAVER SLAG sector. A fifth map

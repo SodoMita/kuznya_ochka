@@ -6,7 +6,7 @@ import { $ } from './utils';
 import { canPlace, placeTower, installModule } from './towers';
 import { launchWave } from './enemies';
 import { hud, renderUnit, toast, award, playHandCard, openDeckModal } from './hud';
-import { defOf, selBoard } from './deck';
+import { defOf, selBoard, isTargetedSkill, castRecalibrate, discardSelCard, recycleSelCard } from './deck';
 import { canAfford, spend, usedGrid, gainRes, upCost, gridCap } from './economy';
 import { burst, float } from './fx';
 import { openMap, pickWorld } from './worldmap';
@@ -54,11 +54,23 @@ cv.addEventListener('pointerdown', function (ev) {
   ev.preventDefault();
   Snd.init();
   var p = canvasPos(ev), hit = towerNear(p, 30);
-  /* a selected MODULE card bolts onto the tapped unit */
-  if (hit && S.selCard != null && defOf(S.hand[S.selCard]).kind === 'module') {
-    installModule(hit);
-    S.ghost = updGhost(p);
-    return;
+  if (hit && S.selCard != null) {
+    var sd = defOf(S.hand[S.selCard]);
+    /* a selected MODULE card bolts onto the tapped unit */
+    if (sd.kind === 'module') {
+      installModule(hit);
+      S.ghost = updGhost(p);
+      return;
+    }
+    /* a targeted skill (RECALIBRATE) resolves on the tapped unit */
+    if (isTargetedSkill(sd)) {
+      var msg = castRecalibrate(hit);
+      if (msg === 'SELECT RECALIBRATE FIRST' || msg === 'INSUFFICIENT MATTER') Snd.play('error');
+      toast(msg);
+      hud(true);
+      S.ghost = updGhost(p);
+      return;
+    }
   }
   if (hit) {
     if (S.selTower === hit) { S.selTower = null; }               /* tap again to release */
@@ -179,6 +191,35 @@ $('modBtn').addEventListener('pointerdown', function () {
   installModule(t);
 });
 
+$('recalBtn').addEventListener('pointerdown', function () {
+  Snd.init();
+  const t = S.selTower;
+  if (!t || S.towers.indexOf(t) < 0) { Snd.play('error'); return; }
+  var msg = castRecalibrate(t);
+  if (msg === 'SELECT RECALIBRATE FIRST' || msg === 'INSUFFICIENT MATTER') Snd.play('error');
+  toast(msg);
+  hud(true);
+});
+
+/* hand-card management: DISCARD / RECYCLE the selected card */
+$('discardCard').addEventListener('pointerdown', function () {
+  Snd.init();
+  var msg = discardSelCard();
+  if (!msg) { toast('SELECT A CARD FIRST'); Snd.play('error'); return; }
+  toast(msg);
+  Snd.play('ui');
+  hud(true);
+});
+
+$('recycleCard').addEventListener('pointerdown', function () {
+  Snd.init();
+  var msg = recycleSelCard();
+  if (!msg) { toast('SELECT A CARD FIRST'); Snd.play('error'); return; }
+  toast(msg);
+  Snd.play('upgrade');
+  hud(true);
+});
+
 Array.prototype.forEach.call($('tgtRow').children, function (b: Element) {
   b.addEventListener('pointerdown', function (ev) {
     ev.stopPropagation();
@@ -282,12 +323,12 @@ addEventListener('keydown', function (ev) {
   if (ev.key >= '1' && ev.key <= '9') {
     var hi = +ev.key - 1;
     if (!S.hand[hi]) { Snd.play('error'); return; }
-    var kind = defOf(S.hand[hi]).kind;
-    if (S.selCard === hi && kind !== 'board' && kind !== 'module') {
+    var d = defOf(S.hand[hi]);
+    if (S.selCard === hi && d.kind !== 'board' && d.kind !== 'module' && !isTargetedSkill(d)) {
       playHandCard(hi);            /* second press runs the subroutine */
     } else {
       S.selCard = hi;
-      if (kind !== 'module') S.selTower = null;
+      if (d.kind !== 'module' && !isTargetedSkill(d)) S.selTower = null;   /* keep unit for targeted cards */
       Snd.play('ui');
     }
     hud(true);

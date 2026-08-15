@@ -122,6 +122,27 @@ assert($('vExh').textContent === '1', 'module card exhausted after install (got 
 click($('recBtn'));
 assert($('unitHead').textContent.indexOf('NO UNIT') >= 0, 'recycle deselects unit');
 
+/* --- card management: DISCARD / RECYCLE a selected hand card --- */
+const info0 = $('pileInfo').textContent;
+const deckBefore = parseInt((info0.match(/DECK (\d+)/) || [,'0'])[1], 10);
+const nb = handCard('NEEDLE BOARD');
+assert(!!nb, 'a NEEDLE BOARD remains in hand to manage');
+click(nb);
+assert($('discardCard').classList.contains('on'), 'DISCARD button arms when a card is selected');
+assert($('recycleCard').classList.contains('on'), 'RECYCLE button arms when a card is selected');
+const discBefore = parseInt($('vDisc').textContent, 10);
+click($('discardCard'));
+assert(parseInt($('vDisc').textContent, 10) === discBefore + 1, 'discard moved the selected card to the discard pile');
+const nb2 = handCard('NEEDLE BOARD');
+assert(!!nb2, 'another NEEDLE BOARD remains to recycle');
+click(nb2);
+const handBefore2 = doc.querySelectorAll('#cards .card').length;
+click($('recycleCard'));
+assert(doc.querySelectorAll('#cards .card').length === handBefore2 - 1, 'recycle removed the selected card from the hand');
+const info1 = $('pileInfo').textContent;
+const deckAfter = parseInt((info1.match(/DECK (\d+)/) || [,'0'])[1], 10);
+assert(deckAfter === deckBefore - 1, 'recycle permanently removed the card from the deck (got ' + deckAfter + ')');
+
 /* --- play SCRAP INFUSION if drawn: double-tap runs the subroutine --- */
 const scrap = handCard('SCRAP INFUSION');
 if (scrap) {
@@ -194,5 +215,5 @@ assert(sawFabrication, 'back to fabrication between waves (got ' + $('phaseBig')
 const handAfterTurn = doc.querySelectorAll('#cards .card').length;
 assert(handAfterTurn === 5, 'new turn deals a fresh 5-card hand (got ' + handAfterTurn + ')');
 
-console.log('SMOKE TEST PASSED ✓ (boot, deck piles, board deploy, module install, subroutines, wave 1, doctrine/pause/speed/modals, turn redraw)');
+console.log('SMOKE TEST PASSED ✓ (boot, deck piles, board deploy, module install, card discard/recycle, subroutines, wave 1, doctrine/pause/speed/modals, turn redraw)');
 process.exit(0);

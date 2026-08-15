@@ -68,6 +68,11 @@ button{font-family:var(--mono);color:var(--ink);touch-action:manipulation;user-s
 #pileBar button b{color:var(--ink);font-size:9px}
 #pileDraw{border-left-color:var(--teal)}#pileDisc{border-left-color:var(--copper)}#pileExh{border-left-color:var(--red)}
 #pileDraw b{color:var(--teal)}#pileDisc b{color:var(--copper)}#pileExh b{color:var(--red)}
+#discardCard,#recycleCard{border-left-color:var(--steel);opacity:.35;filter:grayscale(.6);cursor:default}
+#discardCard.on,#recycleCard.on{opacity:1;filter:none;cursor:pointer;border-left-color:var(--teal);color:var(--ink)}
+#discardCard.on:hover{border-color:var(--teal);color:var(--ink)}
+#recycleCard.on{border-left-color:var(--red)}
+#recycleCard.on:hover{border-color:var(--red);color:var(--ink)}
 #pileBar button.tick{animation:pileTick .4s ease-out}
 @keyframes pileTick{0%{transform:translateY(-2px);border-color:var(--gold);color:var(--ink);filter:brightness(1.6)}}
 #pileInfo{margin-left:auto;font-size:7px;letter-spacing:1px;color:var(--dim);white-space:nowrap;overflow:hidden}
@@ -137,6 +142,9 @@ button{font-family:var(--mono);color:var(--ink);touch-action:manipulation;user-s
 #modBtn small{display:block;font-size:7px;color:#b39a55;margin-top:2px;letter-spacing:.3px;font-family:var(--mono)}
 #modBtn.on{border-color:var(--gold);color:var(--gold)}
 #modBtn.broke{opacity:.55;filter:grayscale(.6);border-color:var(--line)}
+#recalBtn{border-color:#12312c;background:linear-gradient(#122720,#0e1f1a);color:var(--teal);font-family:var(--disp);font-size:11px;letter-spacing:1px}
+#recalBtn small{display:block;font-size:7px;color:#3f7a6e;margin-top:2px;letter-spacing:.3px;font-family:var(--mono)}
+#recalBtn:hover{border-color:var(--teal)}
 #upBtn{border-color:#7a5b22;background:linear-gradient(#3a2f14,#2c2410);color:var(--gold)}
 #upBtn:hover{border-color:var(--gold)}
 #upBtn small{display:block;font-size:7px;color:#b39a55;margin-top:2px;letter-spacing:.3px}
@@ -232,7 +240,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     <div id="stInfo"><b id="sectorName">SECTOR 01 · RUST BASIN</b><span id="sectorMix">SALVAGE Fe-heavy</span></div>
     <div id="banner"></div>
     <div id="toast"></div>
-    <div id="hint">SELECT A CARD [1-9] · BOARDS: TAP FIELD TO PRINT · MODULES: TAP A UNIT TO INSTALL — SKILLS: TAP CARD AGAIN TO RUN · [D] DECK · [SPACE] LAUNCH</div>
+    <div id="hint">SELECT A CARD [1-9] · BOARDS: TAP FIELD · MODULES/RECALIBRATE: TAP A UNIT · SKILLS: TAP AGAIN · [D] DECK · ✕/♻ TOSS A SELECTED CARD · [SPACE] LAUNCH</div>
     <div id="abils">
       <button id="abilSurge" title="All units +50% fire rate for 8s — costs 40 Fe">SURGE<small id="surgeCd">READY · 40Fe</small></button>
       <button id="abilWeld" title="Restore 3 core integrity — costs 30 Fe 15 Cu">WELD<small id="weldCd">READY · 30Fe 15Cu</small></button>
@@ -258,6 +266,8 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
         <button id="pileDraw" title="Draw pile (D)">DRAW <b id="vDraw">0</b></button>
         <button id="pileDisc" title="Discard pile (D)">DISCARD <b id="vDisc">0</b></button>
         <button id="pileExh" title="Exhausted this sector (D)">EXHAUST <b id="vExh">0</b></button>
+        <button id="discardCard" title="Discard the selected card into the discard pile">✕ DISCARD</button>
+        <button id="recycleCard" title="Permanently remove the selected card from your deck for 50% matter">♻ RECYCLE</button>
         <span id="pileInfo">HAND 0/10 · DECK 10</span>
       </div>
     </div>
@@ -275,6 +285,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
           <button data-tgt="far" title="farthest unit">FAR</button>
         </div>
         <button id="modBtn" class="sq" style="display:none"><span>INSTALL MODULE</span><small>—</small></button>
+        <button id="recalBtn" class="sq" style="display:none"><span>RECALIBRATE</span><small>—</small></button>
         <div class="row2">
           <button id="upBtn" class="sq">UPGRADE<small id="upCost">—</small></button>
           <button id="recBtn" class="sq warn">RECYCLE<small id="recVal" style="display:block;font-size:7px;color:#8f9aa0;margin-top:2px">—</small></button>
@@ -318,6 +329,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       <h3 class="sec">THE CIRCUIT DECK</h3>
       <p>You fight with a <b style="color:var(--teal)">deck of cards</b>, drawn Slay-the-Spire style. Your run starts with 10 cards; salvage caches add more. Each fabrication window is a <b>turn</b>: your old hand is discarded and you draw 5 (Autoloader: +1). Playing a card costs matter, not energy — your resources are the mana pool.</p>
       <p><b style="color:var(--steel)">CIRCUIT BOARDS</b> are the only way to build: select one and tap the field to print its unit — the board is consumed into the discard pile and cycles back on reshuffle. <b style="color:var(--teal)">SUBROUTINES</b> are one-shot skills (matter, draws, heals, EMP). <b style="color:var(--gold)">FIRMWARE</b> installs a sector-wide modifier and always exhausts.</p>
+      <p><b>Targeted cards</b> (RECALIBRATE) resolve on a unit you <b>tap after</b> selecting the card — pick the card first, then the unit. With any card selected, the <b style="color:var(--teal)">✕ DISCARD</b> and <b style="color:var(--red)">♻ RECYCLE</b> buttons in the pile bar let you toss it into the discard pile (ethereal cards burn instead) or tear it out of your deck permanently for a 50% matter refund.</p>
       <p>Keywords: <b style="color:var(--red)">EXHAUST</b> — removed for the rest of the sector after play · <b style="color:#b18cd9">ETHEREAL</b> — exhausts if still unplayed when the turn ends (hand redraw) · <b style="color:var(--teal)">RETAIN</b> — not discarded at turn end · <b style="color:var(--steel)">INNATE</b> — guaranteed in the sector's opening hand · <b style="color:var(--gold)">CONSUME</b> — torn from the deck permanently after one use. When the draw pile empties, the discard pile reshuffles into it. Deploying to a new sector restores exhausted cards and deals a fresh opening hand. Press <kbd>D</kbd> or tap the pile counters to audit every pile.</p>
       <h3 class="sec">SALVAGE DOCTRINES [M]</h3>
       <p><b style="color:var(--copper)">LOOT</b> — Harvesters fire normally; every wreck drops base salvage.<br>
@@ -348,7 +360,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
         <tr><td>Simulation</td><td>fixed 60Hz ticks, identical at 1× and 100×, runs live between waves</td></tr>
       </table>
       <h3 class="sec">CONTROLS</h3>
-      <p><kbd>1-9</kbd> select hand card (press again to run a subroutine) · <kbd>D</kbd> circuit ledger · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect · with a board selected, drag &amp; release on the field to print — invalid spots snap to the nearest foundation</p>
+      <p><kbd>1-9</kbd> select hand card (press again to run a subroutine) · <kbd>D</kbd> circuit ledger · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect · with a board selected, drag &amp; release on the field to print — invalid spots snap to the nearest foundation. Select a card, then use ✕ DISCARD / ♻ RECYCLE to thin your hand or deck.</p>
     </div>
   </div>
   <div class="modal" id="endModal">
@@ -2003,6 +2015,16 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     if (d.kind !== "module" || !d.module) return null;
     return modById(d.module);
   }
+  function isTargetedSkill(d) {
+    return d.id === "skill_recal";
+  }
+  function selTargetedSkill() {
+    if (S.selCard == null) return null;
+    var ci = S.hand[S.selCard];
+    if (!ci) return null;
+    var d = defOf(ci);
+    return isTargetedSkill(d) ? d : null;
+  }
   function canPlayDef(d) {
     if (!canAfford(d.cost)) return { ok: false, why: "INSUFFICIENT MATTER" };
     if (d.kind === "board") {
@@ -2010,9 +2032,6 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       if (usedGrid() + c.draw > gridCap()) return { ok: false, why: "GRID CAPACITY EXCEEDED" };
     }
     if (d.id === "skill_weld" && S.core >= S.coreMax) return { ok: false, why: "CORE AT FULL INTEGRITY" };
-    if (d.id === "skill_recal" && (!S.selTower || S.towers.indexOf(S.selTower) < 0)) {
-      return { ok: false, why: "SELECT A UNIT TO RECALIBRATE" };
-    }
     return { ok: true };
   }
   function corePt() {
@@ -2025,6 +2044,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     var d = defOf(ci);
     if (d.kind === "board") return { ok: false, msg: "SELECT A FOUNDATION TO DEPLOY" };
     if (d.kind === "module") return { ok: false, msg: "SELECT A COMPATIBLE UNIT TO INSTALL" };
+    if (isTargetedSkill(d)) return { ok: false, msg: "SELECT A UNIT TO RECALIBRATE" };
     var chk = canPlayDef(d);
     if (!chk.ok) return { ok: false, msg: chk.why };
     spend(d.cost);
@@ -2137,13 +2157,6 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
         Snd.play("weld");
         msg += " \u2014 ALL HOSTILES SLOWED 60% FOR 6s";
         break;
-      case "skill_recal":
-        var rt = S.selTower;
-        rt.lvl++;
-        burst(rt.x, rt.y, "#ffd23f", 8);
-        Snd.play("upgrade");
-        msg += " \u2014 " + CARDS[rt.i].name + " +1 LEVEL";
-        break;
       default:
         break;
     }
@@ -2156,6 +2169,58 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   }
   function powerFoundryMult() {
     return 1 + 0.25 * (S.powers.power_reserve || 0);
+  }
+  function discardSelCard() {
+    if (S.selCard == null) return "";
+    var ci = S.hand[S.selCard];
+    if (!ci) {
+      S.selCard = null;
+      return "";
+    }
+    var d = defOf(ci);
+    S.hand.splice(S.selCard, 1);
+    if (d.ethereal) S.exhaustPile.push(ci);
+    else S.discardPile.push(ci);
+    S.selCard = null;
+    return d.name + (d.ethereal ? " \u2014 BURNED (ETHEREAL)" : " \u2192 DISCARD PILE");
+  }
+  function recycleSelCard() {
+    if (S.selCard == null) return "";
+    var ci = S.hand[S.selCard];
+    if (!ci) {
+      S.selCard = null;
+      return "";
+    }
+    var d = defOf(ci);
+    S.hand.splice(S.selCard, 1);
+    S.deck = S.deck.filter(function(c) {
+      return c !== ci;
+    });
+    var cp = corePt();
+    var refund = {
+      fe: Math.ceil(d.cost.fe * 0.5),
+      cu: Math.ceil(d.cost.cu * 0.5),
+      si: Math.ceil(d.cost.si * 0.5)
+    };
+    var bits = [];
+    if (refund.fe) bits.push("+" + refund.fe + "Fe");
+    if (refund.cu) bits.push("+" + refund.cu + "Cu");
+    if (refund.si) bits.push("+" + refund.si + "Si");
+    if (bits.length) gainRes(refund, cp.x, cp.y - 12);
+    S.selCard = null;
+    return d.name + " TORN FROM DECK" + (bits.length ? " \xB7 " + bits.join(" ") : "");
+  }
+  function castRecalibrate(t) {
+    if (S.selCard == null) return "SELECT RECALIBRATE FIRST";
+    var d = defOf(S.hand[S.selCard]);
+    if (!isTargetedSkill(d)) return "SELECT RECALIBRATE FIRST";
+    if (!canAfford(d.cost)) return "INSUFFICIENT MATTER";
+    spend(d.cost);
+    t.lvl++;
+    resolveAfterPlay(S.selCard);
+    burst(t.x, t.y, "#ffd23f", 8);
+    Snd.play("upgrade");
+    return d.name + " \u2014 " + CARDS[t.i].name + " +1 LEVEL";
   }
 
   // src/hud.ts
@@ -2236,6 +2301,9 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     if (sec.mix.cu > sec.mix.fe && sec.mix.cu >= sec.mix.si) dom = "Cu";
     if (sec.mix.si > sec.mix.fe && sec.mix.si > sec.mix.cu) dom = "Si";
     $("sectorMix").textContent = "SALVAGE " + dom + "-HEAVY \xB7 " + HAZNAMES[sec.haz];
+    var hasSel = S.selCard != null;
+    $("discardCard").classList.toggle("on", hasSel);
+    $("recycleCard").classList.toggle("on", hasSel);
     var sig = handSignature();
     if (sig !== handSig) {
       handSig = sig;
@@ -2289,7 +2357,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       var rankTag = d.kind === "board" && S.ranks[CARDS[d.tower].id] ? '<span class="rank">Mk.' + (S.ranks[CARDS[d.tower].id] + 1) + "</span>" : "";
       var isNew = !seenUids[ci.uid];
       if (isNew) dealt++;
-      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div><div class="hd">' + glyph + "<strong>" + d.name + "</strong>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + "</div><p>" + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "module" ? "\u25B8 TAP A UNIT TO INSTALL" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
+      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div><div class="hd">' + glyph + "<strong>" + d.name + "</strong>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + "</div><p>" + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "module" ? "\u25B8 TAP A UNIT TO INSTALL" : isTargetedSkill(d) ? "\u25B8 TAP A UNIT TO CAST" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
     }
     if (!S.hand.length) {
       h = '<div id="handEmpty">HAND EMPTY \u2014 NEW CARDS DEALT NEXT FABRICATION WINDOW</div>';
@@ -2323,7 +2391,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     if (!ci) return;
     var d = defOf(ci);
     if (S.selCard === i) {
-      if (d.kind === "board" || d.kind === "module") {
+      if (d.kind === "board" || d.kind === "module" || isTargetedSkill(d)) {
         S.selCard = null;
         hud(true);
         return;
@@ -2332,7 +2400,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       if (!res) return;
     } else {
       S.selCard = i;
-      if (d.kind !== "module") S.selTower = null;
+      if (d.kind !== "module" && !isTargetedSkill(d)) S.selTower = null;
       Snd.play("ui");
     }
     hud(true);
@@ -2399,11 +2467,13 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     var has = !!(t && S.towers.indexOf(t) >= 0);
     $("tgtRow").style.display = has ? "grid" : "none";
     var md = selModule();
+    var rk = selTargetedSkill();
     if (!t || !has) {
       $("unitHead").textContent = "NO UNIT SELECTED";
-      $("unitStats").textContent = md ? "MODULE READY \u2014 SELECT A COMPATIBLE UNIT TO INSTALL" : "tap near a unit \u2014 nearest one is grabbed \xB7 tap again to release";
+      $("unitStats").textContent = md ? "MODULE READY \u2014 SELECT A COMPATIBLE UNIT TO INSTALL" : rk ? "RECALIBRATE READY \u2014 TAP A UNIT TO +1 LEVEL" : "tap near a unit \u2014 nearest one is grabbed \xB7 tap again to release";
       $("unitMods").innerHTML = "";
       $("modBtn").style.display = "none";
+      $("recalBtn").style.display = "none";
       $("upCost").textContent = "\u2014";
       $("recVal").textContent = "\u2014";
       return;
@@ -2425,6 +2495,11 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     } else {
       $("modBtn").querySelector("span").textContent = "INSTALL MODULE";
       $("modBtn").querySelector("small").textContent = "\u2014";
+    }
+    $("recalBtn").style.display = rk ? "block" : "none";
+    if (rk) {
+      $("recalBtn").querySelector("span").textContent = "RECALIBRATE " + c.name.toUpperCase();
+      $("recalBtn").querySelector("small").textContent = canAfford(rk.cost) ? "\u25B8 tap field unit or press here" : "INSUFFICIENT MATTER";
     }
     $("unitHead").textContent = c.name + " \xB7 L" + t.lvl + (S.ranks[c.id] ? " Mk." + (S.ranks[c.id] + 1) : "") + (st.stars ? " \xB7 " + "\u2605".repeat(Math.min(st.stars, 5)) + (st.stars > 5 ? "+" + (st.stars - 5) : "") : "");
     if (c.id === "foundry") {
@@ -2685,10 +2760,21 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     ev.preventDefault();
     Snd.init();
     var p = canvasPos(ev), hit = towerNear(p, 30);
-    if (hit && S.selCard != null && defOf(S.hand[S.selCard]).kind === "module") {
-      installModule(hit);
-      S.ghost = updGhost(p);
-      return;
+    if (hit && S.selCard != null) {
+      var sd = defOf(S.hand[S.selCard]);
+      if (sd.kind === "module") {
+        installModule(hit);
+        S.ghost = updGhost(p);
+        return;
+      }
+      if (isTargetedSkill(sd)) {
+        var msg = castRecalibrate(hit);
+        if (msg === "SELECT RECALIBRATE FIRST" || msg === "INSUFFICIENT MATTER") Snd.play("error");
+        toast(msg);
+        hud(true);
+        S.ghost = updGhost(p);
+        return;
+      }
     }
     if (hit) {
       if (S.selTower === hit) {
@@ -2831,6 +2917,42 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     }
     installModule(t);
   });
+  $("recalBtn").addEventListener("pointerdown", function() {
+    Snd.init();
+    const t = S.selTower;
+    if (!t || S.towers.indexOf(t) < 0) {
+      Snd.play("error");
+      return;
+    }
+    var msg = castRecalibrate(t);
+    if (msg === "SELECT RECALIBRATE FIRST" || msg === "INSUFFICIENT MATTER") Snd.play("error");
+    toast(msg);
+    hud(true);
+  });
+  $("discardCard").addEventListener("pointerdown", function() {
+    Snd.init();
+    var msg = discardSelCard();
+    if (!msg) {
+      toast("SELECT A CARD FIRST");
+      Snd.play("error");
+      return;
+    }
+    toast(msg);
+    Snd.play("ui");
+    hud(true);
+  });
+  $("recycleCard").addEventListener("pointerdown", function() {
+    Snd.init();
+    var msg = recycleSelCard();
+    if (!msg) {
+      toast("SELECT A CARD FIRST");
+      Snd.play("error");
+      return;
+    }
+    toast(msg);
+    Snd.play("upgrade");
+    hud(true);
+  });
   Array.prototype.forEach.call($("tgtRow").children, function(b) {
     b.addEventListener("pointerdown", function(ev) {
       ev.stopPropagation();
@@ -2945,12 +3067,12 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
         Snd.play("error");
         return;
       }
-      var kind = defOf(S.hand[hi]).kind;
-      if (S.selCard === hi && kind !== "board" && kind !== "module") {
+      var d = defOf(S.hand[hi]);
+      if (S.selCard === hi && d.kind !== "board" && d.kind !== "module" && !isTargetedSkill(d)) {
         playHandCard(hi);
       } else {
         S.selCard = hi;
-        if (kind !== "module") S.selTower = null;
+        if (d.kind !== "module" && !isTargetedSkill(d)) S.selTower = null;
         Snd.play("ui");
       }
       hud(true);

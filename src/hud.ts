@@ -4,7 +4,7 @@ import { $, fmt, pad2 } from './utils';
 import { CARDS, GLYPHS, KIND_LABEL, TGT_LABEL, HAZNAMES, MEDALS } from './data';
 import { sector, canAfford, usedGrid, upCost, gridCap } from './economy';
 import { stats, foundryOut, nextWaveStr, hasMod } from './towers';
-import { defOf, defById, canPlayDef, playCard, handSize, HAND_CAP, modById, selModule } from './deck';
+import { defOf, defById, canPlayDef, playCard, handSize, HAND_CAP, modById, selModule, isTargetedSkill, selTargetedSkill } from './deck';
 import type { CardInst, DeckCardDef, Cost } from './types';
 import { openModal } from './modals';
 import { Snd } from './audio';
@@ -86,6 +86,10 @@ export function hud(force?: boolean): void {
   if (sec.mix.cu > sec.mix.fe && sec.mix.cu >= sec.mix.si) dom = 'Cu';
   if (sec.mix.si > sec.mix.fe && sec.mix.si > sec.mix.cu) dom = 'Si';
   $('sectorMix').textContent = 'SALVAGE ' + dom + '-HEAVY · ' + HAZNAMES[sec.haz];
+  /* card-management buttons light up only while a card is selected */
+  var hasSel = S.selCard != null;
+  $('discardCard').classList.toggle('on', hasSel);
+  $('recycleCard').classList.toggle('on', hasSel);
   /* re-render the hand when any card's playability or cost shortfall flips */
   var sig = handSignature();
   if (sig !== handSig) { handSig = sig; renderCards(); }
@@ -157,7 +161,7 @@ export function renderCards(): void {
       '<p>' + d.desc + '</p>' +
       '<div class="tags">' + tagStr(d) + '</div>' +
       '<div class="cst">' + costHtml(d.cost) + '</div>' + rankTag +
-      '<div class="play">' + (d.kind === 'board' ? '▸ TAP FIELD TO PRINT' : d.kind === 'module' ? '▸ TAP A UNIT TO INSTALL' : '▸ TAP AGAIN TO RUN') + '</div>' +
+      '<div class="play">' + (d.kind === 'board' ? '▸ TAP FIELD TO PRINT' : d.kind === 'module' ? '▸ TAP A UNIT TO INSTALL' : isTargetedSkill(d) ? '▸ TAP A UNIT TO CAST' : '▸ TAP AGAIN TO RUN') + '</div>' +
       '</div>';
   }
   if (!S.hand.length) {
@@ -191,12 +195,12 @@ function cardTap(i: number): void {
   if (!ci) return;
   var d = defOf(ci);
   if (S.selCard === i) {
-    if (d.kind === 'board' || d.kind === 'module') { S.selCard = null; hud(true); return; }  /* toggle off */
+    if (d.kind === 'board' || d.kind === 'module' || isTargetedSkill(d)) { S.selCard = null; hud(true); return; }  /* toggle off */
     var res = playHandCard(i);
     if (!res) return;
   } else {
     S.selCard = i;
-    if (d.kind !== 'module') S.selTower = null;   /* keep the unit selected so the INSTALL button stays live */
+    if (d.kind !== 'module' && !isTargetedSkill(d)) S.selTower = null;   /* keep the unit selected for targeted cards */
     Snd.play('ui');
   }
   hud(true);
@@ -272,11 +276,14 @@ export function renderUnit(): void {
   var has = !!(t && S.towers.indexOf(t) >= 0);
   $('tgtRow').style.display = has ? 'grid' : 'none';
   var md = selModule();
+  var rk = selTargetedSkill();
   if (!t || !has) {
     $('unitHead').textContent = 'NO UNIT SELECTED';
-    $('unitStats').textContent = md ? 'MODULE READY — SELECT A COMPATIBLE UNIT TO INSTALL' : 'tap near a unit — nearest one is grabbed · tap again to release';
+    $('unitStats').textContent = md ? 'MODULE READY — SELECT A COMPATIBLE UNIT TO INSTALL' :
+      rk ? 'RECALIBRATE READY — TAP A UNIT TO +1 LEVEL' : 'tap near a unit — nearest one is grabbed · tap again to release';
     $('unitMods').innerHTML = '';
     $('modBtn').style.display = 'none';
+    $('recalBtn').style.display = 'none';
     $('upCost').textContent = '—';
     $('recVal').textContent = '—';
     return;
@@ -301,6 +308,13 @@ export function renderUnit(): void {
   } else {
     ($('modBtn').querySelector('span') as HTMLElement).textContent = 'INSTALL MODULE';
     ($('modBtn').querySelector('small') as HTMLElement).textContent = '—';
+  }
+  /* RECALIBRATE targeted-skill button */
+  $('recalBtn').style.display = rk ? 'block' : 'none';
+  if (rk) {
+    ($('recalBtn').querySelector('span') as HTMLElement).textContent = 'RECALIBRATE ' + c.name.toUpperCase();
+    ($('recalBtn').querySelector('small') as HTMLElement).textContent =
+      canAfford(rk.cost) ? '▸ tap field unit or press here' : 'INSUFFICIENT MATTER';
   }
   $('unitHead').textContent = c.name + ' · L' + t.lvl + (S.ranks[c.id] ? ' Mk.' + (S.ranks[c.id] + 1) : '') +
     (st.stars ? ' · ' + '★'.repeat(Math.min(st.stars, 5)) + (st.stars > 5 ? '+' + (st.stars - 5) : '') : '');
