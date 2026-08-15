@@ -429,80 +429,118 @@ function drawTower(t: Tower): void {
     ctx.fill();
     ctx.globalAlpha = 1;
   }
+  /* octagonal base pad — every unit sits on one (top-down plan view) */
+  ctx.fillStyle = '#1a2226';
+  ctx.strokeStyle = sel ? '#3ec9b0' : '#3a4a52';
+  ctx.lineWidth = 1.5;
+  ngon(0, 0, 11, 8, Math.PI / 8);
+  ctx.fill();
+  ctx.stroke();
   if (CARDS[t.i].id === 'foundry') {
+    /* square furnace: glowing center vent + corner chimney stub */
     var glow = (Math.sin(S.time * 5 + t.x) + 1) / 2;
-    ctx.fillStyle = '#1d262b';
-    ctx.strokeStyle = sel ? '#3ec9b0' : '#3a4a52';
-    ctx.lineWidth = 1.5;
-    ctx.fillRect(-9, -8, 18, 16);
-    ctx.strokeRect(-9, -8, 18, 16);
-    ctx.fillStyle = hexA('#e0854e', .5 + glow * .5);
-    ctx.fillRect(-4, -3, 8, 8);
+    ctx.fillStyle = '#232d33';
+    ctx.strokeStyle = '#3a4a52';
+    ctx.lineWidth = 1;
+    ctx.fillRect(-7, -7, 14, 14);
+    ctx.strokeRect(-7, -7, 14, 14);
+    ctx.fillStyle = hexA('#e0854e', .45 + glow * .55);
+    ctx.fillRect(-3.5, -3.5, 7, 7);
+    ctx.fillStyle = hexA('#ffd8a0', .3 + glow * .5);
+    ctx.fillRect(-1.5, -1.5, 3, 3);
+    /* chimney stub, top-right corner, with ember dot */
     ctx.fillStyle = '#3a4a52';
-    ctx.fillRect(3, -12, 4, 5);
-    ctx.fillStyle = '#e0854e';
-    ctx.fillRect(-9, 8, 18, 2);
-  } else if (c.id === 'aegis') {
-    /* rotating slow-field emitter: no turret body, no barrel */
-    ctx.fillStyle = '#1d262b';
-    ctx.strokeStyle = sel ? '#3ec9b0' : '#3a4a52';
-    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(0, -9);
-    ctx.lineTo(8, -4);
-    ctx.lineTo(8, 5);
-    ctx.lineTo(0, 10);
-    ctx.lineTo(-8, 5);
-    ctx.lineTo(-8, -4);
-    ctx.closePath();
+    ctx.arc(5, -5, 2.5, 0, 7);
+    ctx.fill();
+    ctx.fillStyle = hexA('#e0854e', .4 + glow * .6);
+    ctx.beginPath();
+    ctx.arc(5, -5, 1, 0, 7);
+    ctx.fill();
+  } else if (c.id === 'aegis') {
+    /* hex pylon with a rotating inner square + field ring */
+    ctx.fillStyle = '#232d33';
+    ctx.strokeStyle = '#3a4a52';
+    ctx.lineWidth = 1;
+    ngon(0, 0, 8, 6, -Math.PI / 2);
     ctx.fill();
     ctx.stroke();
     ctx.save();
     ctx.rotate(S.time * 1.5);
-    ctx.fillStyle = '#3ec9b0';
-    ctx.fillRect(-3.5, -3.5, 7, 7);
+    ctx.strokeStyle = '#3ec9b0';
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(-4, -4, 8, 8);
+    ctx.fillStyle = hexA('#3ec9b0', .6);
+    ctx.fillRect(-1.5, -1.5, 3, 3);
     ctx.restore();
     var pu3 = (Math.sin(S.time * 4) + 1) / 2;
     ctx.strokeStyle = hexA('#3ec9b0', .25 + .35 * pu3);
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.arc(0, 0, 11 + pu3 * 3, 0, 7);
+    ctx.arc(0, 0, 12 + pu3 * 3, 0, 7);
     ctx.stroke();
-  } else {
-    ctx.fillStyle = '#1d262b';
-    ctx.strokeStyle = sel ? '#3ec9b0' : '#3a4a52';
-    ctx.lineWidth = 1.5;
+  } else if (c.id === 'arc') {
+    /* coil seen from above: concentric rings + orbiting spark */
+    ctx.strokeStyle = '#3a4a52';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(-9, -9);
-    ctx.lineTo(9, -9);
-    ctx.lineTo(9, 6);
-    ctx.lineTo(5, 9);
-    ctx.lineTo(-5, 9);
-    ctx.lineTo(-9, 6);
-    ctx.closePath();
-    ctx.fill();
+    ctx.arc(0, 0, 7.5, 0, 7);
     ctx.stroke();
+    ctx.strokeStyle = c.col;
+    ctx.beginPath();
+    ctx.arc(0, 0, 5, 0, 7);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(0, 0, 2.5, 0, 7);
+    ctx.stroke();
+    var sa = S.time * 4 + t.x;
+    ctx.fillStyle = hexA('#ffd23f', .5 + .5 * ((Math.sin(S.time * 9 + t.y) + 1) / 2));
+    ctx.fillRect(Math.cos(sa) * 6.5 - 1, Math.sin(sa) * 6.5 - 1, 2, 2);
+    if (t.flash > 0) {
+      ctx.strokeStyle = hexA('#fff', Math.min(1, t.flash * 12));
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, 0, 9, 0, 7);
+      ctx.stroke();
+    }
+  } else {
+    /* rotating hub + per-blueprint barrel, plan view */
     ctx.rotate(t.ang);
-    ctx.fillStyle = '#2c3940';
-    ctx.fillRect(-4, -4, 8, 8);
-    ctx.fillStyle = c.col;
-    if (c.id === 'arc') {
-      ctx.fillRect(2, -1.5, 10, 3);
-      ctx.fillRect(9, -3.5, 2, 7);
-    } else if (c.id === 'harvest') {
+    if (c.id === 'harvest') {
+      /* round hub with C-shaped claw dish opening forward */
+      ctx.fillStyle = '#2c3940';
+      ctx.beginPath();
+      ctx.arc(0, 0, 4.5, 0, 7);
+      ctx.fill();
       ctx.strokeStyle = c.col;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(8, 0, 4, -1.2, 1.2);
+      ctx.arc(6.5, 0, 4.5, -1.15, 1.15);
       ctx.stroke();
-      ctx.fillRect(1, -1.5, 7, 3);
+      ctx.fillStyle = c.col;
+      ctx.fillRect(0, -1.2, 5, 2.4);
     } else if (c.id === 'rail') {
-      ctx.fillRect(1, -1.2, 15, 2.4);
-      ctx.fillRect(12, -2.6, 2, 5.2);
+      /* twin parallel rails on a rectangular carriage */
+      ctx.fillStyle = '#2c3940';
+      ctx.fillRect(-6, -4.5, 10, 9);
+      ctx.fillStyle = c.col;
+      ctx.fillRect(0, -3.2, 15, 1.6);
+      ctx.fillRect(0, 1.6, 15, 1.6);
       ctx.fillStyle = '#8a6a20';
-      ctx.fillRect(-6, -3, 5, 6);
+      ctx.fillRect(-5, -2.5, 4, 5);
     } else {
-      ctx.fillRect(2, -1, 11, 2);
+      /* needle: small round hub, single long thin barrel */
+      ctx.fillStyle = '#2c3940';
+      ctx.beginPath();
+      ctx.arc(0, 0, 4.5, 0, 7);
+      ctx.fill();
+      ctx.strokeStyle = c.col;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, 0, 4.5, 0, 7);
+      ctx.stroke();
+      ctx.fillStyle = c.col;
+      ctx.fillRect(2, -1, 12, 2);
     }
     if (t.flash > 0) {
       ctx.fillStyle = '#fff';
@@ -600,26 +638,57 @@ function drawEnemy(e: Enemy): void {
     ctx.closePath();
     ctx.fill();
   } else if (e.type === 'titan') {
+    /* heavy hull with red corner armor plates */
     ctx.fillRect(-e.size, -e.size, e.size * 2, e.size * 2);
-    ctx.strokeStyle = '#7c282c';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(-e.size + 2, -e.size + 2, e.size * 2 - 4, e.size * 2 - 4);
+    ctx.strokeStyle = '#39454d';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(-e.size + 2.5, -e.size + 2.5, e.size * 2 - 5, e.size * 2 - 5);
+    ctx.fillStyle = '#7c282c';
+    var cp = e.size * .5;
+    ctx.fillRect(-e.size, -e.size, cp, cp);
+    ctx.fillRect(e.size - cp, -e.size, cp, cp);
+    ctx.fillRect(-e.size, e.size - cp, cp, cp);
+    ctx.fillRect(e.size - cp, e.size - cp, cp, cp);
     ctx.fillStyle = '#ffd23f';
     ctx.fillRect(-2, -2, 4, 4);
   } else if (e.type === 'dread') {
+    /* spiked hull with pulsing red eye */
     ctx.fillRect(-e.size, -e.size, e.size * 2, e.size * 2);
+    ctx.fillStyle = '#4d1418';
+    for (var sk = 0; sk < 8; sk++) {
+      var ska = sk * Math.PI / 4 + Math.PI / 8;
+      var skx = Math.cos(ska), sky = Math.sin(ska);
+      ctx.beginPath();
+      ctx.moveTo(skx * e.size, sky * e.size);
+      ctx.lineTo(skx * (e.size + 4) - sky * 2, sky * (e.size + 4) + skx * 2);
+      ctx.lineTo(skx * (e.size + 4) + sky * 2, sky * (e.size + 4) - skx * 2);
+      ctx.closePath();
+      ctx.fill();
+    }
     ctx.strokeStyle = '#4d1418';
     ctx.lineWidth = 2.5;
     ctx.strokeRect(-e.size + 2, -e.size + 2, e.size * 2 - 4, e.size * 2 - 4);
-    ctx.strokeRect(-e.size + 5, -e.size + 5, e.size * 2 - 10, e.size * 2 - 10);
-    ctx.fillStyle = hexA('#ffd23f', .55 + Math.sin(S.time * 5) * .4);
-    ctx.fillRect(-2.5, -2.5, 5, 5);
+    var dp = .55 + Math.sin(S.time * 5) * .4;
+    ctx.fillStyle = hexA('#e5484d', dp);
+    ctx.beginPath();
+    ctx.arc(0, 0, 4, 0, 7);
+    ctx.fill();
+    ctx.fillStyle = hexA('#ffd23f', dp);
+    ctx.fillRect(-1.5, -1.5, 3, 3);
   } else if (e.type === 'carrier') {
-    ctx.fillRect(-e.size, -e.size * .6, e.size * 2, e.size * 1.2);
-    ctx.fillStyle = '#6e5a44';
-    ctx.fillRect(-e.size + 2, -e.size * .6 - 3, 5, 3);
-    ctx.fillRect(2, -e.size * .6 - 3, 5, 3);
-    ctx.fillRect(-4, e.size * .6, 8, 3);
+    /* oval pod with a seam down the middle */
+    ctx.beginPath();
+    ctx.ellipse(0, 0, e.size * 1.1, e.size * .7, 0, 0, 7);
+    ctx.fill();
+    ctx.strokeStyle = '#6e5a44';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, e.size * 1.1 - 2, e.size * .7 - 2, 0, 0, 7);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-e.size * 1.1 + 2, 0);
+    ctx.lineTo(e.size * 1.1 - 2, 0);
+    ctx.stroke();
   } else if (e.type === 'gilded') {
     var gp = (Math.sin(S.time * 7 + e.d * .1) + 1) / 2;
     ctx.save();
@@ -632,22 +701,36 @@ function drawEnemy(e: Enemy): void {
     ctx.arc(0, 0, e.size + 2 + gp * 2.5, 0, 7);
     ctx.stroke();
   } else if (e.type === 'phase') {
-    ctx.fillRect(-e.size, -e.size * .6, e.size * 2, e.size * 1.2);
+    /* translucent disc with trailing ghost copy */
+    ctx.globalAlpha = .4;
+    ctx.beginPath();
+    ctx.arc(-e.size * .7, 0, e.size * .85, 0, 7);
+    ctx.fill();
+    ctx.globalAlpha = .85;
+    ctx.beginPath();
+    ctx.arc(0, 0, e.size * .85, 0, 7);
+    ctx.fill();
+    ctx.globalAlpha = 1;
     ctx.fillStyle = '#141a24';
-    ctx.fillRect(-e.size + 2, -e.size * .6 + 2, e.size * 2 - 4, 2.5);
+    ctx.beginPath();
+    ctx.arc(0, 0, e.size * .3, 0, 7);
+    ctx.fill();
     if ((e.ph || 0) > 1.9) {
       ctx.strokeStyle = hexA('#cfe0f5', ((e.ph || 0) - 1.9) * 1.4);
       ctx.lineWidth = 1;
-      ctx.strokeRect(-e.size - 2.5, -e.size * .6 - 2.5, e.size * 2 + 5, e.size * 1.2 + 5);
+      ctx.beginPath();
+      ctx.arc(0, 0, e.size + 2.5, 0, 7);
+      ctx.stroke();
     }
   } else if (e.type === 'regen') {
+    /* round body with a green repair cross */
     ctx.beginPath();
     ctx.arc(0, 0, e.size, 0, 7);
     ctx.fill();
     ctx.fillStyle = hexA('#b8f0c4', .5 + Math.sin(S.time * 6) * .4);
-    ctx.beginPath();
-    ctx.arc(0, 0, e.size * .45, 0, 7);
-    ctx.fill();
+    var cw = Math.max(1.6, e.size * .28), cl = e.size * .62;
+    ctx.fillRect(-cw / 2, -cl, cw, cl * 2);
+    ctx.fillRect(-cl, -cw / 2, cl * 2, cw);
   } else {
     ctx.fillRect(-e.size, -e.size * .75, e.size * 2, e.size * 1.5);
     ctx.fillStyle = '#8a4a30';
