@@ -18,10 +18,10 @@ export interface Card {
   col: string;
 }
 
-export type DeckCardKind = 'board' | 'skill' | 'power';
+export type DeckCardKind = 'board' | 'skill' | 'power' | 'curse';
 
 /** A Slay-the-Spire style card definition. Boards deploy towers, skills fire
-    one-shot effects, powers install sector-wide modifiers. */
+    one-shot effects, powers install sector-wide modifiers, curses are dead draws. */
 export interface DeckCardDef {
   id: string;
   name: string;

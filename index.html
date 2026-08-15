@@ -308,7 +308,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, nine hostile classes, eighteen relics, two field abilities. Survive wave 12 to clear a sector and open the world route.</p>
       <h3 class="sec">THE CIRCUIT DECK</h3>
       <p>You fight with a <b style="color:var(--teal)">deck of cards</b>, drawn Slay-the-Spire style. Your run starts with 10 cards; salvage caches add more. Each fabrication window is a <b>turn</b>: your old hand is discarded and you draw 5 (Autoloader: +1). Playing a card costs matter, not energy — your resources are the mana pool.</p>
-      <p><b style="color:var(--steel)">CIRCUIT BOARDS</b> are the only way to build: select one and tap the field to print its unit — the board is consumed into the discard pile and cycles back on reshuffle. <b style="color:var(--teal)">SUBROUTINES</b> are one-shot skills (matter, draws, heals, EMP). <b style="color:var(--gold)">FIRMWARE</b> installs a sector-wide modifier and always exhausts.</p>
+      <p><b style="color:var(--steel)">CIRCUIT BOARDS</b> are the only way to build: select one and tap the field to print its unit — the board is consumed into the discard pile and cycles back on reshuffle. <b style="color:var(--teal)">SUBROUTINES</b> are one-shot skills, including hand-control circuits that discard weak cards or recycle cards from discard. <b style="color:var(--gold)">FIRMWARE</b> installs a sector-wide modifier and always exhausts. <b style="color:#b18cd9">CORRUPTIONS</b> are unplayable curse cards: risky black-box technology adds them permanently, while CLEAN ROOM can purge them.</p>
       <p>Keywords: <b style="color:var(--red)">EXHAUST</b> — removed for the rest of the sector after play · <b style="color:#b18cd9">ETHEREAL</b> — exhausts if still unplayed when the turn ends (hand redraw) · <b style="color:var(--teal)">RETAIN</b> — not discarded at turn end · <b style="color:var(--steel)">INNATE</b> — guaranteed in the sector's opening hand · <b style="color:var(--gold)">CONSUME</b> — torn from the deck permanently after one use. When the draw pile empties, the discard pile reshuffles into it. Deploying to a new sector restores exhausted cards and deals a fresh opening hand. Press <kbd>D</kbd> or tap the pile counters to audit every pile.</p>
       <h3 class="sec">SALVAGE DOCTRINES [M]</h3>
       <p><b style="color:var(--copper)">LOOT</b> — Harvesters fire normally; every wreck drops base salvage.<br>
@@ -500,11 +500,38 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     { id: "skill_recall", name: "MAGNET RECALL", kind: "skill", desc: "drag every hostile 70px back along its route", cost: { fe: 0, cu: 8, si: 0 }, rar: 1, exhaust: true },
     { id: "skill_refit", name: "MASS REFIT", kind: "skill", desc: "every deployed unit gains +1 level, free", cost: { fe: 0, cu: 0, si: 20 }, rar: 2, exhaust: true },
     { id: "skill_graft", name: "CORE GRAFT", kind: "skill", desc: "+5 max core integrity, permanently", cost: { fe: 25, cu: 0, si: 10 }, rar: 2, exhaust: true, consume: true },
+    /* hand control — discard weak hands and recycle useful circuits */
+    { id: "skill_filter", name: "PACKET FILTER", kind: "skill", desc: "discard the 3 rightmost other cards, then draw that many", cost: { fe: 0, cu: 4, si: 0 }, rar: 0 },
+    { id: "skill_smelter", name: "HAND SMELTER", kind: "skill", desc: "discard every other card \xB7 gain 8 Fe for each", cost: { fe: 0, cu: 0, si: 0 }, rar: 1, exhaust: true },
+    { id: "skill_recycle", name: "RECLAIM CIRCUIT", kind: "skill", desc: "return the newest card in the discard pile to your hand", cost: { fe: 5, cu: 0, si: 2 }, rar: 0, exhaust: true },
+    { id: "skill_coldboot", name: "COLD BOOT", kind: "skill", desc: "shuffle the discard pile into the draw pile, then draw 2", cost: { fe: 0, cu: 7, si: 3 }, rar: 1, exhaust: true },
+    { id: "skill_purge", name: "CLEAN ROOM", kind: "skill", desc: "permanently purge every curse in hand, then draw that many", cost: { fe: 12, cu: 0, si: 6 }, rar: 1, exhaust: true },
+    { id: "skill_corrupt", name: "BLACK-BOX CACHE", kind: "skill", desc: "gain 70 Fe \xB7 28 Cu \xB7 12 Si, but add a permanent curse", cost: { fe: 0, cu: 0, si: 0 }, rar: 2, exhaust: true },
+    { id: "skill_capacitor", name: "CAPACITOR DUMP", kind: "skill", desc: "gain 3 grid capacity this sector", cost: { fe: 0, cu: 10, si: 4 }, rar: 1, exhaust: true },
+    { id: "skill_barrage", name: "SHRAPNEL BARRAGE", kind: "skill", desc: "deal 35 hull damage to every hostile", cost: { fe: 18, cu: 4, si: 0 }, rar: 1, exhaust: true },
+    { id: "skill_mulligan", name: "EMERGENCY SORT", kind: "skill", desc: "discard every other card, then draw up to 5", cost: { fe: 0, cu: 3, si: 0 }, rar: 0, exhaust: true },
+    { id: "skill_defrag", name: "DEFRAGMENT", kind: "skill", desc: "return the newest exhausted card to your hand", cost: { fe: 8, cu: 5, si: 4 }, rar: 2, exhaust: true },
+    { id: "skill_clone", name: "CLONE VAT", kind: "skill", desc: "permanently copy the newest discarded card \xB7 consume", cost: { fe: 20, cu: 8, si: 12 }, rar: 2, consume: true },
+    { id: "skill_triage", name: "FIELD TRIAGE", kind: "skill", desc: "restore 2 core integrity, then draw 1", cost: { fe: 6, cu: 0, si: 0 }, rar: 0 },
+    { id: "skill_delete", name: "PRIORITY DELETE", kind: "skill", desc: "deal 120 hull damage to the strongest hostile", cost: { fe: 12, cu: 6, si: 5 }, rar: 1, exhaust: true },
+    { id: "skill_quarantine", name: "QUARANTINE", kind: "skill", desc: "exhaust every curse in hand this sector \xB7 gain 12 Fe each", cost: { fe: 0, cu: 5, si: 0 }, rar: 0, exhaust: true },
+    { id: "skill_siphon", name: "ORE SIPHON", kind: "skill", desc: "gain 3 Fe per living hostile, up to 45 Fe", cost: { fe: 0, cu: 4, si: 0 }, rar: 0 },
+    { id: "skill_gridloan", name: "GRID LOAN", kind: "skill", desc: "+7 grid this sector, but add a permanent RUST DEBT", cost: { fe: 0, cu: 0, si: 0 }, rar: 1, exhaust: true },
     /* firmware — sector-wide powers, always exhaust */
     { id: "power_lathe", name: "TUNGSTEN LATHE", kind: "power", desc: "+10% unit damage this sector", cost: { fe: 20, cu: 0, si: 8 }, rar: 1, exhaust: true },
     { id: "power_sub", name: "SUBSTATION", kind: "power", desc: "+4 grid capacity this sector", cost: { fe: 0, cu: 18, si: 0 }, rar: 0, exhaust: true },
     { id: "power_reserve", name: "DEEP RESERVES", kind: "power", desc: "foundries +25% output this sector", cost: { fe: 15, cu: 10, si: 0 }, rar: 1, exhaust: true },
-    { id: "power_loader", name: "AUTOLOADER", kind: "power", desc: "draw +1 card per turn this sector", cost: { fe: 0, cu: 0, si: 14 }, rar: 2, exhaust: true }
+    { id: "power_loader", name: "AUTOLOADER", kind: "power", desc: "draw +1 card per turn this sector", cost: { fe: 0, cu: 0, si: 14 }, rar: 2, exhaust: true },
+    { id: "power_armature", name: "REACTIVE ARMATURE", kind: "power", desc: "+15% unit damage while core is below half integrity", cost: { fe: 10, cu: 12, si: 4 }, rar: 1, exhaust: true },
+    { id: "power_broker", name: "SCRAP BROKER", kind: "power", desc: "gain 12 Fe at the start of each new turn", cost: { fe: 0, cu: 14, si: 5 }, rar: 1, exhaust: true },
+    { id: "power_scope", name: "VECTOR SCOPE", kind: "power", desc: "+15% unit range this sector", cost: { fe: 12, cu: 0, si: 9 }, rar: 1, exhaust: true },
+    { id: "power_feedback", name: "FEEDBACK CLOCK", kind: "power", desc: "+12% unit fire rate this sector", cost: { fe: 0, cu: 16, si: 6 }, rar: 2, exhaust: true },
+    { id: "power_failsafe", name: "CORE FAILSAFE", kind: "power", desc: "restore 2 core at the start of each new turn", cost: { fe: 14, cu: 5, si: 0 }, rar: 1, exhaust: true },
+    { id: "power_scrubber", name: "ERROR SCRUBBER", kind: "power", desc: "curses exhaust harmlessly at turn end this sector", cost: { fe: 8, cu: 8, si: 8 }, rar: 2, exhaust: true },
+    /* curses — dead draws acquired by risky technology; never offered directly */
+    { id: "curse_jam", name: "SIGNAL JAM", kind: "curse", desc: "unplayable \xB7 clogs your hand until discarded", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
+    { id: "curse_rust", name: "RUST DEBT", kind: "curse", desc: "unplayable \xB7 lose 8 Fe when left in hand at turn end", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
+    { id: "curse_breach", name: "HULL BREACH", kind: "curse", desc: "unplayable \xB7 lose 1 core when left in hand at turn end", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 }
   ];
   var STARTER_DECK = [
     "board_needle",
@@ -521,7 +548,8 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   var KIND_LABEL = {
     board: "CIRCUIT BOARD",
     skill: "SUBROUTINE",
-    power: "FIRMWARE"
+    power: "FIRMWARE",
+    curse: "CORRUPTION"
   };
   var RELICS = [
     { id: "cap", name: "CAPACITOR BANK", desc: "+8 grid capacity, immediately", rar: 1 },
@@ -1253,6 +1281,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     var pool = [], i;
     for (i = 0; i < DECK_CARDS.length; i++) {
       var dc = DECK_CARDS[i];
+      if (dc.kind === "curse") continue;
       var owned = S.deck.filter(function(c) {
         return c.id === dc.id;
       }).length;
@@ -1693,6 +1722,13 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     S.stat.waves++;
     var eth = startTurn();
     if (eth) float(S.nodes[S.coreIdx].px, S.nodes[S.coreIdx].py - 26, eth + " ETHEREAL CARD" + (eth > 1 ? "S" : "") + " EXHAUSTED", "#b18cd9");
+    if (S.core <= 0) {
+      S.core = 0;
+      S.over = true;
+      hud(true);
+      showEnd(false);
+      return;
+    }
     if (S.relics.repair) S.core = Math.min(S.coreMax, S.core + 1);
     if (S.wave % 12 === 0 && !S.cleared[S.sector]) {
       S.cleared[S.sector] = true;
@@ -1847,13 +1883,30 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     return drawn;
   }
   function startTurn() {
-    var eth = 0;
+    var eth = 0, cp = corePt();
     for (var i = S.hand.length - 1; i >= 0; i--) {
       var d = defOf(S.hand[i]);
-      if (d.ethereal) {
+      var scrubbed = d.kind === "curse" && !!S.powers.power_scrubber;
+      if (!scrubbed && d.id === "curse_rust") {
+        S.res.fe = Math.max(0, S.res.fe - 8);
+        float(cp.x, cp.y - 18, "RUST DEBT \u22128Fe", "#e5484d");
+      } else if (!scrubbed && d.id === "curse_breach") {
+        S.core = Math.max(0, S.core - 1);
+        float(cp.x, cp.y - 18, "HULL BREACH \u22121 CORE", "#e5484d");
+      }
+      if (scrubbed || d.ethereal) {
         S.exhaustPile.push(S.hand.splice(i, 1)[0]);
-        eth++;
+        if (d.ethereal) eth++;
       } else if (!d.retain) S.discardPile.push(S.hand.splice(i, 1)[0]);
+    }
+    if (S.powers.power_broker) {
+      var stipend = 12 * S.powers.power_broker;
+      gainRes({ fe: stipend, cu: 0, si: 0 }, cp.x, cp.y - 8);
+    }
+    if (S.powers.power_failsafe && S.core < S.coreMax) {
+      var repair = 2 * S.powers.power_failsafe;
+      S.core = Math.min(S.coreMax, S.core + repair);
+      float(cp.x, cp.y - 24, "FAILSAFE +" + repair + " CORE", "#3ec9b0");
     }
     drawCards(handSize() - S.hand.length);
     S.selCard = null;
@@ -1882,12 +1935,20 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     return CARDS[d.tower];
   }
   function canPlayDef(d) {
+    if (d.kind === "curse") return { ok: false, why: "CURSES CANNOT BE PLAYED \u2014 DISCARD OR PURGE IT" };
     if (!canAfford(d.cost)) return { ok: false, why: "INSUFFICIENT MATTER" };
     if (d.kind === "board") {
       var c = CARDS[d.tower];
       if (usedGrid() + c.draw > gridCap()) return { ok: false, why: "GRID CAPACITY EXCEEDED" };
     }
     if (d.id === "skill_weld" && S.core >= S.coreMax) return { ok: false, why: "CORE AT FULL INTEGRITY" };
+    if ((d.id === "skill_recycle" || d.id === "skill_clone") && !S.discardPile.length) return { ok: false, why: "DISCARD PILE EMPTY" };
+    if (d.id === "skill_defrag" && !S.exhaustPile.length) return { ok: false, why: "EXHAUST PILE EMPTY" };
+    if ((d.id === "skill_purge" || d.id === "skill_quarantine") && !S.hand.some(function(ci) {
+      return defOf(ci).kind === "curse";
+    })) {
+      return { ok: false, why: "NO CURSE IN HAND" };
+    }
     return { ok: true };
   }
   function corePt() {
@@ -1983,18 +2044,184 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
         Snd.play("weld");
         msg += " \u2014 +5 MAX CORE (CONSUMED FROM DECK)";
         break;
+      case "skill_filter": {
+        var filtered = 0;
+        for (i = S.hand.length - 1; i >= 0 && filtered < 3; i--) {
+          if (S.hand[i] === ci) continue;
+          S.discardPile.push(S.hand.splice(i, 1)[0]);
+          filtered++;
+        }
+        var replaced = drawCards(filtered);
+        msg += " \u2014 DISCARDED " + filtered + " \xB7 DREW " + replaced;
+        break;
+      }
+      case "skill_smelter": {
+        var melted = 0;
+        for (i = S.hand.length - 1; i >= 0; i--) {
+          if (S.hand[i] === ci) continue;
+          S.discardPile.push(S.hand.splice(i, 1)[0]);
+          melted++;
+        }
+        if (melted) gainRes({ fe: melted * 8, cu: 0, si: 0 }, cp.x, cp.y - 10);
+        msg += " \u2014 MELTED " + melted + " CARD" + (melted === 1 ? "" : "S") + " FOR " + melted * 8 + "Fe";
+        break;
+      }
+      case "skill_recycle": {
+        var reclaimed = S.discardPile.pop();
+        if (reclaimed) S.hand.push(reclaimed);
+        msg += reclaimed ? " \u2014 " + defOf(reclaimed).name + " RETURNED TO HAND" : " \u2014 DISCARD PILE EMPTY";
+        break;
+      }
+      case "skill_coldboot": {
+        var recycled = S.discardPile.length;
+        S.drawPile = shuffleInPlace(S.drawPile.concat(S.discardPile));
+        S.discardPile = [];
+        var bootDraw = drawCards(2);
+        msg += " \u2014 RECYCLED " + recycled + " \xB7 DREW " + bootDraw;
+        break;
+      }
+      case "skill_purge": {
+        var cursed = [];
+        S.hand = S.hand.filter(function(card) {
+          if (defOf(card).kind === "curse") {
+            cursed.push(card);
+            return false;
+          }
+          return true;
+        });
+        var curseUids = {};
+        cursed.forEach(function(card) {
+          curseUids[card.uid] = true;
+        });
+        S.deck = S.deck.filter(function(card) {
+          return !curseUids[card.uid];
+        });
+        var purgeDraw = drawCards(cursed.length);
+        msg += " \u2014 PURGED " + cursed.length + " CURSE" + (cursed.length === 1 ? "" : "S") + " \xB7 DREW " + purgeDraw;
+        break;
+      }
+      case "skill_corrupt": {
+        gainRes({ fe: 70, cu: 28, si: 12 }, cp.x, cp.y - 10);
+        var curses = ["curse_jam", "curse_rust", "curse_breach"];
+        var curse = addCardToDeck(curses[Math.floor(Math.random() * curses.length)]);
+        msg += " \u2014 CACHE OPENED \xB7 " + defOf(curse).name + " ADDED TO DECK";
+        break;
+      }
+      case "skill_capacitor":
+        S.gridMax += 3;
+        S.rings.push({ x: cp.x, y: cp.y, r: 5, max: 44, col: "#6fd7e8" });
+        msg += " \u2014 +3 GRID THIS SECTOR";
+        break;
+      case "skill_barrage": {
+        var shredded = 0;
+        for (i = 0; i < S.enemies.length; i++) {
+          var target = S.enemies[i];
+          if (target.dead) continue;
+          target.hp -= 35;
+          target.flash = 0.08;
+          shredded++;
+          if (target.hp <= 0) killEnemy(target, false);
+        }
+        S.shake = Math.max(S.shake, 5);
+        S.rings.push({ x: cp.x, y: cp.y, r: 8, max: 82, col: "#e0854e" });
+        msg += " \u2014 HIT " + shredded + " HOSTILES";
+        break;
+      }
+      case "skill_mulligan": {
+        var sorted = 0;
+        for (i = S.hand.length - 1; i >= 0; i--) {
+          if (S.hand[i] === ci) continue;
+          S.discardPile.push(S.hand.splice(i, 1)[0]);
+          sorted++;
+        }
+        var sortDraw = drawCards(Math.min(5, sorted));
+        msg += " \u2014 DISCARDED " + sorted + " \xB7 DREW " + sortDraw;
+        break;
+      }
+      case "skill_defrag": {
+        var restored = S.exhaustPile.pop();
+        if (restored) S.hand.push(restored);
+        msg += restored ? " \u2014 RESTORED " + defOf(restored).name : " \u2014 EXHAUST PILE EMPTY";
+        break;
+      }
+      case "skill_clone": {
+        var source = S.discardPile[S.discardPile.length - 1];
+        if (source) {
+          var clone = addCardToDeck(source.id);
+          S.discardPile.pop();
+          S.hand.push(clone);
+          msg += " \u2014 PERMANENT " + defOf(clone).name + " COPY FABRICATED";
+        }
+        break;
+      }
+      case "skill_triage": {
+        var beforeCore = S.core;
+        S.core = Math.min(S.coreMax, S.core + 2);
+        var triageDraw = drawCards(1);
+        float(cp.x, cp.y - 16, "+" + (S.core - beforeCore) + " CORE", "#3ec9b0");
+        msg += " \u2014 +" + (S.core - beforeCore) + " CORE \xB7 DREW " + triageDraw;
+        break;
+      }
+      case "skill_delete": {
+        var strongest = null;
+        for (i = 0; i < S.enemies.length; i++) {
+          if (!S.enemies[i].dead && (!strongest || S.enemies[i].hp > strongest.hp)) strongest = S.enemies[i];
+        }
+        if (strongest) {
+          strongest.hp -= 120;
+          strongest.flash = 0.12;
+          if (strongest.hp <= 0) killEnemy(strongest, false);
+        }
+        S.shake = Math.max(S.shake, 4);
+        msg += strongest ? " \u2014 STRONGEST HOSTILE HIT FOR 120" : " \u2014 NO HOSTILE TARGET";
+        break;
+      }
+      case "skill_quarantine": {
+        var isolated = 0;
+        for (i = S.hand.length - 1; i >= 0; i--) {
+          if (defOf(S.hand[i]).kind !== "curse") continue;
+          S.exhaustPile.push(S.hand.splice(i, 1)[0]);
+          isolated++;
+        }
+        if (isolated) gainRes({ fe: isolated * 12, cu: 0, si: 0 }, cp.x, cp.y - 10);
+        msg += " \u2014 QUARANTINED " + isolated + " \xB7 +" + isolated * 12 + "Fe";
+        break;
+      }
+      case "skill_siphon": {
+        var living = S.enemies.filter(function(enemy) {
+          return !enemy.dead;
+        }).length;
+        var siphoned = Math.min(45, living * 3);
+        if (siphoned) gainRes({ fe: siphoned, cu: 0, si: 0 }, cp.x, cp.y - 10);
+        msg += " \u2014 DRAINED " + living + " HOSTILES \xB7 +" + siphoned + "Fe";
+        break;
+      }
+      case "skill_gridloan":
+        S.gridMax += 7;
+        addCardToDeck("curse_rust");
+        msg += " \u2014 +7 GRID \xB7 RUST DEBT ADDED TO DECK";
+        break;
       default:
         break;
     }
-    resolveAfterPlay(handIdx);
+    var playedIdx = S.hand.indexOf(ci);
+    if (playedIdx >= 0) resolveAfterPlay(playedIdx);
     if (d.id !== "skill_weld" && d.id !== "skill_graft") Snd.play("ui");
     return { ok: true, msg };
   }
   function powerDmgMult() {
-    return 1 + 0.1 * (S.powers.power_lathe || 0);
+    var mult = 1 + 0.1 * (S.powers.power_lathe || 0);
+    if (S.core < S.coreMax * 0.5) mult += 0.15 * (S.powers.power_armature || 0);
+    return mult;
   }
   function powerFoundryMult() {
     return 1 + 0.25 * (S.powers.power_reserve || 0);
+  }
+  function powerRangeMult() {
+    return 1 + 0.15 * (S.powers.power_scope || 0);
+  }
+  function powerRateMult() {
+    return 1 + 0.12 * (S.powers.power_feedback || 0);
   }
 
   // src/hud.ts
@@ -2088,7 +2315,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       return (canPlayDef(d).ok ? "1" : "0") + (S.res.fe >= d.cost.fe ? "" : "f") + (S.res.cu >= d.cost.cu ? "" : "c") + (S.res.si >= d.cost.si ? "" : "s");
     }).join("|") + "\xB7" + S.hand.length + "\xB7" + S.selCard;
   }
-  var KIND_COL = { board: "#9fb6c9", skill: "#3ec9b0", power: "#ffd23f" };
+  var KIND_COL = { board: "#9fb6c9", skill: "#3ec9b0", power: "#ffd23f", curse: "#b18cd9" };
   var TAG_TIP = {
     INNATE: "guaranteed in the sector\u2019s opening hand",
     RETAIN: "not discarded when the turn ends",
@@ -2128,7 +2355,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       var rankTag = d.kind === "board" && S.ranks[CARDS[d.tower].id] ? '<span class="rank">Mk.' + (S.ranks[CARDS[d.tower].id] + 1) + "</span>" : "";
       var isNew = !seenUids[ci.uid];
       if (isNew) dealt++;
-      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div><div class="hd">' + glyph + "<strong>" + d.name + "</strong>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + "</div><p>" + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
+      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div><div class="hd">' + glyph + "<strong>" + d.name + "</strong>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + "</div><p>" + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "curse" ? "UNPLAYABLE" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
     }
     if (!S.hand.length) {
       h = '<div id="handEmpty">HAND EMPTY \u2014 NEW CARDS DEALT NEXT FABRICATION WINDOW</div>';
@@ -2272,11 +2499,11 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     var c = CARDS[t.i], L = t.lvl - 1, rank = Math.pow(1.05, S.ranks[c.id] || 0);
     var sm = Math.pow(1.05, Math.floor(L / 5));
     var dmg = c.dmg * Math.pow(1.16, L) * rank * sm * (S.relics.tungsten ? 1.1 : 1) * powerDmgMult();
-    var rate = c.rate * Math.pow(1.05, L) * sm * (S.relics.clock ? 1.1 : 1) * supplyAt(t);
+    var rate = c.rate * Math.pow(1.05, L) * sm * (S.relics.clock ? 1.1 : 1) * supplyAt(t) * powerRateMult();
     if (c.id === "needle" && S.relics.twin) rate *= 1.2;
     if (S.time < S.ability.surge.until) rate *= 1.5;
     if (c.id === "arc" && S.event && S.event.id === "ion") dmg *= 1.4;
-    var range = c.range * (1 + 0.04 * L) * (S.relics.cryo ? 1.12 : 1);
+    var range = c.range * (1 + 0.04 * L) * (S.relics.cryo ? 1.12 : 1) * powerRangeMult();
     if (c.id === "rail" && S.relics.lens) range *= 1.25;
     return { dmg, rate, range, stars: Math.floor(L / 5) };
   }

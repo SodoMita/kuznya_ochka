@@ -45,11 +45,38 @@ export const DECK_CARDS: DeckCardDef[] = [
   { id: 'skill_recall', name: 'MAGNET RECALL', kind: 'skill', desc: 'drag every hostile 70px back along its route', cost: { fe: 0, cu: 8, si: 0 }, rar: 1, exhaust: true },
   { id: 'skill_refit', name: 'MASS REFIT', kind: 'skill', desc: 'every deployed unit gains +1 level, free', cost: { fe: 0, cu: 0, si: 20 }, rar: 2, exhaust: true },
   { id: 'skill_graft', name: 'CORE GRAFT', kind: 'skill', desc: '+5 max core integrity, permanently', cost: { fe: 25, cu: 0, si: 10 }, rar: 2, exhaust: true, consume: true },
+  /* hand control — discard weak hands and recycle useful circuits */
+  { id: 'skill_filter', name: 'PACKET FILTER', kind: 'skill', desc: 'discard the 3 rightmost other cards, then draw that many', cost: { fe: 0, cu: 4, si: 0 }, rar: 0 },
+  { id: 'skill_smelter', name: 'HAND SMELTER', kind: 'skill', desc: 'discard every other card · gain 8 Fe for each', cost: { fe: 0, cu: 0, si: 0 }, rar: 1, exhaust: true },
+  { id: 'skill_recycle', name: 'RECLAIM CIRCUIT', kind: 'skill', desc: 'return the newest card in the discard pile to your hand', cost: { fe: 5, cu: 0, si: 2 }, rar: 0, exhaust: true },
+  { id: 'skill_coldboot', name: 'COLD BOOT', kind: 'skill', desc: 'shuffle the discard pile into the draw pile, then draw 2', cost: { fe: 0, cu: 7, si: 3 }, rar: 1, exhaust: true },
+  { id: 'skill_purge', name: 'CLEAN ROOM', kind: 'skill', desc: 'permanently purge every curse in hand, then draw that many', cost: { fe: 12, cu: 0, si: 6 }, rar: 1, exhaust: true },
+  { id: 'skill_corrupt', name: 'BLACK-BOX CACHE', kind: 'skill', desc: 'gain 70 Fe · 28 Cu · 12 Si, but add a permanent curse', cost: { fe: 0, cu: 0, si: 0 }, rar: 2, exhaust: true },
+  { id: 'skill_capacitor', name: 'CAPACITOR DUMP', kind: 'skill', desc: 'gain 3 grid capacity this sector', cost: { fe: 0, cu: 10, si: 4 }, rar: 1, exhaust: true },
+  { id: 'skill_barrage', name: 'SHRAPNEL BARRAGE', kind: 'skill', desc: 'deal 35 hull damage to every hostile', cost: { fe: 18, cu: 4, si: 0 }, rar: 1, exhaust: true },
+  { id: 'skill_mulligan', name: 'EMERGENCY SORT', kind: 'skill', desc: 'discard every other card, then draw up to 5', cost: { fe: 0, cu: 3, si: 0 }, rar: 0, exhaust: true },
+  { id: 'skill_defrag', name: 'DEFRAGMENT', kind: 'skill', desc: 'return the newest exhausted card to your hand', cost: { fe: 8, cu: 5, si: 4 }, rar: 2, exhaust: true },
+  { id: 'skill_clone', name: 'CLONE VAT', kind: 'skill', desc: 'permanently copy the newest discarded card · consume', cost: { fe: 20, cu: 8, si: 12 }, rar: 2, consume: true },
+  { id: 'skill_triage', name: 'FIELD TRIAGE', kind: 'skill', desc: 'restore 2 core integrity, then draw 1', cost: { fe: 6, cu: 0, si: 0 }, rar: 0 },
+  { id: 'skill_delete', name: 'PRIORITY DELETE', kind: 'skill', desc: 'deal 120 hull damage to the strongest hostile', cost: { fe: 12, cu: 6, si: 5 }, rar: 1, exhaust: true },
+  { id: 'skill_quarantine', name: 'QUARANTINE', kind: 'skill', desc: 'exhaust every curse in hand this sector · gain 12 Fe each', cost: { fe: 0, cu: 5, si: 0 }, rar: 0, exhaust: true },
+  { id: 'skill_siphon', name: 'ORE SIPHON', kind: 'skill', desc: 'gain 3 Fe per living hostile, up to 45 Fe', cost: { fe: 0, cu: 4, si: 0 }, rar: 0 },
+  { id: 'skill_gridloan', name: 'GRID LOAN', kind: 'skill', desc: '+7 grid this sector, but add a permanent RUST DEBT', cost: { fe: 0, cu: 0, si: 0 }, rar: 1, exhaust: true },
   /* firmware — sector-wide powers, always exhaust */
   { id: 'power_lathe', name: 'TUNGSTEN LATHE', kind: 'power', desc: '+10% unit damage this sector', cost: { fe: 20, cu: 0, si: 8 }, rar: 1, exhaust: true },
   { id: 'power_sub', name: 'SUBSTATION', kind: 'power', desc: '+4 grid capacity this sector', cost: { fe: 0, cu: 18, si: 0 }, rar: 0, exhaust: true },
   { id: 'power_reserve', name: 'DEEP RESERVES', kind: 'power', desc: 'foundries +25% output this sector', cost: { fe: 15, cu: 10, si: 0 }, rar: 1, exhaust: true },
-  { id: 'power_loader', name: 'AUTOLOADER', kind: 'power', desc: 'draw +1 card per turn this sector', cost: { fe: 0, cu: 0, si: 14 }, rar: 2, exhaust: true }
+  { id: 'power_loader', name: 'AUTOLOADER', kind: 'power', desc: 'draw +1 card per turn this sector', cost: { fe: 0, cu: 0, si: 14 }, rar: 2, exhaust: true },
+  { id: 'power_armature', name: 'REACTIVE ARMATURE', kind: 'power', desc: '+15% unit damage while core is below half integrity', cost: { fe: 10, cu: 12, si: 4 }, rar: 1, exhaust: true },
+  { id: 'power_broker', name: 'SCRAP BROKER', kind: 'power', desc: 'gain 12 Fe at the start of each new turn', cost: { fe: 0, cu: 14, si: 5 }, rar: 1, exhaust: true },
+  { id: 'power_scope', name: 'VECTOR SCOPE', kind: 'power', desc: '+15% unit range this sector', cost: { fe: 12, cu: 0, si: 9 }, rar: 1, exhaust: true },
+  { id: 'power_feedback', name: 'FEEDBACK CLOCK', kind: 'power', desc: '+12% unit fire rate this sector', cost: { fe: 0, cu: 16, si: 6 }, rar: 2, exhaust: true },
+  { id: 'power_failsafe', name: 'CORE FAILSAFE', kind: 'power', desc: 'restore 2 core at the start of each new turn', cost: { fe: 14, cu: 5, si: 0 }, rar: 1, exhaust: true },
+  { id: 'power_scrubber', name: 'ERROR SCRUBBER', kind: 'power', desc: 'curses exhaust harmlessly at turn end this sector', cost: { fe: 8, cu: 8, si: 8 }, rar: 2, exhaust: true },
+  /* curses — dead draws acquired by risky technology; never offered directly */
+  { id: 'curse_jam', name: 'SIGNAL JAM', kind: 'curse', desc: 'unplayable · clogs your hand until discarded', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
+  { id: 'curse_rust', name: 'RUST DEBT', kind: 'curse', desc: 'unplayable · lose 8 Fe when left in hand at turn end', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
+  { id: 'curse_breach', name: 'HULL BREACH', kind: 'curse', desc: 'unplayable · lose 1 core when left in hand at turn end', cost: { fe: 0, cu: 0, si: 0 }, rar: 0 }
 ];
 
 /** The run starts with this 10-card deck. */
@@ -60,7 +87,7 @@ export const STARTER_DECK: string[] = [
 ];
 
 export const KIND_LABEL: Record<string, string> = {
-  board: 'CIRCUIT BOARD', skill: 'SUBROUTINE', power: 'FIRMWARE'
+  board: 'CIRCUIT BOARD', skill: 'SUBROUTINE', power: 'FIRMWARE', curse: 'CORRUPTION'
 };
 
 export const RELICS: Relic[] = [
