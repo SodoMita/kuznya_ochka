@@ -5,6 +5,7 @@ import { cv, ctx, W, H, dpr, oldW, oldH, setView, commitSize } from './view';
 import { clamp } from './utils';
 import { genWorld } from './world';
 import { genSector, buildGraphPx, repathEnemies } from './sectors';
+import { initRunDeck, sectorShuffle } from './deck';
 import { hud } from './hud';
 import { draw } from './render';
 import { fixedUpdate } from './sim';
@@ -28,6 +29,7 @@ function resize(): void {
   commitSize();
 }
 
+if (!S.deck.length) { initRunDeck(); sectorShuffle(); }
 if (!S.nodes.length) { resize(); genSector(); }
 addEventListener('resize', function () { resize(); });
 addEventListener('orientationchange', function () { setTimeout(resize, 120); });

@@ -58,7 +58,19 @@ button{font-family:var(--mono);color:var(--ink);touch-action:manipulation;user-s
 /* ---------- DECK ---------- */
 #deck{display:grid;grid-template-areas:"L C R";grid-template-columns:150px minmax(0,1fr) 186px;gap:7px;padding:7px;background:linear-gradient(#171f24,#131a1e);min-height:0}
 #deckL{grid-area:L;display:flex;flex-direction:column;gap:5px;min-height:0}
-#cards{grid-area:C;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:5px;min-height:0}
+#handCol{grid-area:C;display:flex;flex-direction:column;gap:4px;min-height:0;min-width:0}
+#cards{flex:1;display:flex;gap:5px;min-height:0;min-width:0;overflow-x:auto;overflow-y:hidden;padding:4px 1px 1px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+#cards::-webkit-scrollbar{height:5px}
+#cards::-webkit-scrollbar-thumb{background:var(--line)}
+#pileBar{display:flex;gap:4px;align-items:center;flex:0 0 17px;min-width:0}
+#pileBar button{border:1px solid var(--line2);border-left:3px solid var(--line);background:#151d21;color:var(--dim);font-size:7px;letter-spacing:1px;padding:2px 6px;cursor:pointer;transition:border-color .12s,color .12s;white-space:nowrap}
+#pileBar button:hover{border-color:var(--teal);color:var(--ink)}
+#pileBar button b{color:var(--ink);font-size:9px}
+#pileDraw{border-left-color:var(--teal)}#pileDisc{border-left-color:var(--copper)}#pileExh{border-left-color:var(--red)}
+#pileDraw b{color:var(--teal)}#pileDisc b{color:var(--copper)}#pileExh b{color:var(--red)}
+#pileBar button.tick{animation:pileTick .4s ease-out}
+@keyframes pileTick{0%{transform:translateY(-2px);border-color:var(--gold);color:var(--ink);filter:brightness(1.6)}}
+#pileInfo{margin-left:auto;font-size:7px;letter-spacing:1px;color:var(--dim);white-space:nowrap;overflow:hidden}
 #deckR{grid-area:R;display:flex;flex-direction:column;min-height:0}
 #startBtn{border:1px solid var(--amber);background:linear-gradient(#ffb648,#e08a1e);color:#221503;font-family:var(--disp);font-size:16px;letter-spacing:1px;padding:6px 4px 5px;cursor:pointer;line-height:1;transition:filter .12s,transform .06s}
 #startBtn:hover{filter:brightness(1.1)}
@@ -78,20 +90,42 @@ button{font-family:var(--mono);color:var(--ink);touch-action:manipulation;user-s
 .spd button{border:1px solid var(--line);background:var(--panel2);cursor:pointer;font-size:11px;padding:4px 0;transition:border-color .12s}
 .spd button:hover{border-color:var(--gold)}
 #spdVal{color:var(--gold);font-weight:700;font-size:10px}
-/* cards */
-.card{position:relative;border:1px solid var(--line);background:linear-gradient(#1c252b,#161e22);padding:5px 6px;cursor:pointer;display:flex;flex-direction:column;min-width:0;overflow:hidden;transition:border-color .12s,transform .12s,box-shadow .12s}
-.card:hover{border-color:var(--amber);transform:translateY(-2px);box-shadow:0 4px 14px #0008}
-.card.sel{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal),0 0 12px #3ec9b033}
-.card.broke{opacity:.45}
-.card .hd{display:flex;align-items:center;gap:5px;min-width:0}
-.card svg{flex:0 0 15px;height:15px}
+/* hand cards — StS style: kind ribbon, body, keyword tags, cost footer */
+.card{position:relative;flex:1 0 100px;max-width:136px;border:1px solid var(--line);border-top:2px solid currentColor;background:linear-gradient(172deg,#1e272d,#161e22 70%);padding:0 0 4px;cursor:pointer;display:flex;flex-direction:column;min-width:0;overflow:hidden;transition:border-color .12s,transform .12s,box-shadow .12s}
+.card:hover{border-color:var(--amber);transform:translateY(-3px);box-shadow:0 5px 16px #000a}
+.card.sel{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal),0 0 14px #3ec9b040;transform:translateY(-4px)}
+.card.broke{opacity:.5;filter:saturate(.55)}
+.card.broke:hover{border-color:var(--red);transform:none;box-shadow:none}
+.card.deal{animation:deal .3s ease-out backwards}
+@keyframes deal{from{opacity:0;transform:translateY(16px) scale(.94)}}
+.card .kind{font-size:6px;letter-spacing:1.5px;padding:2px 5px 1px;color:#0f1517;background:currentColor;white-space:nowrap;overflow:hidden}
+.card .kind i{font-style:normal;color:#0f1517}
+.card .hd{display:flex;align-items:center;gap:4px;min-width:0;padding:4px 5px 0}
+.card svg{flex:0 0 13px;height:13px}
 .card strong{font-family:var(--disp);font-size:10px;letter-spacing:.3px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400}
-.card .key{margin-left:auto;font-size:7px;color:var(--dim);border:1px solid var(--line2);padding:1px 3px;flex:0 0 auto}
-.card p{margin:3px 0 0;font-size:8px;line-height:1.3;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card .cst{margin-top:auto;padding-top:3px;font-size:7px;font-weight:700;letter-spacing:.2px;white-space:nowrap}
-.cst .fe{color:var(--copper)}.cst .cu{color:var(--amber)}.cst .si{color:var(--steel)}
+.card .key{margin-left:auto;font-size:7px;color:var(--dim);border:1px solid var(--line2);padding:0 3px;flex:0 0 auto}
+.card p{margin:2px 0 0;padding:0 5px;font-size:7.5px;line-height:1.35;color:var(--dim);overflow:hidden}
+.card .tags{padding:2px 5px 0;font-size:6.5px;letter-spacing:1px;line-height:1.5;min-height:10px}
+.card .tags em{font-style:normal;margin-right:4px;white-space:nowrap;cursor:help}
+.tag-ex{color:var(--red)}.tag-eth{color:#b18cd9}.tag-ret{color:var(--teal)}.tag-inn{color:var(--steel)}.tag-con{color:var(--gold)}
+.card .cst{margin-top:auto;padding:3px 5px 1px;font-size:7.5px;font-weight:700;letter-spacing:.2px;white-space:nowrap;border-top:1px solid var(--line2)}
+.cst .fe{color:var(--copper)}.cst .cu{color:var(--amber)}.cst .si{color:var(--steel)}.cst .free{color:var(--dim);font-weight:400}
+.cst .lack{color:var(--red)}
 .card .cst span+span{margin-left:5px}
-.card .rank{position:absolute;right:4px;bottom:3px;font-size:7px;color:var(--teal);letter-spacing:1px}
+.card .rank{position:absolute;right:4px;top:14px;font-size:7px;color:var(--teal);letter-spacing:1px}
+.card .play{position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:7px;letter-spacing:2px;color:#0f1517;background:var(--teal);padding:1px 0;opacity:0;transition:.12s}
+.card.sel.runnable .play{opacity:1}
+#handEmpty{align-self:center;margin:auto;font-size:8px;letter-spacing:2px;color:var(--dim);border:1px dashed var(--line2);padding:8px 14px}
+/* deck ledger modal */
+#deckList{display:flex;flex-direction:column;gap:10px}
+#deckList h4{font-family:var(--disp);font-size:12px;letter-spacing:1px;margin:0;font-weight:400;color:var(--teal)}
+#deckList h4 span{color:var(--dim);font-family:var(--mono);font-size:8px;letter-spacing:1px}
+.pileRow{display:flex;flex-wrap:wrap;gap:4px}
+.mini{border:1px solid var(--line2);border-left:3px solid currentColor;background:#151d21;padding:3px 6px;font-size:8px;letter-spacing:.4px;cursor:help}
+.mini b{color:var(--ink);font-weight:400;font-family:var(--disp);letter-spacing:.5px}
+.mini u{text-decoration:none;color:var(--gold);font-weight:700;margin-left:4px}
+.mini i{font-style:normal;color:var(--dim);font-size:7px;margin-left:4px}
+.pileEmpty{font-size:8px;color:var(--dim);letter-spacing:1px;border:1px dashed var(--line2);padding:3px 8px}
 /* unit panel */
 #unitBox{border:1px solid var(--line);background:var(--panel);padding:6px;flex:1;display:flex;flex-direction:column;gap:4px;min-height:0}
 #unitHead{font-family:var(--disp);font-size:13px;letter-spacing:.5px;color:var(--teal);line-height:1.1}
@@ -144,7 +178,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   .chip{padding:2px 4px}.chip b{font-size:10px}.chip i{display:none}
   #hbtns button{padding:4px 6px;font-size:8px}
   #deck{grid-template-areas:"L C" "L R";grid-template-columns:128px minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:5px;padding:5px}
-  #cards{grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr}
+  .card{flex-basis:86px;max-width:112px}
   #deckR{flex-direction:row;gap:5px;align-items:stretch}
   #unitBox{flex:1;padding:5px;gap:3px}
   #unitStats{display:none}
@@ -191,7 +225,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     <div id="stInfo"><b id="sectorName">SECTOR 01 · RUST BASIN</b><span id="sectorMix">SALVAGE Fe-heavy</span></div>
     <div id="banner"></div>
     <div id="toast"></div>
-    <div id="hint">SELECT BLUEPRINT [1-6] · DRAG &amp; RELEASE TO DEPLOY — INVALID SPOTS SNAP TO NEAREST FOUNDATION · [SPACE] LAUNCH</div>
+    <div id="hint">SELECT A CARD [1-9] · BOARDS: TAP FIELD TO PRINT — SKILLS: TAP CARD AGAIN TO RUN · [D] DECK · [SPACE] LAUNCH</div>
     <div id="abils">
       <button id="abilSurge" title="All units +50% fire rate for 8s — costs 40 Fe">SURGE<small id="surgeCd">READY · 40Fe</small></button>
       <button id="abilWeld" title="Restore 3 core integrity — costs 30 Fe 15 Cu">WELD<small id="weldCd">READY · 30Fe 15Cu</small></button>
@@ -211,7 +245,15 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
         <button id="spdUp" title="Faster (+)">+</button>
       </div>
     </div>
-    <div id="cards"></div>
+    <div id="handCol">
+      <div id="cards"></div>
+      <div id="pileBar">
+        <button id="pileDraw" title="Draw pile (D)">DRAW <b id="vDraw">0</b></button>
+        <button id="pileDisc" title="Discard pile (D)">DISCARD <b id="vDisc">0</b></button>
+        <button id="pileExh" title="Exhausted this sector (D)">EXHAUST <b id="vExh">0</b></button>
+        <span id="pileInfo">HAND 0/10 · DECK 10</span>
+      </div>
+    </div>
     <div id="deckR">
       <div id="unitBox">
         <div id="unitHead">NO UNIT SELECTED</div>
@@ -240,6 +282,14 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       <div id="offers"></div>
     </div>
   </div>
+  <div class="modal" id="deckModal">
+    <div class="panel">
+      <button class="close" data-close="deckModal">CLOSE</button>
+      <h2>CIRCUIT LEDGER</h2>
+      <div class="sub">EVERY CARD OWNED THIS RUN · DRAW / DISCARD / EXHAUST PILES</div>
+      <div id="deckList"></div>
+    </div>
+  </div>
   <div class="modal" id="mapModal">
     <div class="panel">
       <button class="close" data-close="mapModal">CLOSE</button>
@@ -255,7 +305,11 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       <h2>FIELD MANUAL</h2>
       <div class="sub">ECONOMY · DOCTRINE · BALANCE LEDGER</div>
       <h3 class="sec">OBJECTIVE</h3>
-      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. Six blueprints, nine hostile classes, eighteen relics, two field abilities. Survive wave 12 to clear a sector and open the world route.</p>
+      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, nine hostile classes, eighteen relics, two field abilities. Survive wave 12 to clear a sector and open the world route.</p>
+      <h3 class="sec">THE CIRCUIT DECK</h3>
+      <p>You fight with a <b style="color:var(--teal)">deck of cards</b>, drawn Slay-the-Spire style. Your run starts with 10 cards; salvage caches add more. Each fabrication window is a <b>turn</b>: your old hand is discarded and you draw 5 (Autoloader: +1). Playing a card costs matter, not energy — your resources are the mana pool.</p>
+      <p><b style="color:var(--steel)">CIRCUIT BOARDS</b> are the only way to build: select one and tap the field to print its unit — the board is consumed into the discard pile and cycles back on reshuffle. <b style="color:var(--teal)">SUBROUTINES</b> are one-shot skills (matter, draws, heals, EMP). <b style="color:var(--gold)">FIRMWARE</b> installs a sector-wide modifier and always exhausts.</p>
+      <p>Keywords: <b style="color:var(--red)">EXHAUST</b> — removed for the rest of the sector after play · <b style="color:#b18cd9">ETHEREAL</b> — exhausts if still unplayed when the turn ends (hand redraw) · <b style="color:var(--teal)">RETAIN</b> — not discarded at turn end · <b style="color:var(--steel)">INNATE</b> — guaranteed in the sector's opening hand · <b style="color:var(--gold)">CONSUME</b> — torn from the deck permanently after one use. When the draw pile empties, the discard pile reshuffles into it. Deploying to a new sector restores exhausted cards and deals a fresh opening hand. Press <kbd>D</kbd> or tap the pile counters to audit every pile.</p>
       <h3 class="sec">SALVAGE DOCTRINES [M]</h3>
       <p><b style="color:var(--copper)">LOOT</b> — Harvesters fire normally; every wreck drops base salvage.<br>
       <b style="color:var(--teal)">CAPTURE</b> — Harvesters lock a tractor beam on units inside the <b style="color:var(--teal)">teal 30% zone</b> shown on every hull bar. The beam channels just 0.85s, slows the victim 55%, and rasps at 35% of Harvester DPS. While a target is beamed, <b style="color:var(--teal)">allied units hold fire on it</b> whenever another target is in range, and the beam tolerates integrity drift up to 40%. Completed captures yield <b style="color:var(--teal)">×2.5 salvage, +0.4 grid capacity</b> and bonus Silicon from Titans; escapes or forced kills fail the capture.</p>
@@ -281,7 +335,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
         <tr><td>Simulation</td><td>fixed 60Hz ticks, identical at 1× and 100×, runs live between waves</td></tr>
       </table>
       <h3 class="sec">CONTROLS</h3>
-      <p><kbd>1-6</kbd> blueprints · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect · drag &amp; release to deploy — invalid spots snap to the nearest foundation</p>
+      <p><kbd>1-9</kbd> select hand card (press again to run a subroutine) · <kbd>D</kbd> circuit ledger · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect · with a board selected, drag &amp; release on the field to print — invalid spots snap to the nearest foundation</p>
     </div>
   </div>
   <div class="modal" id="endModal">
@@ -322,12 +376,18 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     motes: [],
     ranks: { needle: 0, arc: 0, harvest: 0, foundry: 0 },
     relics: {},
+    deck: [],
+    drawPile: [],
+    hand: [],
+    discardPile: [],
+    exhaustPile: [],
+    powers: {},
     speed: 1,
     paused: false,
     over: false,
     victoryShown: false,
     modalOpen: false,
-    selCard: 0,
+    selCard: null,
     selTower: null,
     mode: "loot",
     ghost: null,
@@ -423,6 +483,46 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     { id: "rail", name: "RAIL", desc: "long-range sniper, punches 80% of armor", cost: { fe: 20, cu: 12, si: 26 }, dmg: 60, rate: 0.5, range: 150, draw: 3, col: "#ffd23f" },
     { id: "aegis", name: "AEGIS", desc: "slow field 30% \u2014 no guns, pure drag", cost: { fe: 12, cu: 26, si: 6 }, dmg: 0, rate: 0, range: 70, draw: 1, col: "#7fd8c8" }
   ];
+  var DECK_CARDS = [
+    /* circuit boards — the only way to deploy units */
+    { id: "board_needle", name: "NEEDLE BOARD", kind: "board", tower: 0, desc: "print a NEEDLE \u2014 rapid kinetic sentry", cost: CARDS[0].cost, rar: 0, innate: true },
+    { id: "board_arc", name: "ARC BOARD", kind: "board", tower: 1, desc: "print an ARC COIL \u2014 chains past armor", cost: CARDS[1].cost, rar: 0 },
+    { id: "board_harvest", name: "HARVEST BOARD", kind: "board", tower: 2, desc: "print a HARVESTER \u2014 tractor-beam captor", cost: CARDS[2].cost, rar: 0 },
+    { id: "board_foundry", name: "FOUNDRY BOARD", kind: "board", tower: 3, desc: "print a FOUNDRY \u2014 refines matter, feeds allies", cost: CARDS[3].cost, rar: 0, innate: true },
+    { id: "board_rail", name: "RAIL BOARD", kind: "board", tower: 4, desc: "print a RAIL \u2014 long-range armor-piercing sniper", cost: CARDS[4].cost, rar: 2, exhaust: true },
+    { id: "board_aegis", name: "AEGIS BOARD", kind: "board", tower: 5, desc: "print an AEGIS \u2014 30% slow field, pure drag", cost: CARDS[5].cost, rar: 1 },
+    /* subroutines — one-shot skills */
+    { id: "skill_scrap", name: "SCRAP INFUSION", kind: "skill", desc: "gain 26 Fe \xB7 10 Cu \xB7 4 Si", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
+    { id: "skill_hotswap", name: "HOTSWAP", kind: "skill", desc: "draw 2 cards", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
+    { id: "skill_weld", name: "PATCH WELD", kind: "skill", desc: "restore 4 core integrity", cost: { fe: 10, cu: 0, si: 0 }, rar: 0, exhaust: true },
+    { id: "skill_overdrive", name: "OVERDRIVE PULSE", kind: "skill", desc: "all units +50% fire rate for 8s", cost: { fe: 0, cu: 15, si: 0 }, rar: 1, retain: true },
+    { id: "skill_emp", name: "EMP BURST", kind: "skill", desc: "zap every hostile for 12% max hull", cost: { fe: 0, cu: 12, si: 6 }, rar: 1, ethereal: true },
+    { id: "skill_recall", name: "MAGNET RECALL", kind: "skill", desc: "drag every hostile 70px back along its route", cost: { fe: 0, cu: 8, si: 0 }, rar: 1, exhaust: true },
+    { id: "skill_refit", name: "MASS REFIT", kind: "skill", desc: "every deployed unit gains +1 level, free", cost: { fe: 0, cu: 0, si: 20 }, rar: 2, exhaust: true },
+    { id: "skill_graft", name: "CORE GRAFT", kind: "skill", desc: "+5 max core integrity, permanently", cost: { fe: 25, cu: 0, si: 10 }, rar: 2, exhaust: true, consume: true },
+    /* firmware — sector-wide powers, always exhaust */
+    { id: "power_lathe", name: "TUNGSTEN LATHE", kind: "power", desc: "+10% unit damage this sector", cost: { fe: 20, cu: 0, si: 8 }, rar: 1, exhaust: true },
+    { id: "power_sub", name: "SUBSTATION", kind: "power", desc: "+4 grid capacity this sector", cost: { fe: 0, cu: 18, si: 0 }, rar: 0, exhaust: true },
+    { id: "power_reserve", name: "DEEP RESERVES", kind: "power", desc: "foundries +25% output this sector", cost: { fe: 15, cu: 10, si: 0 }, rar: 1, exhaust: true },
+    { id: "power_loader", name: "AUTOLOADER", kind: "power", desc: "draw +1 card per turn this sector", cost: { fe: 0, cu: 0, si: 14 }, rar: 2, exhaust: true }
+  ];
+  var STARTER_DECK = [
+    "board_needle",
+    "board_needle",
+    "board_needle",
+    "board_arc",
+    "board_harvest",
+    "board_foundry",
+    "skill_scrap",
+    "skill_scrap",
+    "skill_hotswap",
+    "skill_weld"
+  ];
+  var KIND_LABEL = {
+    board: "CIRCUIT BOARD",
+    skill: "SUBROUTINE",
+    power: "FIRMWARE"
+  };
   var RELICS = [
     { id: "cap", name: "CAPACITOR BANK", desc: "+8 grid capacity, immediately", rar: 1 },
     { id: "scav", name: "SCAVENGER PROTOCOL", desc: "+12% salvage from every source", rar: 1 },
@@ -1010,9 +1110,6 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     var b = CARDS[t.i].cost, m = 0.75 * Math.pow(1.28, t.lvl - 1);
     return { fe: Math.ceil(b.fe * m), cu: Math.ceil(b.cu * m), si: Math.ceil(b.si * m) };
   }
-  function costStr(c) {
-    return '<span class="fe">' + c.fe + 'Fe</span><span class="cu">' + c.cu + 'Cu</span><span class="si">' + c.si + "Si</span>";
-  }
 
   // src/audio.ts
   var Snd = {
@@ -1135,134 +1232,6 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     }
   };
 
-  // src/hud.ts
-  var toastTimer = void 0;
-  function toast(msg) {
-    var e = $("toast");
-    e.textContent = msg;
-    e.classList.add("show");
-    if (toastTimer !== void 0) clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(function() {
-      e.classList.remove("show");
-    }, 1400);
-  }
-  function banner(a, b) {
-    var e = $("banner");
-    e.innerHTML = a + "<small>" + b + "</small>";
-    e.classList.remove("show");
-    void e.offsetWidth;
-    e.classList.add("show");
-  }
-  function award(id) {
-    if (S.medals[id]) return;
-    S.medals[id] = true;
-    var m = MEDALS.filter(function(x) {
-      return x[0] === id;
-    })[0];
-    if (m) {
-      toast("COMMENDATION \xB7 " + m[1]);
-      Snd.play("draft");
-    }
-  }
-  function hud(force) {
-    if (force) {
-      renderCards();
-      renderUnit();
-    }
-    $("vFe").textContent = fmt(S.res.fe);
-    $("vCu").textContent = fmt(S.res.cu);
-    $("vSi").textContent = fmt(S.res.si);
-    $("vW").textContent = usedGrid().toFixed(1) + "/" + Math.floor(gridCap() * 10) / 10;
-    $("vCore").textContent = S.core + "";
-    $("vWave").textContent = S.wave + "/12" + (S.wave > 12 ? " \u221E" : "");
-    var pb = $("phaseBig"), ps = $("phaseSub");
-    if (S.phase === "build") {
-      pb.textContent = "FABRICATION";
-      pb.className = "";
-      ps.textContent = "window " + Math.max(0, S.buildT).toFixed(1) + "s \u2014 build, refine, prepare";
-      $("startSub").textContent = nextWaveStr() + " \xB7 " + Math.max(0, S.buildT).toFixed(1) + "s";
-      $("startBtn").classList.remove("armed");
-      $("startBtn").classList.toggle("hot", S.buildT < 5);
-      $("startBtn").firstChild.textContent = "START WAVE";
-      $("timefill").style.width = S.buildT / S.buildMax * 100 + "%";
-      $("timefill").classList.toggle("low", S.buildT < 5);
-    } else {
-      pb.textContent = "WAVE " + pad2(S.wave);
-      pb.className = "war";
-      ps.textContent = "hostiles " + (S.enemies.length + S.spawnQ.length) + " \xB7 doctrine " + S.mode.toUpperCase() + (S.streak.n >= 5 && S.time - S.streak.t < 2.2 ? " \xB7 streak \xD7" + S.streak.n : "") + (S.event ? " \xB7 " + S.event.name : "");
-      $("startBtn").classList.add("armed");
-      $("startBtn").classList.remove("hot");
-      $("startBtn").firstChild.textContent = "WAVE ACTIVE";
-      $("startSub").textContent = "doctrine: " + S.mode.toUpperCase();
-      $("timefill").style.width = "100%";
-      $("timefill").classList.remove("low");
-    }
-    $("spdVal").textContent = S.speed + "\xD7";
-    $("modeBtn").textContent = "DOCTRINE: " + S.mode.toUpperCase();
-    $("modeBtn").classList.toggle("on", S.mode === "capture");
-    var sg = S.ability.surge, wl = S.ability.weld;
-    $("surgeCd").textContent = S.time < sg.until ? "ACTIVE " + Math.ceil(sg.until - S.time) + "s" : S.time < sg.cd ? "RECHARGE " + Math.ceil(sg.cd - S.time) + "s" : "READY \xB7 40Fe";
-    $("abilSurge").classList.toggle("cooling", S.time < sg.cd && S.time >= sg.until);
-    $("abilSurge").classList.toggle("ready", S.time >= sg.cd);
-    $("weldCd").textContent = S.core >= S.coreMax ? "CORE FULL" : S.time < wl.cd ? "RECHARGE " + Math.ceil(wl.cd - S.time) + "s" : "READY \xB7 30Fe 15Cu";
-    $("abilWeld").classList.toggle("cooling", S.time < wl.cd);
-    $("abilWeld").classList.toggle("ready", S.time >= wl.cd && S.core < S.coreMax);
-    var sec = sector();
-    $("sectorName").textContent = "SECTOR " + pad2(S.sector + 1) + " \xB7 " + sec.name;
-    var dom = "Fe";
-    if (sec.mix.cu > sec.mix.fe && sec.mix.cu >= sec.mix.si) dom = "Cu";
-    if (sec.mix.si > sec.mix.fe && sec.mix.si > sec.mix.cu) dom = "Si";
-    $("sectorMix").textContent = "SALVAGE " + dom + "-HEAVY \xB7 " + HAZNAMES[sec.haz];
-    if (S.selCard != null && !canAfford(CARDS[S.selCard].cost)) renderCards();
-  }
-  function renderCards() {
-    var h = "";
-    for (var i = 0; i < CARDS.length; i++) {
-      var c = CARDS[i];
-      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (canAfford(c.cost) ? "" : " broke") + '" data-card="' + i + '" style="color:' + c.col + '"><div class="hd">' + GLYPHS[c.id] + '<strong style="color:var(--ink)">' + c.name + '</strong><span class="key">' + (i + 1) + "</span></div><p>" + c.desc + '</p><div class="cst">' + costStr(c.cost) + "</div>" + (S.ranks[c.id] ? '<span class="rank">Mk.' + (S.ranks[c.id] + 1) + "</span>" : "") + "</div>";
-    }
-    $("cards").innerHTML = h;
-    var nodes = $("cards").children;
-    for (i = 0; i < nodes.length; i++) {
-      (function(n) {
-        n.addEventListener("pointerdown", function(ev) {
-          ev.stopPropagation();
-          S.selCard = +n.dataset.card;
-          S.selTower = null;
-          Snd.init();
-          Snd.play("ui");
-          hud(true);
-        });
-      })(nodes[i]);
-    }
-  }
-  function renderUnit() {
-    var t = S.selTower;
-    var has = !!(t && S.towers.indexOf(t) >= 0);
-    $("tgtRow").style.display = has ? "grid" : "none";
-    if (!t || !has) {
-      $("unitHead").textContent = "NO UNIT SELECTED";
-      $("unitStats").textContent = "tap near a unit \u2014 nearest one is grabbed \xB7 tap again to release";
-      $("upCost").textContent = "\u2014";
-      $("recVal").textContent = "\u2014";
-      return;
-    }
-    var c = CARDS[t.i], st = stats(t), uc = upCost(t);
-    $("unitHead").textContent = c.name + " \xB7 L" + t.lvl + (S.ranks[c.id] ? " Mk." + (S.ranks[c.id] + 1) : "") + (st.stars ? " \xB7 " + "\u2605".repeat(Math.min(st.stars, 5)) + (st.stars > 5 ? "+" + (st.stars - 5) : "") : "");
-    if (c.id === "foundry") {
-      var o = foundryOut(t);
-      $("unitStats").textContent = "refines " + o.fe.toFixed(2) + "Fe " + o.cu.toFixed(2) + "Cu " + o.si.toFixed(2) + "Si /s \xB7 aura +8% rate";
-    } else if (c.id === "aegis") {
-      $("unitStats").textContent = "slow field " + Math.round(Math.min(50, 30 + 2 * (t.lvl - 1))) + "% \xB7 rng " + Math.round(st.range) + " \xB7 grid " + (c.draw + 0.3 * (t.lvl - 1)).toFixed(1);
-    } else {
-      $("unitStats").textContent = "dps " + (st.dmg * st.rate).toFixed(1) + " \xB7 rng " + Math.round(st.range) + " \xB7 grid " + (c.draw + 0.3 * (t.lvl - 1)).toFixed(1) + " \xB7 tgt " + TGT_LABEL[t.tgt];
-    }
-    var bs = $("tgtRow").children;
-    for (var k = 0; k < bs.length; k++) bs[k].classList.toggle("on", bs[k].dataset.tgt === t.tgt);
-    $("upCost").textContent = uc.fe + "Fe " + uc.cu + "Cu " + uc.si + "Si";
-    $("recVal").textContent = "+" + Math.floor(t.inv.fe * 0.7) + "Fe +" + Math.floor(t.inv.cu * 0.7) + "Cu +" + Math.floor(t.inv.si * 0.7) + "Si";
-  }
-
   // src/modals.ts
   function openModal(id) {
     $(id).classList.add("open");
@@ -1282,7 +1251,17 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   // src/draft.ts
   function rollOffers() {
     var pool = [], i;
-    for (i = 0; i < CARDS.length; i++) pool.push({ kind: "rank", id: CARDS[i].id, rar: 0 });
+    for (i = 0; i < DECK_CARDS.length; i++) {
+      var dc = DECK_CARDS[i];
+      var owned = S.deck.filter(function(c) {
+        return c.id === dc.id;
+      }).length;
+      if (owned < 4) {
+        pool.push({ kind: "card", id: dc.id, rar: dc.rar });
+        if (dc.rar === 0) pool.push({ kind: "card", id: dc.id, rar: dc.rar });
+      }
+    }
+    for (i = 0; i < CARDS.length; i++) pool.push({ kind: "rank", id: CARDS[i].id, rar: 1 });
     for (i = 0; i < RELICS.length; i++) {
       if (!S.relics[RELICS[i].id]) pool.push({ kind: "relic", id: RELICS[i].id, rar: RELICS[i].rar });
     }
@@ -1296,7 +1275,11 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       for (i = 0; i < pool.length; i++) {
         acc2 += w[pool[i].rar];
         if (roll <= acc2) {
-          out.push(pool.splice(i, 1)[0]);
+          var picked = pool.splice(i, 1)[0];
+          pool = pool.filter(function(p) {
+            return !(p.kind === picked.kind && p.id === picked.id);
+          });
+          out.push(picked);
           break;
         }
       }
@@ -1307,8 +1290,19 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     S.draftOffers = rollOffers();
     var h = "";
     for (var i = 0; i < S.draftOffers.length; i++) {
-      var o = S.draftOffers[i], name, desc, rn = ["COMMON", "ADVANCED", "PROTOTYPE"][o.rar];
-      if (o.kind === "rank") {
+      var o = S.draftOffers[i], name, desc, pick = "\u25B8 INSTALL", rn = ["COMMON", "ADVANCED", "PROTOTYPE"][o.rar];
+      if (o.kind === "card") {
+        var d = defById(o.id);
+        var flags = [];
+        if (d.exhaust) flags.push("EXHAUST");
+        if (d.ethereal) flags.push("ETHEREAL");
+        if (d.retain) flags.push("RETAIN");
+        if (d.innate) flags.push("INNATE");
+        if (d.consume) flags.push("CONSUME");
+        name = d.name;
+        desc = KIND_LABEL[d.kind] + (flags.length ? " \xB7 " + flags.join(" \xB7 ") : "") + " \u2014 " + d.desc + ". Added to your circuit deck.";
+        pick = "\u25B8 ADD TO DECK";
+      } else if (o.kind === "rank") {
         var c = CARDS.filter(function(x) {
           return x.id === o.id;
         })[0];
@@ -1321,7 +1315,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
         name = r.name;
         desc = r.desc;
       }
-      h += '<div class="offer" data-off="' + i + '"><span class="rar r' + o.rar + '">' + rn + "</span><b>" + name + "</b><p>" + desc + '</p><div class="pick">\u25B8 INSTALL</div></div>';
+      h += '<div class="offer" data-off="' + i + '"><span class="rar r' + o.rar + '">' + rn + "</span><b>" + name + "</b><p>" + desc + '</p><div class="pick">' + pick + "</div></div>";
     }
     $("offers").innerHTML = h;
     var nodes = $("offers").children;
@@ -1338,7 +1332,10 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   function chooseDraft(i) {
     var o = S.draftOffers[i];
     if (!o) return;
-    if (o.kind === "rank") {
+    if (o.kind === "card") {
+      addCardToDeck(o.id);
+      toast(defById(o.id).name + " \u2192 CIRCUIT DECK (" + S.deck.length + " CARDS)");
+    } else if (o.kind === "rank") {
       S.ranks[o.id]++;
       toast(CARDS.filter(function(c) {
         return c.id === o.id;
@@ -1426,9 +1423,10 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     S.spawnQ = [];
     S.over = false;
     S.selTower = null;
-    S.selCard = 0;
+    S.selCard = null;
     S.event = null;
     S.ability = { surge: { cd: 0, until: 0 }, weld: { cd: 0 } };
+    sectorShuffle();
     genSector();
     banner("SECTOR " + pad2(idx + 1), SECTORS[idx % SECTORS.length].name + " \u2014 DEPLOYED");
     Snd.play("wave");
@@ -1544,7 +1542,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       return S.medals[m[0]];
     }).map(function(m) {
       return m[1];
-    }).join(" \xB7 ") || "none yet") + "</b><br><br>" + (win ? "The salvage front is yours. Rebuild and push an endless escalation, or open the route network." : "Rebuild keeps your blueprint ranks, relics and cleared routes. Matter resets.");
+    }).join(" \xB7 ") || "none yet") + "</b><br><br>" + (win ? "The salvage front is yours. Rebuild and push an endless escalation, or open the route network." : "Rebuild keeps your circuit deck, blueprint ranks, relics and cleared routes. Matter resets; exhausted cards return.");
     $("endRebuild").textContent = win ? "ENDLESS ESCALATION" : "REBUILD SECTOR";
     openModal("endModal");
   }
@@ -1693,6 +1691,8 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     S.event = null;
     S.gridMax += 2;
     S.stat.waves++;
+    var eth = startTurn();
+    if (eth) float(S.nodes[S.coreIdx].px, S.nodes[S.coreIdx].py - 26, eth + " ETHEREAL CARD" + (eth > 1 ? "S" : "") + " EXHAUSTED", "#b18cd9");
     if (S.relics.repair) S.core = Math.min(S.coreMax, S.core + 1);
     if (S.wave % 12 === 0 && !S.cleared[S.sector]) {
       S.cleared[S.sector] = true;
@@ -1785,6 +1785,481 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     hud(true);
   }
 
+  // src/deck.ts
+  var HAND_CAP = 10;
+  var uidC = 1;
+  var DEFS = {};
+  DECK_CARDS.forEach(function(d) {
+    DEFS[d.id] = d;
+  });
+  function defOf(ci) {
+    return DEFS[ci.id];
+  }
+  function defById(id) {
+    return DEFS[id];
+  }
+  function shuffleInPlace(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1)), t = a[i];
+      a[i] = a[j];
+      a[j] = t;
+    }
+    return a;
+  }
+  function initRunDeck() {
+    S.deck = STARTER_DECK.map(function(id) {
+      return { uid: uidC++, id };
+    });
+  }
+  function addCardToDeck(id) {
+    var ci = { uid: uidC++, id };
+    S.deck.push(ci);
+    S.discardPile.push(ci);
+    return ci;
+  }
+  function handSize() {
+    return Math.min(HAND_CAP, 5 + (S.powers.power_loader || 0));
+  }
+  function sectorShuffle() {
+    S.powers = {};
+    S.hand = [];
+    S.discardPile = [];
+    S.exhaustPile = [];
+    S.drawPile = shuffleInPlace(S.deck.slice());
+    S.selCard = null;
+    for (var i = S.drawPile.length - 1; i >= 0 && S.hand.length < handSize(); i--) {
+      if (defOf(S.drawPile[i]).innate) S.hand.push(S.drawPile.splice(i, 1)[0]);
+    }
+    drawCards(handSize() - S.hand.length);
+  }
+  function drawCards(n) {
+    var drawn = 0;
+    for (var i = 0; i < n; i++) {
+      if (S.hand.length >= HAND_CAP) break;
+      if (!S.drawPile.length) {
+        if (!S.discardPile.length) break;
+        S.drawPile = shuffleInPlace(S.discardPile);
+        S.discardPile = [];
+      }
+      S.hand.push(S.drawPile.pop());
+      drawn++;
+    }
+    return drawn;
+  }
+  function startTurn() {
+    var eth = 0;
+    for (var i = S.hand.length - 1; i >= 0; i--) {
+      var d = defOf(S.hand[i]);
+      if (d.ethereal) {
+        S.exhaustPile.push(S.hand.splice(i, 1)[0]);
+        eth++;
+      } else if (!d.retain) S.discardPile.push(S.hand.splice(i, 1)[0]);
+    }
+    drawCards(handSize() - S.hand.length);
+    S.selCard = null;
+    return eth;
+  }
+  function resolveAfterPlay(handIdx) {
+    var ci = S.hand.splice(handIdx, 1)[0];
+    if (!ci) return;
+    var d = defOf(ci);
+    if (d.consume) S.deck = S.deck.filter(function(c) {
+      return c !== ci;
+    });
+    else if (d.exhaust) S.exhaustPile.push(ci);
+    else S.discardPile.push(ci);
+    if (S.selCard != null) {
+      if (S.selCard === handIdx) S.selCard = null;
+      else if (S.selCard > handIdx) S.selCard--;
+    }
+  }
+  function selBoard() {
+    if (S.selCard == null) return null;
+    var ci = S.hand[S.selCard];
+    if (!ci) return null;
+    var d = defOf(ci);
+    if (d.kind !== "board" || d.tower == null) return null;
+    return CARDS[d.tower];
+  }
+  function canPlayDef(d) {
+    if (!canAfford(d.cost)) return { ok: false, why: "INSUFFICIENT MATTER" };
+    if (d.kind === "board") {
+      var c = CARDS[d.tower];
+      if (usedGrid() + c.draw > gridCap()) return { ok: false, why: "GRID CAPACITY EXCEEDED" };
+    }
+    if (d.id === "skill_weld" && S.core >= S.coreMax) return { ok: false, why: "CORE AT FULL INTEGRITY" };
+    return { ok: true };
+  }
+  function corePt() {
+    var cp = S.nodes[S.coreIdx];
+    return cp ? { x: cp.px, y: cp.py } : { x: 0, y: 0 };
+  }
+  function playCard(handIdx) {
+    var ci = S.hand[handIdx];
+    if (!ci) return { ok: false, msg: "NO CARD" };
+    var d = defOf(ci);
+    if (d.kind === "board") return { ok: false, msg: "SELECT A FOUNDATION TO DEPLOY" };
+    var chk = canPlayDef(d);
+    if (!chk.ok) return { ok: false, msg: chk.why };
+    spend(d.cost);
+    var cp = corePt(), i;
+    if (d.kind === "power") {
+      S.powers[d.id] = (S.powers[d.id] || 0) + 1;
+      if (d.id === "power_sub") S.gridMax += 4;
+      S.rings.push({ x: cp.x, y: cp.y, r: 6, max: 52, col: "#ffd23f" });
+      float(cp.x, cp.y - 18, d.name + " INSTALLED", "#ffd23f");
+      resolveAfterPlay(handIdx);
+      Snd.play("upgrade");
+      return { ok: true, msg: d.name + " \u2014 FIRMWARE INSTALLED (EXHAUSTED)" };
+    }
+    var msg = d.name;
+    switch (d.id) {
+      case "skill_scrap":
+        gainRes({ fe: 26, cu: 10, si: 4 }, cp.x, cp.y - 10);
+        msg += " \u2014 +26Fe +10Cu +4Si";
+        break;
+      case "skill_hotswap": {
+        var got = drawCards(2);
+        msg += " \u2014 DREW " + got + (got === 1 ? " CARD" : " CARDS");
+        break;
+      }
+      case "skill_weld":
+        S.core = Math.min(S.coreMax, S.core + 4);
+        float(cp.x, cp.y - 16, "+4 CORE", "#3ec9b0");
+        S.rings.push({ x: cp.x, y: cp.y, r: 4, max: 36, col: "#3ec9b0" });
+        Snd.play("weld");
+        msg += " \u2014 +4 CORE (EXHAUSTED)";
+        break;
+      case "skill_overdrive":
+        S.ability.surge.until = Math.max(S.ability.surge.until, S.time + 8);
+        S.stat.surges++;
+        S.shake = Math.max(S.shake, 3);
+        S.rings.push({ x: cp.x, y: cp.y, r: 6, max: 60, col: "#ffd23f" });
+        Snd.play("surge");
+        msg += " \u2014 +50% RATE FOR 8s";
+        break;
+      case "skill_emp": {
+        var hit = 0;
+        for (i = 0; i < S.enemies.length; i++) {
+          var e = S.enemies[i];
+          if (e.dead) continue;
+          e.hp -= e.mhp * 0.12;
+          e.flash = 0.08;
+          hit++;
+          if (e.hp <= 0) killEnemy(e, false);
+        }
+        S.shake = Math.max(S.shake, 4);
+        S.rings.push({ x: cp.x, y: cp.y, r: 8, max: 90, col: "#6fd7e8" });
+        Snd.play("arc");
+        msg += hit ? " \u2014 ZAPPED " + hit + " HOSTILES" : " \u2014 NO HOSTILES IN THE FIELD";
+        break;
+      }
+      case "skill_recall": {
+        var pulled = 0;
+        for (i = 0; i < S.enemies.length; i++) {
+          var en = S.enemies[i];
+          if (en.dead) continue;
+          en.d = Math.max(-14, en.d - 70);
+          pulled++;
+        }
+        S.rings.push({ x: cp.x, y: cp.y, r: 8, max: 70, col: "#7fa8d9" });
+        Snd.play("beam");
+        msg += pulled ? " \u2014 DRAGGED " + pulled + " HOSTILES BACK" : " \u2014 NOTHING TO RECALL (EXHAUSTED)";
+        break;
+      }
+      case "skill_refit":
+        for (i = 0; i < S.towers.length; i++) {
+          var t = S.towers[i];
+          t.lvl++;
+          burst(t.x, t.y, "#ffd23f", 8);
+        }
+        Snd.play("upgrade");
+        msg += " \u2014 " + S.towers.length + " UNITS REFIT +1 LEVEL";
+        break;
+      case "skill_graft":
+        S.coreMax += 5;
+        S.core += 5;
+        float(cp.x, cp.y - 16, "+5 MAX CORE", "#3ec9b0");
+        Snd.play("weld");
+        msg += " \u2014 +5 MAX CORE (CONSUMED FROM DECK)";
+        break;
+      default:
+        break;
+    }
+    resolveAfterPlay(handIdx);
+    if (d.id !== "skill_weld" && d.id !== "skill_graft") Snd.play("ui");
+    return { ok: true, msg };
+  }
+  function powerDmgMult() {
+    return 1 + 0.1 * (S.powers.power_lathe || 0);
+  }
+  function powerFoundryMult() {
+    return 1 + 0.25 * (S.powers.power_reserve || 0);
+  }
+
+  // src/hud.ts
+  var toastTimer = void 0;
+  function toast(msg) {
+    var e = $("toast");
+    e.textContent = msg;
+    e.classList.add("show");
+    if (toastTimer !== void 0) clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function() {
+      e.classList.remove("show");
+    }, 1400);
+  }
+  function banner(a, b) {
+    var e = $("banner");
+    e.innerHTML = a + "<small>" + b + "</small>";
+    e.classList.remove("show");
+    void e.offsetWidth;
+    e.classList.add("show");
+  }
+  function award(id) {
+    if (S.medals[id]) return;
+    S.medals[id] = true;
+    var m = MEDALS.filter(function(x) {
+      return x[0] === id;
+    })[0];
+    if (m) {
+      toast("COMMENDATION \xB7 " + m[1]);
+      Snd.play("draft");
+    }
+  }
+  function hud(force) {
+    if (force) {
+      renderCards();
+      renderUnit();
+    }
+    $("vFe").textContent = fmt(S.res.fe);
+    $("vCu").textContent = fmt(S.res.cu);
+    $("vSi").textContent = fmt(S.res.si);
+    $("vW").textContent = usedGrid().toFixed(1) + "/" + Math.floor(gridCap() * 10) / 10;
+    $("vCore").textContent = S.core + "";
+    $("vWave").textContent = S.wave + "/12" + (S.wave > 12 ? " \u221E" : "");
+    var pb = $("phaseBig"), ps = $("phaseSub");
+    if (S.phase === "build") {
+      pb.textContent = "FABRICATION";
+      pb.className = "";
+      ps.textContent = "window " + Math.max(0, S.buildT).toFixed(1) + "s \u2014 build, refine, prepare";
+      $("startSub").textContent = nextWaveStr() + " \xB7 " + Math.max(0, S.buildT).toFixed(1) + "s";
+      $("startBtn").classList.remove("armed");
+      $("startBtn").classList.toggle("hot", S.buildT < 5);
+      $("startBtn").firstChild.textContent = "START WAVE";
+      $("timefill").style.width = S.buildT / S.buildMax * 100 + "%";
+      $("timefill").classList.toggle("low", S.buildT < 5);
+    } else {
+      pb.textContent = "WAVE " + pad2(S.wave);
+      pb.className = "war";
+      ps.textContent = "hostiles " + (S.enemies.length + S.spawnQ.length) + " \xB7 doctrine " + S.mode.toUpperCase() + (S.streak.n >= 5 && S.time - S.streak.t < 2.2 ? " \xB7 streak \xD7" + S.streak.n : "") + (S.event ? " \xB7 " + S.event.name : "");
+      $("startBtn").classList.add("armed");
+      $("startBtn").classList.remove("hot");
+      $("startBtn").firstChild.textContent = "WAVE ACTIVE";
+      $("startSub").textContent = "doctrine: " + S.mode.toUpperCase();
+      $("timefill").style.width = "100%";
+      $("timefill").classList.remove("low");
+    }
+    $("spdVal").textContent = S.speed + "\xD7";
+    $("modeBtn").textContent = "DOCTRINE: " + S.mode.toUpperCase();
+    $("modeBtn").classList.toggle("on", S.mode === "capture");
+    var sg = S.ability.surge, wl = S.ability.weld;
+    $("surgeCd").textContent = S.time < sg.until ? "ACTIVE " + Math.ceil(sg.until - S.time) + "s" : S.time < sg.cd ? "RECHARGE " + Math.ceil(sg.cd - S.time) + "s" : "READY \xB7 40Fe";
+    $("abilSurge").classList.toggle("cooling", S.time < sg.cd && S.time >= sg.until);
+    $("abilSurge").classList.toggle("ready", S.time >= sg.cd);
+    $("weldCd").textContent = S.core >= S.coreMax ? "CORE FULL" : S.time < wl.cd ? "RECHARGE " + Math.ceil(wl.cd - S.time) + "s" : "READY \xB7 30Fe 15Cu";
+    $("abilWeld").classList.toggle("cooling", S.time < wl.cd);
+    $("abilWeld").classList.toggle("ready", S.time >= wl.cd && S.core < S.coreMax);
+    var sec = sector();
+    $("sectorName").textContent = "SECTOR " + pad2(S.sector + 1) + " \xB7 " + sec.name;
+    var dom = "Fe";
+    if (sec.mix.cu > sec.mix.fe && sec.mix.cu >= sec.mix.si) dom = "Cu";
+    if (sec.mix.si > sec.mix.fe && sec.mix.si > sec.mix.cu) dom = "Si";
+    $("sectorMix").textContent = "SALVAGE " + dom + "-HEAVY \xB7 " + HAZNAMES[sec.haz];
+    var sig = handSignature();
+    if (sig !== handSig) {
+      handSig = sig;
+      renderCards();
+    }
+  }
+  var handSig = "";
+  function handSignature() {
+    return S.hand.map(function(ci) {
+      var d = defOf(ci);
+      return (canPlayDef(d).ok ? "1" : "0") + (S.res.fe >= d.cost.fe ? "" : "f") + (S.res.cu >= d.cost.cu ? "" : "c") + (S.res.si >= d.cost.si ? "" : "s");
+    }).join("|") + "\xB7" + S.hand.length + "\xB7" + S.selCard;
+  }
+  var KIND_COL = { board: "#9fb6c9", skill: "#3ec9b0", power: "#ffd23f" };
+  var TAG_TIP = {
+    INNATE: "guaranteed in the sector\u2019s opening hand",
+    RETAIN: "not discarded when the turn ends",
+    ETHEREAL: "exhausts if still unplayed when the turn ends",
+    EXHAUST: "removed for the rest of the sector after play",
+    CONSUME: "torn from the deck permanently after play"
+  };
+  function tagStr(d) {
+    var t = "";
+    function tag(cls, name) {
+      return '<em class="' + cls + '" title="' + name + ": " + TAG_TIP[name] + '">' + name + "</em>";
+    }
+    if (d.innate) t += tag("tag-inn", "INNATE");
+    if (d.retain) t += tag("tag-ret", "RETAIN");
+    if (d.ethereal) t += tag("tag-eth", "ETHEREAL");
+    if (d.exhaust) t += tag("tag-ex", "EXHAUST");
+    if (d.consume) t += tag("tag-con", "CONSUME");
+    return t;
+  }
+  function costHtml(c) {
+    if (!c.fe && !c.cu && !c.si) return '<span class="free">NO MATTER COST</span>';
+    var h = "";
+    if (c.fe) h += '<span class="' + (S.res.fe >= c.fe ? "fe" : "lack") + '">' + c.fe + "Fe</span>";
+    if (c.cu) h += '<span class="' + (S.res.cu >= c.cu ? "cu" : "lack") + '">' + c.cu + "Cu</span>";
+    if (c.si) h += '<span class="' + (S.res.si >= c.si ? "si" : "lack") + '">' + c.si + "Si</span>";
+    return h;
+  }
+  var seenUids = {};
+  function renderCards() {
+    handSig = handSignature();
+    var h = "", dealt = 0;
+    for (var i = 0; i < S.hand.length; i++) {
+      var ci = S.hand[i], d = defOf(ci);
+      var col = d.kind === "board" ? CARDS[d.tower].col : KIND_COL[d.kind];
+      var chk = canPlayDef(d);
+      var glyph = d.kind === "board" ? GLYPHS[CARDS[d.tower].id] : "";
+      var rankTag = d.kind === "board" && S.ranks[CARDS[d.tower].id] ? '<span class="rank">Mk.' + (S.ranks[CARDS[d.tower].id] + 1) + "</span>" : "";
+      var isNew = !seenUids[ci.uid];
+      if (isNew) dealt++;
+      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div><div class="hd">' + glyph + "<strong>" + d.name + "</strong>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + "</div><p>" + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
+    }
+    if (!S.hand.length) {
+      h = '<div id="handEmpty">HAND EMPTY \u2014 NEW CARDS DEALT NEXT FABRICATION WINDOW</div>';
+    }
+    seenUids = {};
+    S.hand.forEach(function(ci2) {
+      seenUids[ci2.uid] = true;
+    });
+    $("cards").innerHTML = h;
+    var nodes = $("cards").querySelectorAll(".card");
+    for (i = 0; i < nodes.length; i++) {
+      (function(n) {
+        n.addEventListener("pointerdown", function(ev) {
+          ev.stopPropagation();
+          Snd.init();
+          cardTap(+n.dataset.card);
+        });
+      })(nodes[i]);
+    }
+    var selEl = $("cards").querySelector(".card.sel");
+    if (selEl && selEl.scrollIntoView) {
+      try {
+        selEl.scrollIntoView({ block: "nearest", inline: "nearest" });
+      } catch (e) {
+      }
+    }
+    renderPiles();
+  }
+  function cardTap(i) {
+    var ci = S.hand[i];
+    if (!ci) return;
+    var d = defOf(ci);
+    if (S.selCard === i) {
+      if (d.kind === "board") {
+        S.selCard = null;
+        hud(true);
+        return;
+      }
+      var res = playHandCard(i);
+      if (!res) return;
+    } else {
+      S.selCard = i;
+      S.selTower = null;
+      Snd.play("ui");
+    }
+    hud(true);
+  }
+  function playHandCard(i) {
+    var r = playCard(i);
+    if (!r.ok) {
+      toast(r.msg);
+      Snd.play("error");
+      return false;
+    }
+    toast(r.msg);
+    return true;
+  }
+  function setPile(btnId, valId, n) {
+    var v = $(valId);
+    if (v.textContent !== n + "") {
+      v.textContent = n + "";
+      var b = $(btnId);
+      b.classList.remove("tick");
+      void b.offsetWidth;
+      b.classList.add("tick");
+    }
+  }
+  function renderPiles() {
+    setPile("pileDraw", "vDraw", S.drawPile.length);
+    setPile("pileDisc", "vDisc", S.discardPile.length);
+    setPile("pileExh", "vExh", S.exhaustPile.length);
+    $("pileInfo").textContent = "HAND " + S.hand.length + "/" + HAND_CAP + " \xB7 DRAW " + handSize() + "/TURN \xB7 DECK " + S.deck.length;
+  }
+  function miniCard(d, n) {
+    var col = d.kind === "board" ? CARDS[d.tower].col : KIND_COL[d.kind];
+    var flags = [];
+    if (d.exhaust) flags.push("EXH");
+    if (d.ethereal) flags.push("ETH");
+    if (d.retain) flags.push("RET");
+    if (d.innate) flags.push("INN");
+    if (d.consume) flags.push("CON");
+    return '<span class="mini" style="color:' + col + '" title="' + d.desc + '"><b>' + d.name + "</b>" + (n > 1 ? "<u>\xD7" + n + "</u>" : "") + "<i>" + KIND_LABEL[d.kind] + (flags.length ? " \xB7 " + flags.join("/") : "") + "</i></span>";
+  }
+  function pileSection(title, list) {
+    var cnt = {}, order = [];
+    list.forEach(function(ci) {
+      if (cnt[ci.id] === void 0) {
+        cnt[ci.id] = 0;
+        order.push(ci.id);
+      }
+      cnt[ci.id]++;
+    });
+    order.sort(function(a, b) {
+      return defById(a).name < defById(b).name ? -1 : 1;
+    });
+    return "<div><h4>" + title + " <span>\xB7 " + list.length + (list.length === 1 ? " CARD" : " CARDS") + '</span></h4><div class="pileRow">' + (order.length ? order.map(function(id) {
+      return miniCard(defById(id), cnt[id]);
+    }).join("") : '<span class="pileEmpty">EMPTY</span>') + "</div></div>";
+  }
+  function openDeckModal() {
+    $("deckList").innerHTML = pileSection("HAND", S.hand) + pileSection("DRAW PILE", S.drawPile) + pileSection("DISCARD PILE", S.discardPile) + pileSection("EXHAUSTED THIS SECTOR", S.exhaustPile) + pileSection("FULL DECK", S.deck);
+    openModal("deckModal");
+    Snd.play("ui");
+  }
+  function renderUnit() {
+    var t = S.selTower;
+    var has = !!(t && S.towers.indexOf(t) >= 0);
+    $("tgtRow").style.display = has ? "grid" : "none";
+    if (!t || !has) {
+      $("unitHead").textContent = "NO UNIT SELECTED";
+      $("unitStats").textContent = "tap near a unit \u2014 nearest one is grabbed \xB7 tap again to release";
+      $("upCost").textContent = "\u2014";
+      $("recVal").textContent = "\u2014";
+      return;
+    }
+    var c = CARDS[t.i], st = stats(t), uc = upCost(t);
+    $("unitHead").textContent = c.name + " \xB7 L" + t.lvl + (S.ranks[c.id] ? " Mk." + (S.ranks[c.id] + 1) : "") + (st.stars ? " \xB7 " + "\u2605".repeat(Math.min(st.stars, 5)) + (st.stars > 5 ? "+" + (st.stars - 5) : "") : "");
+    if (c.id === "foundry") {
+      var o = foundryOut(t);
+      $("unitStats").textContent = "refines " + o.fe.toFixed(2) + "Fe " + o.cu.toFixed(2) + "Cu " + o.si.toFixed(2) + "Si /s \xB7 aura +8% rate";
+    } else if (c.id === "aegis") {
+      $("unitStats").textContent = "slow field " + Math.round(Math.min(50, 30 + 2 * (t.lvl - 1))) + "% \xB7 rng " + Math.round(st.range) + " \xB7 grid " + (c.draw + 0.3 * (t.lvl - 1)).toFixed(1);
+    } else {
+      $("unitStats").textContent = "dps " + (st.dmg * st.rate).toFixed(1) + " \xB7 rng " + Math.round(st.range) + " \xB7 grid " + (c.draw + 0.3 * (t.lvl - 1)).toFixed(1) + " \xB7 tgt " + TGT_LABEL[t.tgt];
+    }
+    var bs = $("tgtRow").children;
+    for (var k = 0; k < bs.length; k++) bs[k].classList.toggle("on", bs[k].dataset.tgt === t.tgt);
+    $("upCost").textContent = uc.fe + "Fe " + uc.cu + "Cu " + uc.si + "Si";
+    $("recVal").textContent = "+" + Math.floor(t.inv.fe * 0.7) + "Fe +" + Math.floor(t.inv.cu * 0.7) + "Cu +" + Math.floor(t.inv.si * 0.7) + "Si";
+  }
+
   // src/towers.ts
   function supplyAt(t) {
     var n = 0;
@@ -1796,7 +2271,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   function stats(t) {
     var c = CARDS[t.i], L = t.lvl - 1, rank = Math.pow(1.05, S.ranks[c.id] || 0);
     var sm = Math.pow(1.05, Math.floor(L / 5));
-    var dmg = c.dmg * Math.pow(1.16, L) * rank * sm * (S.relics.tungsten ? 1.1 : 1);
+    var dmg = c.dmg * Math.pow(1.16, L) * rank * sm * (S.relics.tungsten ? 1.1 : 1) * powerDmgMult();
     var rate = c.rate * Math.pow(1.05, L) * sm * (S.relics.clock ? 1.1 : 1) * supplyAt(t);
     if (c.id === "needle" && S.relics.twin) rate *= 1.2;
     if (S.time < S.ability.surge.until) rate *= 1.5;
@@ -1806,7 +2281,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     return { dmg, rate, range, stars: Math.floor(L / 5) };
   }
   function foundryOut(t) {
-    var m = Math.pow(1.13, t.lvl - 1) * Math.pow(1.05, S.ranks.foundry) * (S.relics.metal ? 1.18 : 1);
+    var m = Math.pow(1.13, t.lvl - 1) * Math.pow(1.05, S.ranks.foundry) * (S.relics.metal ? 1.18 : 1) * powerFoundryMult();
     if (S.event && S.event.id === "rust") m *= 1.4;
     return { fe: 0.34 * m, cu: 0.12 * m, si: 0.05 * m };
   }
@@ -1871,9 +2346,15 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     return true;
   }
   function placeTower(x, y) {
-    var ci = S.selCard;
-    var c = CARDS[ci];
-    if (!canAfford(c.cost)) {
+    var c = selBoard();
+    if (!c || S.selCard == null) {
+      toast("SELECT A CIRCUIT BOARD FIRST");
+      Snd.play("error");
+      return;
+    }
+    var handIdx = S.selCard;
+    var d = defOf(S.hand[handIdx]);
+    if (!canAfford(d.cost)) {
       toast("INSUFFICIENT MATTER");
       Snd.play("error");
       return;
@@ -1888,20 +2369,28 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       Snd.play("error");
       return;
     }
-    spend(c.cost);
+    spend(d.cost);
     var t = {
       x,
       y,
-      i: ci,
+      i: d.tower,
       lvl: 1,
       cool: 0,
       ang: -Math.PI / 2,
       flash: 0,
       tgt: "first",
-      inv: { fe: c.cost.fe, cu: c.cost.cu, si: c.cost.si }
+      inv: { fe: d.cost.fe, cu: d.cost.cu, si: d.cost.si }
     };
     S.towers.push(t);
     S.selTower = t;
+    resolveAfterPlay(handIdx);
+    for (var k = 0; k < S.hand.length; k++) {
+      if (S.hand[k].id === d.id) {
+        S.selCard = k;
+        break;
+      }
+    }
+    toast(d.name + (d.consume ? " \u2014 CONSUMED FROM DECK" : d.exhaust ? " \u2014 EXHAUSTED THIS SECTOR" : " \u2192 DISCARD PILE"));
     burst(x, y, "#8fa0a6", 8);
     Snd.play("place");
     hud(true);
@@ -1937,7 +2426,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
   }
   function updGhost(p) {
     if (!p) return null;
-    if (S.selCard == null) return { x: p.x, y: p.y, sx: null, sy: null };
+    if (!selBoard()) return { x: p.x, y: p.y, sx: null, sy: null };
     var sn = nearestValid(p.x, p.y);
     return { x: p.x, y: p.y, sx: sn ? sn.x : null, sy: sn ? sn.y : null };
   }
@@ -1961,7 +2450,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       return;
     }
     placing = true;
-    if (S.selCard == null && !towerNear(p, 48)) {
+    if (!selBoard() && !towerNear(p, 48)) {
       S.selTower = null;
       hud(true);
     }
@@ -1990,7 +2479,7 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       S.ghost = updGhost(p);
       return;
     }
-    if (wasPlacing && S.selCard != null) {
+    if (wasPlacing && selBoard()) {
       var g = updGhost(p);
       S.ghost = g;
       if (g && g.sx != null) placeTower(g.sx, g.sy);
@@ -2178,13 +2667,30 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     Snd.play("weld");
     hud(true);
   });
+  ["pileDraw", "pileDisc", "pileExh"].forEach(function(id) {
+    $(id).addEventListener("pointerdown", function() {
+      Snd.init();
+      openDeckModal();
+    });
+  });
   addEventListener("keydown", function(ev) {
     Snd.init();
-    if (ev.key >= "1" && ev.key <= "6") {
-      S.selCard = Math.min(CARDS.length - 1, +ev.key - 1);
-      S.selTower = null;
+    if (ev.key >= "1" && ev.key <= "9") {
+      var hi = +ev.key - 1;
+      if (!S.hand[hi]) {
+        Snd.play("error");
+        return;
+      }
+      if (S.selCard === hi && defOf(S.hand[hi]).kind !== "board") {
+        playHandCard(hi);
+      } else {
+        S.selCard = hi;
+        S.selTower = null;
+        Snd.play("ui");
+      }
       hud(true);
-    } else if (ev.code === "Space") {
+    } else if (ev.key === "d" || ev.key === "D") openDeckModal();
+    else if (ev.code === "Space") {
       ev.preventDefault();
       launchWave();
     } else if (ev.key === "m" || ev.key === "M") $("modeBtn").click();
@@ -2272,7 +2778,8 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     ctx.globalAlpha = 1;
     ctx.save();
     if (S.shake > 0) ctx.translate((Math.random() - 0.5) * S.shake, (Math.random() - 0.5) * S.shake);
-    ctx.globalAlpha = S.selCard != null ? 0.55 : 0.16;
+    var ghostBoard = selBoard();
+    ctx.globalAlpha = ghostBoard ? 0.55 : 0.16;
     ctx.strokeStyle = "#8fa0a6";
     ctx.lineWidth = 1;
     for (i = 0; i < S.spots.length; i++) {
@@ -2283,8 +2790,8 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
     drawPath(sec);
     drawCore();
     drawSpawn();
-    if (S.ghost && S.selCard != null && !S.modalOpen) {
-      var c = CARDS[S.selCard], gx = S.ghost.sx != null ? S.ghost.sx : S.ghost.x, gy = S.ghost.sy != null ? S.ghost.sy : S.ghost.y;
+    if (S.ghost && ghostBoard && !S.modalOpen) {
+      var c = ghostBoard, gx = S.ghost.sx != null ? S.ghost.sx : S.ghost.x, gy = S.ghost.sy != null ? S.ghost.sy : S.ghost.y;
       var posOk = S.ghost.sx != null, afford = canAfford(c.cost) && usedGrid() + c.draw <= gridCap();
       var gcol = !posOk ? "#e5484d" : afford ? "#3ec9b0" : "#ffa02f";
       if (posOk && (Math.abs(gx - S.ghost.x) > 3 || Math.abs(gy - S.ghost.y) > 3)) {
@@ -3019,6 +3526,10 @@ kbd{border:1px solid var(--line);padding:0 4px;color:var(--gold);font-size:9px}
       repathEnemies();
     }
     commitSize();
+  }
+  if (!S.deck.length) {
+    initRunDeck();
+    sectorShuffle();
   }
   if (!S.nodes.length) {
     resize();

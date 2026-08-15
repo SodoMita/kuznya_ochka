@@ -73,8 +73,19 @@ function assert(cond, msg) {
   if (!cond) throw new Error('ASSERT FAILED: ' + msg);
 }
 
-/* --- boot --- */
-assert(doc.querySelectorAll('.card').length === 6, '6 blueprint cards rendered');
+/* helper: find a hand card element whose name contains `name` */
+function handCard(name) {
+  const cards = [...doc.querySelectorAll('#cards .card')];
+  return cards.find((c) => c.textContent.indexOf(name) >= 0) || null;
+}
+
+/* --- boot: opening hand dealt from the starter circuit deck --- */
+assert(doc.querySelectorAll('#cards .card').length === 5, '5-card opening hand rendered (got ' + doc.querySelectorAll('#cards .card').length + ')');
+assert(!!handCard('NEEDLE BOARD'), 'innate NEEDLE BOARD in opening hand');
+assert(!!handCard('FOUNDRY BOARD'), 'innate FOUNDRY BOARD in opening hand');
+assert($('vDraw').textContent === '5', 'draw pile holds the other 5 cards (got ' + $('vDraw').textContent + ')');
+assert($('vDisc').textContent === '0', 'discard pile empty at boot');
+assert($('vExh').textContent === '0', 'exhaust pile empty at boot');
 assert($('vFe').textContent === '120', 'initial iron = 120 (got ' + $('vFe').textContent + ')');
 assert($('vCore').textContent === '20', 'initial core = 20');
 assert($('phaseBig').textContent === 'FABRICATION', 'starts in fabrication phase');
@@ -85,10 +96,12 @@ assert($('surgeCd').textContent.indexOf('READY') >= 0, 'surge starts ready');
 tick(30);
 assert(errors.length === 0, 'no errors during idle frames: ' + errors.map(String).join(' | '));
 
-/* --- place a NEEDLE at the canvas center, upgrade, recycle --- */
+/* --- play a NEEDLE BOARD: select the card, tap the field, board discards --- */
+click(handCard('NEEDLE BOARD'));
 pointerAt(400, 300, 'pointerdown');
 pointerAt(400, 300, 'pointerup');
-assert($('unitHead').textContent.indexOf('NEEDLE') >= 0, 'needle placed & selected (got ' + $('unitHead').textContent + ')');
+assert($('unitHead').textContent.indexOf('NEEDLE') >= 0, 'needle printed & selected (got ' + $('unitHead').textContent + ')');
+assert($('vDisc').textContent === '1', 'played board went to the discard pile (got ' + $('vDisc').textContent + ')');
 const gridAfterPlace = $('vW').textContent;
 click($('upBtn'));
 assert($('unitHead').textContent.indexOf('L2') >= 0, 'needle upgraded to L2');
@@ -96,21 +109,29 @@ assert($('vW').textContent !== gridAfterPlace, 'grid usage changed after upgrade
 click($('recBtn'));
 assert($('unitHead').textContent.indexOf('NO UNIT') >= 0, 'recycle deselects unit');
 
-/* --- place an AEGIS (card 6) — slow field shown in unit panel --- */
-window.dispatchEvent(new window.KeyboardEvent('keydown', { key: '6', bubbles: true }));
-pointerAt(400, 300, 'pointerdown');
-pointerAt(400, 300, 'pointerup');
-assert($('unitHead').textContent.indexOf('AEGIS') >= 0, 'aegis placed (got ' + $('unitHead').textContent + ')');
-assert($('unitStats').textContent.indexOf('slow field 30%') >= 0, 'aegis slow field stat shown');
+/* --- play SCRAP INFUSION if drawn: double-tap runs the subroutine --- */
+const scrap = handCard('SCRAP INFUSION');
+if (scrap) {
+  const feBefore0 = parseInt($('vFe').textContent, 10);
+  click(scrap);                       /* select */
+  click(handCard('SCRAP INFUSION')); /* run */
+  assert(parseInt($('vFe').textContent, 10) === feBefore0 + 26, 'scrap infusion granted +26 Fe');
+}
 
-/* --- place a RAIL (card 5) — sniper stats shown --- */
-window.dispatchEvent(new window.KeyboardEvent('keydown', { key: '5', bubbles: true }));
+/* --- deploy a FOUNDRY BOARD too --- */
+click(handCard('FOUNDRY BOARD'));
 pointerAt(600, 150, 'pointerdown');
 pointerAt(600, 150, 'pointerup');
-if ($('unitHead').textContent.indexOf('RAIL') >= 0) {
-  assert($('unitStats').textContent.indexOf('rng 150') >= 0 || $('unitStats').textContent.indexOf('rng 1') >= 0, 'rail long range shown: ' + $('unitStats').textContent);
-}
+assert($('unitHead').textContent.indexOf('FOUNDRY') >= 0, 'foundry printed (got ' + $('unitHead').textContent + ')');
 pointerAt(800, 20, 'pointerup'); // harmless stray click
+
+/* --- circuit ledger modal --- */
+click($('pileDraw'));
+assert($('deckModal').classList.contains('open'), 'circuit ledger opens from pile bar');
+doc.querySelector('[data-close="deckModal"]').dispatchEvent(
+  new window.MouseEvent('pointerdown', { bubbles: true, cancelable: true })
+);
+assert(!$('deckModal').classList.contains('open'), 'circuit ledger closes');
 
 /* --- launch wave 1 --- */
 click($('startBtn'));
@@ -153,5 +174,9 @@ for (let s = 0; s < 90 && !sawFabrication; s++) {
 assert(errors.length === 0, 'no errors while draining wave 1: ' + errors.map(String).join(' | '));
 assert(sawFabrication, 'back to fabrication between waves (got ' + $('phaseBig').textContent + ')');
 
-console.log('SMOKE TEST PASSED ✓ (boot, wave 1, doctrine/pause/speed/modals, wave drain)');
+/* --- new turn: hand redrawn back to 5 cards --- */
+const handAfterTurn = doc.querySelectorAll('#cards .card').length;
+assert(handAfterTurn === 5, 'new turn deals a fresh 5-card hand (got ' + handAfterTurn + ')');
+
+console.log('SMOKE TEST PASSED ✓ (boot, deck piles, board deploy, subroutines, wave 1, doctrine/pause/speed/modals, turn redraw)');
 process.exit(0);

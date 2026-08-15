@@ -3,6 +3,11 @@
 Robot card tower defense ("forge of points"). The whole game ships as a **single static `index.html`** —
 open it in any browser and play. No server, no build step required to play.
 
+You fight with a real **deck of cards**, drawn Slay-the-Spire style: circuit **boards** are consumed
+to print towers, **subroutines** are one-shot skills, **firmware** powers install sector-wide mods and
+exhaust. Each fabrication window is a turn — the hand is discarded (except RETAIN cards) and redrawn;
+the discard pile reshuffles into the draw pile when it runs dry. Salvage caches add new cards to the deck.
+
 ## Source layout
 
 The game logic is written in **TypeScript**, split by concern under `src/`:
@@ -12,7 +17,8 @@ The game logic is written in **TypeScript**, split by concern under `src/`:
 | `main.ts` | boot, resize handling, fixed-60Hz game loop |
 | `types.ts` | shared data structures |
 | `utils.ts` | DOM `$`, PRNG, math, formatting |
-| `data.ts` | cards, relics, enemy archetypes, sector templates, speeds |
+| `data.ts` | tower blueprints, the circuit-deck card pool, relics, enemy archetypes, sector templates, speeds |
+| `deck.ts` | **Slay-the-Spire style card engine**: draw/hand/discard/exhaust piles, keywords (exhaust, ethereal, retain, innate, consume), card play resolution |
 | `state.ts` | central mutable game state `S` |
 | `view.ts` | canvas bindings + viewport bookkeeping |
 | `audio.ts` | Web Audio synth (zero external assets) |

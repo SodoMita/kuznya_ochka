@@ -1,9 +1,12 @@
-/* DOM HUD: resource chips, phase bar, blueprint cards, unit panel, toasts. */
+/* DOM HUD: resource chips, phase bar, the card hand, unit panel, toasts. */
 import { S } from './state';
 import { $, fmt, pad2 } from './utils';
-import { CARDS, GLYPHS, TGT_LABEL, HAZNAMES, MEDALS } from './data';
-import { costStr, sector, canAfford, usedGrid, upCost, gridCap } from './economy';
+import { CARDS, GLYPHS, KIND_LABEL, TGT_LABEL, HAZNAMES, MEDALS } from './data';
+import { sector, canAfford, usedGrid, upCost, gridCap } from './economy';
 import { stats, foundryOut, nextWaveStr } from './towers';
+import { defOf, defById, canPlayDef, playCard, handSize, HAND_CAP } from './deck';
+import type { CardInst, DeckCardDef, Cost } from './types';
+import { openModal } from './modals';
 import { Snd } from './audio';
 
 let toastTimer: number | undefined = undefined;
@@ -83,32 +86,185 @@ export function hud(force?: boolean): void {
   if (sec.mix.cu > sec.mix.fe && sec.mix.cu >= sec.mix.si) dom = 'Cu';
   if (sec.mix.si > sec.mix.fe && sec.mix.si > sec.mix.cu) dom = 'Si';
   $('sectorMix').textContent = 'SALVAGE ' + dom + '-HEAVY · ' + HAZNAMES[sec.haz];
-  if (S.selCard != null && !canAfford(CARDS[S.selCard].cost)) renderCards();
+  /* re-render the hand when any card's playability or cost shortfall flips */
+  var sig = handSignature();
+  if (sig !== handSig) { handSig = sig; renderCards(); }
 }
 
-export function renderCards(): void {
-  var h = '';
-  for (var i = 0; i < CARDS.length; i++) {
-    var c = CARDS[i];
-    h += '<div class="card' + (i === S.selCard ? ' sel' : '') + (canAfford(c.cost) ? '' : ' broke') + '" data-card="' + i + '" style="color:' + c.col + '">' +
-      '<div class="hd">' + GLYPHS[c.id] + '<strong style="color:var(--ink)">' + c.name + '</strong><span class="key">' + (i + 1) + '</span></div>' +
-      '<p>' + c.desc + '</p><div class="cst">' + costStr(c.cost) + '</div>' +
-      (S.ranks[c.id] ? '<span class="rank">Mk.' + (S.ranks[c.id] + 1) + '</span>' : '') + '</div>';
+let handSig = '';
+
+function handSignature(): string {
+  return S.hand.map(function (ci) {
+    var d = defOf(ci);
+    return (canPlayDef(d).ok ? '1' : '0') +
+      (S.res.fe >= d.cost.fe ? '' : 'f') + (S.res.cu >= d.cost.cu ? '' : 'c') + (S.res.si >= d.cost.si ? '' : 's');
+  }).join('|') + '·' + S.hand.length + '·' + S.selCard;
+}
+
+const KIND_COL: Record<string, string> = { board: '#9fb6c9', skill: '#3ec9b0', power: '#ffd23f' };
+
+const TAG_TIP: Record<string, string> = {
+  INNATE: 'guaranteed in the sector\u2019s opening hand',
+  RETAIN: 'not discarded when the turn ends',
+  ETHEREAL: 'exhausts if still unplayed when the turn ends',
+  EXHAUST: 'removed for the rest of the sector after play',
+  CONSUME: 'torn from the deck permanently after play'
+};
+
+function tagStr(d: DeckCardDef): string {
+  var t = '';
+  function tag(cls: string, name: string): string {
+    return '<em class="' + cls + '" title="' + name + ': ' + TAG_TIP[name] + '">' + name + '</em>';
   }
+  if (d.innate) t += tag('tag-inn', 'INNATE');
+  if (d.retain) t += tag('tag-ret', 'RETAIN');
+  if (d.ethereal) t += tag('tag-eth', 'ETHEREAL');
+  if (d.exhaust) t += tag('tag-ex', 'EXHAUST');
+  if (d.consume) t += tag('tag-con', 'CONSUME');
+  return t;
+}
+
+/** Cost footer — resources you can't cover are flagged red. */
+function costHtml(c: Cost): string {
+  if (!c.fe && !c.cu && !c.si) return '<span class="free">NO MATTER COST</span>';
+  var h = '';
+  if (c.fe) h += '<span class="' + (S.res.fe >= c.fe ? 'fe' : 'lack') + '">' + c.fe + 'Fe</span>';
+  if (c.cu) h += '<span class="' + (S.res.cu >= c.cu ? 'cu' : 'lack') + '">' + c.cu + 'Cu</span>';
+  if (c.si) h += '<span class="' + (S.res.si >= c.si ? 'si' : 'lack') + '">' + c.si + 'Si</span>';
+  return h;
+}
+
+/* uids rendered last time — cards not in this set get the deal animation */
+let seenUids: Record<number, boolean> = {};
+
+/** Render the current HAND — real card instances, not a static shop. */
+export function renderCards(): void {
+  handSig = handSignature();
+  var h = '', dealt = 0;
+  for (var i = 0; i < S.hand.length; i++) {
+    var ci = S.hand[i], d = defOf(ci);
+    var col = d.kind === 'board' ? CARDS[d.tower!].col : KIND_COL[d.kind];
+    var chk = canPlayDef(d);
+    var glyph = d.kind === 'board' ? GLYPHS[CARDS[d.tower!].id] : '';
+    var rankTag = d.kind === 'board' && S.ranks[CARDS[d.tower!].id] ? '<span class="rank">Mk.' + (S.ranks[CARDS[d.tower!].id] + 1) + '</span>' : '';
+    var isNew = !seenUids[ci.uid];
+    if (isNew) dealt++;
+    h += '<div class="card' + (i === S.selCard ? ' sel' : '') + (chk.ok ? ' runnable' : ' broke') + (isNew ? ' deal' : '') +
+      '" data-card="' + i + '" style="color:' + col + (isNew ? ';animation-delay:' + ((dealt - 1) * 45) + 'ms' : '') + '"' +
+      (chk.ok ? '' : ' title="' + chk.why + '"') + '>' +
+      '<div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div>' +
+      '<div class="hd">' + glyph + '<strong>' + d.name + '</strong>' + (i < 9 ? '<span class="key">' + (i + 1) + '</span>' : '') + '</div>' +
+      '<p>' + d.desc + '</p>' +
+      '<div class="tags">' + tagStr(d) + '</div>' +
+      '<div class="cst">' + costHtml(d.cost) + '</div>' + rankTag +
+      '<div class="play">' + (d.kind === 'board' ? '▸ TAP FIELD TO PRINT' : '▸ TAP AGAIN TO RUN') + '</div>' +
+      '</div>';
+  }
+  if (!S.hand.length) {
+    h = '<div id="handEmpty">HAND EMPTY — NEW CARDS DEALT NEXT FABRICATION WINDOW</div>';
+  }
+  seenUids = {};
+  S.hand.forEach(function (ci2) { seenUids[ci2.uid] = true; });
   $('cards').innerHTML = h;
-  var nodes = $('cards').children;
+  var nodes = $('cards').querySelectorAll('.card');
   for (i = 0; i < nodes.length; i++) {
     (function (n: HTMLElement) {
       n.addEventListener('pointerdown', function (ev) {
         ev.stopPropagation();
-        S.selCard = +n.dataset.card!;
-        S.selTower = null;
         Snd.init();
-        Snd.play('ui');
-        hud(true);
+        cardTap(+n.dataset.card!);
       });
     })(nodes[i] as HTMLElement);
   }
+  /* keep the selected card in view on narrow screens */
+  var selEl = $('cards').querySelector('.card.sel');
+  if (selEl && (selEl as any).scrollIntoView) {
+    try { (selEl as any).scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { /* jsdom */ }
+  }
+  renderPiles();
+}
+
+/** Tap logic: first tap selects; second tap runs a subroutine/firmware.
+    Boards stay selected — they resolve on battlefield placement. */
+function cardTap(i: number): void {
+  var ci = S.hand[i];
+  if (!ci) return;
+  var d = defOf(ci);
+  if (S.selCard === i) {
+    if (d.kind === 'board') { S.selCard = null; hud(true); return; }  /* toggle off */
+    var res = playHandCard(i);
+    if (!res) return;
+  } else {
+    S.selCard = i;
+    S.selTower = null;
+    Snd.play('ui');
+  }
+  hud(true);
+}
+
+/** Run a non-board card immediately. Returns true if it resolved. */
+export function playHandCard(i: number): boolean {
+  var r = playCard(i);
+  if (!r.ok) { toast(r.msg); Snd.play('error'); return false; }
+  toast(r.msg);
+  return true;
+}
+
+/** Update a pile counter; flash the button briefly when the count changes. */
+function setPile(btnId: string, valId: string, n: number): void {
+  var v = $(valId);
+  if (v.textContent !== n + '') {
+    v.textContent = n + '';
+    var b = $(btnId);
+    b.classList.remove('tick');
+    void (b as HTMLElement).offsetWidth;
+    b.classList.add('tick');
+  }
+}
+
+function renderPiles(): void {
+  setPile('pileDraw', 'vDraw', S.drawPile.length);
+  setPile('pileDisc', 'vDisc', S.discardPile.length);
+  setPile('pileExh', 'vExh', S.exhaustPile.length);
+  $('pileInfo').textContent = 'HAND ' + S.hand.length + '/' + HAND_CAP + ' · DRAW ' + handSize() + '/TURN · DECK ' + S.deck.length;
+}
+
+function miniCard(d: DeckCardDef, n: number): string {
+  var col = d.kind === 'board' ? CARDS[d.tower!].col : KIND_COL[d.kind];
+  var flags: string[] = [];
+  if (d.exhaust) flags.push('EXH');
+  if (d.ethereal) flags.push('ETH');
+  if (d.retain) flags.push('RET');
+  if (d.innate) flags.push('INN');
+  if (d.consume) flags.push('CON');
+  return '<span class="mini" style="color:' + col + '" title="' + d.desc + '"><b>' + d.name + '</b>' +
+    (n > 1 ? '<u>×' + n + '</u>' : '') +
+    '<i>' + KIND_LABEL[d.kind] + (flags.length ? ' · ' + flags.join('/') : '') + '</i></span>';
+}
+
+/** Piles are shown grouped by card with a ×N count — order stays hidden, like StS. */
+function pileSection(title: string, list: CardInst[]): string {
+  var cnt: Record<string, number> = {}, order: string[] = [];
+  list.forEach(function (ci) {
+    if (cnt[ci.id] === undefined) { cnt[ci.id] = 0; order.push(ci.id); }
+    cnt[ci.id]++;
+  });
+  order.sort(function (a, b) { return defById(a).name < defById(b).name ? -1 : 1; });
+  return '<div><h4>' + title + ' <span>· ' + list.length + (list.length === 1 ? ' CARD' : ' CARDS') + '</span></h4><div class="pileRow">' +
+    (order.length ? order.map(function (id) { return miniCard(defById(id), cnt[id]); }).join('') : '<span class="pileEmpty">EMPTY</span>') +
+    '</div></div>';
+}
+
+/** The circuit ledger: full contents of every pile. */
+export function openDeckModal(): void {
+  $('deckList').innerHTML =
+    pileSection('HAND', S.hand) +
+    pileSection('DRAW PILE', S.drawPile) +
+    pileSection('DISCARD PILE', S.discardPile) +
+    pileSection('EXHAUSTED THIS SECTOR', S.exhaustPile) +
+    pileSection('FULL DECK', S.deck);
+  openModal('deckModal');
+  Snd.play('ui');
 }
 
 export function renderUnit(): void {

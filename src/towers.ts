@@ -9,6 +9,7 @@ import { burst } from './fx';
 import { toast, hud } from './hud';
 import { Snd } from './audio';
 import { compFor } from './enemies';
+import { selBoard, defOf, resolveAfterPlay, powerDmgMult, powerFoundryMult } from './deck';
 
 export function supplyAt(t: Tower): number {
   var n = 0;
@@ -21,7 +22,7 @@ export function supplyAt(t: Tower): number {
 export function stats(t: Tower): TowerStats {
   var c = CARDS[t.i], L = t.lvl - 1, rank = Math.pow(1.05, S.ranks[c.id] || 0);
   var sm = Math.pow(1.05, Math.floor(L / 5)); /* calibration stars */
-  var dmg = c.dmg * Math.pow(1.16, L) * rank * sm * (S.relics.tungsten ? 1.1 : 1);
+  var dmg = c.dmg * Math.pow(1.16, L) * rank * sm * (S.relics.tungsten ? 1.1 : 1) * powerDmgMult();
   var rate = c.rate * Math.pow(1.05, L) * sm * (S.relics.clock ? 1.1 : 1) * supplyAt(t);
   if (c.id === 'needle' && S.relics.twin) rate *= 1.2;
   if (S.time < S.ability.surge.until) rate *= 1.5;
@@ -32,7 +33,7 @@ export function stats(t: Tower): TowerStats {
 }
 
 export function foundryOut(t: Tower): Cost {
-  var m = Math.pow(1.13, t.lvl - 1) * Math.pow(1.05, S.ranks.foundry) * (S.relics.metal ? 1.18 : 1);
+  var m = Math.pow(1.13, t.lvl - 1) * Math.pow(1.05, S.ranks.foundry) * (S.relics.metal ? 1.18 : 1) * powerFoundryMult();
   if (S.event && S.event.id === 'rust') m *= 1.4;
   return { fe: .34 * m, cu: .12 * m, si: .05 * m };
 }
@@ -83,19 +84,30 @@ export function canPlace(x: number, y: number): boolean {
   return true;
 }
 
+/** Play the selected circuit-board card from the hand: consumes the card
+    (→ discard/exhaust pile) and prints the unit on the field. */
 export function placeTower(x: number, y: number): void {
-  var ci = S.selCard!;
-  var c = CARDS[ci];
-  if (!canAfford(c.cost)) { toast('INSUFFICIENT MATTER'); Snd.play('error'); return; }
+  var c = selBoard();
+  if (!c || S.selCard == null) { toast('SELECT A CIRCUIT BOARD FIRST'); Snd.play('error'); return; }
+  var handIdx = S.selCard;
+  var d = defOf(S.hand[handIdx]);
+  if (!canAfford(d.cost)) { toast('INSUFFICIENT MATTER'); Snd.play('error'); return; }
   if (usedGrid() + c.draw > gridCap()) { toast('GRID CAPACITY EXCEEDED'); Snd.play('error'); return; }
   if (!canPlace(x, y)) { toast('FOUNDATION BLOCKED'); Snd.play('error'); return; }
-  spend(c.cost);
+  spend(d.cost);
   var t: Tower = {
-    x: x, y: y, i: ci, lvl: 1, cool: 0, ang: -Math.PI / 2, flash: 0,
-    tgt: 'first', inv: { fe: c.cost.fe, cu: c.cost.cu, si: c.cost.si }
+    x: x, y: y, i: d.tower!, lvl: 1, cool: 0, ang: -Math.PI / 2, flash: 0,
+    tgt: 'first', inv: { fe: d.cost.fe, cu: d.cost.cu, si: d.cost.si }
   };
   S.towers.push(t);
   S.selTower = t;
+  resolveAfterPlay(handIdx);
+  /* QoL: chain-deploy — auto-select another copy of the same board
+     (the freshly printed unit stays selected in the unit panel) */
+  for (var k = 0; k < S.hand.length; k++) {
+    if (S.hand[k].id === d.id) { S.selCard = k; break; }
+  }
+  toast(d.name + (d.consume ? ' — CONSUMED FROM DECK' : d.exhaust ? ' — EXHAUSTED THIS SECTOR' : ' → DISCARD PILE'));
   burst(x, y, '#8fa0a6', 8);
   Snd.play('place');
   hud(true);

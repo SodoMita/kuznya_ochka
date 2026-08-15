@@ -3,6 +3,7 @@ import { S } from './state';
 import { SECTORS } from './data';
 import { pad2 } from './utils';
 import { genSector } from './sectors';
+import { sectorShuffle } from './deck';
 import { banner, hud } from './hud';
 import { Snd } from './audio';
 
@@ -26,9 +27,10 @@ export function resetSector(idx: number): void {
   S.spawnQ = [];
   S.over = false;
   S.selTower = null;
-  S.selCard = 0;
+  S.selCard = null;
   S.event = null;
   S.ability = { surge: { cd: 0, until: 0 }, weld: { cd: 0 } };
+  sectorShuffle();          /* fresh draw pile + opening hand for the sector */
   genSector();
   banner('SECTOR ' + pad2(idx + 1), SECTORS[idx % SECTORS.length].name + ' — DEPLOYED');
   Snd.play('wave');

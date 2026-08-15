@@ -18,6 +18,31 @@ export interface Card {
   col: string;
 }
 
+export type DeckCardKind = 'board' | 'skill' | 'power';
+
+/** A Slay-the-Spire style card definition. Boards deploy towers, skills fire
+    one-shot effects, powers install sector-wide modifiers. */
+export interface DeckCardDef {
+  id: string;
+  name: string;
+  kind: DeckCardKind;
+  desc: string;
+  cost: Cost;           // matter cost to play (boards: the build cost)
+  rar: number;          // 0 common · 1 uncommon · 2 rare
+  tower?: number;       // boards only: index into CARDS
+  exhaust?: boolean;    // removed for the rest of the sector after play
+  ethereal?: boolean;   // exhausts if still in hand when the turn ends
+  innate?: boolean;     // guaranteed in the opening hand
+  retain?: boolean;     // not discarded when the turn ends
+  consume?: boolean;    // removed from the deck permanently after play
+}
+
+/** A physical copy of a card in one of the piles. */
+export interface CardInst {
+  uid: number;
+  id: string;
+}
+
 export interface Relic {
   id: string;
   name: string;
@@ -182,7 +207,7 @@ export interface WorldNode {
 }
 
 export interface DraftOffer {
-  kind: 'rank' | 'relic';
+  kind: 'rank' | 'relic' | 'card';
   id: string;
   rar: number;
 }

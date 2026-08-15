@@ -7,6 +7,7 @@ import { burst, float } from './fx';
 import { banner, hud, award } from './hud';
 import { Snd } from './audio';
 import { openDraft } from './draft';
+import { startTurn } from './deck';
 import { showEnd } from './end';
 import { shortestRoute, routePolyline, pointOnPoly } from './sectors';
 import { W, H } from './view';
@@ -125,6 +126,9 @@ export function endWave(): void {
   S.event = null;
   S.gridMax += 2;
   S.stat.waves++;
+  /* new turn: ethereal cards burn, non-retain hand discards, redraw */
+  var eth = startTurn();
+  if (eth) float(S.nodes[S.coreIdx].px, S.nodes[S.coreIdx].py - 26, eth + ' ETHEREAL CARD' + (eth > 1 ? 'S' : '') + ' EXHAUSTED', '#b18cd9');
   if (S.relics.repair) S.core = Math.min(S.coreMax, S.core + 1);
   if (S.wave % 12 === 0 && !S.cleared[S.sector]) {
     S.cleared[S.sector] = true;
