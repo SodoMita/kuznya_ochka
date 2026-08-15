@@ -67,6 +67,7 @@ npm run rendercheck # render harness: drives many game states, asserts no NaN co
 
 ## Feature set
 
+<<<<<<< HEAD
 A 43-card pool spanning boards, subroutines, firmware and corruptions, with discard/recycle,
 exhaust recovery, permanent cloning, curse trade-offs and multiple deck-cleaning strategies.
 Six blueprints (NEEDLE · ARC COIL · HARVESTER · FOUNDRY · RAIL · AEGIS), nine hostile
@@ -75,14 +76,43 @@ relics, two field abilities (**SURGE** +50% rate for 8s, **WELD** +3 core), weat
 (ION STORM / GRAV SHEAR / RUST WIND), scrap-streak salvage chains, veteran elites, calibration
 stars every 5 levels, and ten commendation medals. Every 5th wave is a RUSH, every 12th an
 ASSAULT led by a DREAD.
+=======
+Seven blueprints (NEEDLE · ARC COIL · HARVESTER · FOUNDRY · RAIL · AEGIS · MORTAR), ten hostile
+classes (scrap · plated · swarm · regen · gilded · phase · reaver · titan · carrier · dread),
+twenty-one relics, two field abilities (**SURGE** +50% rate for 8s, **WELD** +3 core), weather
+events (ION STORM / GRAV SHEAR / RUST WIND / SOLAR FLARE / HARD FROST), scrap-streak salvage
+chains, veteran elites, calibration stars every 5 levels, and eleven commendation medals. Every
+5th wave is a RUSH, every 12th an ASSAULT led by a DREAD.
+
+**Upgrade modules** are a fourth card kind: **MODULE** cards bolt a permanent improvement onto
+one deployed unit (one per unit per kind, exhausted after use). Eleven modules — FLAMETHROWER
+HEAD (Needle ignites hosts), HOLLOW-POINT AMMO (Needle armor punch), TESLA FRAME (Arc chains
+harder), HYDRAULIC GRASP (Harvester captures faster), SMELTER BELLY (Foundry output + aura
+damage), RAILGUN COIL (Rail ignores armor), FRAG SHELLS (Mortar splash), CRYO GRID (Aegis slows
+harder), STATIC GRID (Aegis zaps), RANGEFINDER SCOPE (+35% range) and OVERVOLT CAPACITOR (+20%
+rate). Install by tapping a unit with the module selected, or via the INSTALL button in the
+unit panel.
+
+**Targeted skills** (RECALIBRATE: selected unit +1 level, free) resolve the same way —
+select the card, then tap the unit. **Card management:** with any card selected, the
+**✕ DISCARD** and **♻ RECYCLE** buttons in the pile bar toss the card into the discard
+pile (ethereal cards burn instead) or tear it out of the deck permanently for a 50%
+matter refund.
+
+**MORTAR** is a seventh blueprint: lobbed shells that deal 60% area splash within 34px (halved
+armor), making it the swarm answer. **REAVERS** are a tenth hostile class — heavy 50%-armor
+linebreakers that roll from wave 6 and dominate the new REAVER SLAG sector. A fifth map
+archetype (**roundabout switchbacks**) joins the generator's grid/radial/river/web set.
+>>>>>>> origin/arena/01a0045e-kuznya-ochka
 
 ## Procedural level generation
 
 Each sector is a small **route network** (a connected graph), not a single path:
 
-- **Four archetypes** chosen by seed — jittered **grids** (cell loops, diagonal X-crossings),
+- **Five archetypes** chosen by seed — jittered **grids** (cell loops, diagonal X-crossings),
   **radial webs** (ring + spokes + chords across the ring), **winding rivers** (a wavy spine
-  with cut-back chords and a side gate), and **organic webs** (nearest-neighbor + random chords).
+  with cut-back chords and a side gate), **organic webs** (nearest-neighbor + random chords),
+  and **roundabout switchbacks** (a chain of tight multi-loop cells with off-ramp links).
 - **1–3 spawn gates** per sector; every wave's enemies round-robin across the gates, so attacks
   converge on the CORE from several directions (swarms sometimes take jittered near-shortest
   routes and wander the scenic loops).

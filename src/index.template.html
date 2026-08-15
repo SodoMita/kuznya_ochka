@@ -150,6 +150,11 @@ button:focus-visible{outline:1px solid var(--teal);outline-offset:1px}
 #pileBar button b{color:var(--ink);font-size:9.5px;font-variant-numeric:tabular-nums;margin-left:2px}
 #pileDraw{border-left-color:var(--teal)}#pileDisc{border-left-color:var(--copper)}#pileExh{border-left-color:var(--red)}
 #pileDraw b{color:var(--teal)}#pileDisc b{color:var(--copper)}#pileExh b{color:var(--red)}
+#discardCard,#recycleCard{border-left-color:var(--steel);opacity:.35;filter:grayscale(.6);cursor:default}
+#discardCard.on,#recycleCard.on{opacity:1;filter:none;cursor:pointer;border-left-color:var(--teal);color:var(--ink)}
+#discardCard.on:hover{border-color:var(--teal);color:var(--ink)}
+#recycleCard.on{border-left-color:var(--red)}
+#recycleCard.on:hover{border-color:var(--red);color:var(--ink)}
 #pileBar button.tick{animation:pileTick .45s var(--ease)}
 @keyframes pileTick{0%{transform:translateY(-3px) scale(1.06);border-color:var(--gold);color:var(--ink);filter:brightness(1.7)}}
 #pileInfo{margin-left:auto;font-size:7px;letter-spacing:1px;color:var(--dim2);white-space:nowrap;overflow:hidden}
@@ -247,6 +252,26 @@ button:focus-visible{outline:1px solid var(--teal);outline-offset:1px}
 #unitStats{font-size:8px;color:var(--dim);letter-spacing:.4px;line-height:1.45}
 #upBtn{border-color:#7a5b22;background:linear-gradient(#3f3316,#2b2310);color:var(--gold)}
 #upBtn:hover{border-color:var(--gold);background:linear-gradient(#4a3c1a,#332a13);box-shadow:var(--bevel),0 0 10px #ffd23f2e}
+/* --- merged: selectors unique to the gameplay branch --- */
+#deckList{display:flex;flex-direction:column;gap:10px}
+#deckList h4{font-family:var(--disp);font-size:12px;letter-spacing:1px;margin:0;font-weight:400;color:var(--teal)}
+#deckList h4 span{color:var(--dim);font-family:var(--mono);font-size:8px;letter-spacing:1px}
+.pileRow{display:flex;flex-wrap:wrap;gap:4px}
+.mini{border:1px solid var(--line2);border-left:3px solid currentColor;background:#151d21;padding:3px 6px;font-size:8px;letter-spacing:.4px;cursor:help}
+.mini b{color:var(--ink);font-weight:400;font-family:var(--disp);letter-spacing:.5px}
+.mini u{text-decoration:none;color:var(--gold);font-weight:700;margin-left:4px}
+.mini i{font-style:normal;color:var(--dim);font-size:7px;margin-left:4px}
+.pileEmpty{font-size:8px;color:var(--dim);letter-spacing:1px;border:1px dashed var(--line2);padding:3px 8px}
+#unitMods{font-size:7px;letter-spacing:.6px;color:var(--dim);line-height:1.5;min-height:0}
+#unitMods b{color:var(--gold);margin-right:3px}
+#unitMods em{font-style:normal;white-space:nowrap}
+#modBtn{border-color:#7a5b22;background:linear-gradient(#2c2a14,#232014);color:var(--gold);font-family:var(--disp);font-size:11px;letter-spacing:1px}
+#modBtn small{display:block;font-size:7px;color:#b39a55;margin-top:2px;letter-spacing:.3px;font-family:var(--mono)}
+#modBtn.on{border-color:var(--gold);color:var(--gold)}
+#modBtn.broke{opacity:.55;filter:grayscale(.6);border-color:var(--line)}
+#recalBtn{border-color:#12312c;background:linear-gradient(#122720,#0e1f1a);color:var(--teal);font-family:var(--disp);font-size:11px;letter-spacing:1px}
+#recalBtn small{display:block;font-size:7px;color:#3f7a6e;margin-top:2px;letter-spacing:.3px;font-family:var(--mono)}
+#recalBtn:hover{border-color:var(--teal)}
 #upBtn small{display:block;font-size:7px;color:#b39a55;margin-top:2px;letter-spacing:.3px}
 #tgtRow{display:none;grid-template-columns:repeat(6,1fr);gap:3px}
 #tgtRow button{border:1px solid var(--line2);border-radius:2px;background:#141b1f;color:var(--dim2);font-size:7px;letter-spacing:.5px;
@@ -378,7 +403,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     <div id="stInfo"><b id="sectorName">SECTOR 01 · RUST BASIN</b><span id="sectorMix">SALVAGE Fe-heavy</span></div>
     <div id="banner"></div>
     <div id="toast"></div>
-    <div id="hint">SELECT A CARD [1-9] · BOARDS: TAP FIELD TO PRINT — SKILLS: TAP CARD AGAIN TO RUN · [D] DECK · [SPACE] LAUNCH</div>
+    <div id="hint">SELECT A CARD [1-9] · BOARDS: TAP FIELD · MODULES/RECALIBRATE: TAP A UNIT · SKILLS: TAP AGAIN · [D] DECK · ✕/♻ TOSS A SELECTED CARD · [SPACE] LAUNCH</div>
     <div id="abils">
       <button id="abilSurge" title="All units +50% fire rate for 8s — costs 40 Fe">SURGE<small id="surgeCd">READY · 40Fe</small></button>
       <button id="abilWeld" title="Restore 3 core integrity — costs 30 Fe 15 Cu">WELD<small id="weldCd">READY · 30Fe 15Cu</small></button>
@@ -404,6 +429,8 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         <button id="pileDraw" title="Draw pile (D)">DRAW <b id="vDraw">0</b></button>
         <button id="pileDisc" title="Discard pile (D)">DISCARD <b id="vDisc">0</b></button>
         <button id="pileExh" title="Exhausted this sector (D)">EXHAUST <b id="vExh">0</b></button>
+        <button id="discardCard" title="Discard the selected card into the discard pile">✕ DISCARD</button>
+        <button id="recycleCard" title="Permanently remove the selected card from your deck for 50% matter">♻ RECYCLE</button>
         <span id="pileInfo">HAND 0/10 · DECK 10</span>
       </div>
     </div>
@@ -411,6 +438,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       <div id="unitBox">
         <div id="unitHead">NO UNIT SELECTED</div>
         <div id="unitStats">tap near a unit — nearest one is grabbed</div>
+        <div id="unitMods"></div>
         <div id="tgtRow">
           <button data-tgt="first" title="furthest along route">1ST</button>
           <button data-tgt="last" title="closest to your gate">LST</button>
@@ -419,6 +447,8 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
           <button data-tgt="near" title="nearest unit">NEAR</button>
           <button data-tgt="far" title="farthest unit">FAR</button>
         </div>
+        <button id="modBtn" class="sq" style="display:none"><span>INSTALL MODULE</span><small>—</small></button>
+        <button id="recalBtn" class="sq" style="display:none"><span>RECALIBRATE</span><small>—</small></button>
         <div class="row2">
           <button id="upBtn" class="sq">UPGRADE<small id="upCost">—</small></button>
           <button id="recBtn" class="sq warn">RECYCLE<small id="recVal" style="display:block;font-size:7px;color:#8f9aa0;margin-top:2px">—</small></button>
@@ -458,21 +488,25 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       <h2>FIELD MANUAL</h2>
       <div class="sub">ECONOMY · DOCTRINE · BALANCE LEDGER</div>
       <h3 class="sec">OBJECTIVE</h3>
-      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, nine hostile classes, eighteen relics, two field abilities. Survive wave 12 to clear a sector and open the world route.</p>
+      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, seven blueprints, ten hostile classes, twenty-one relics, eleven modules, two field abilities. Survive wave 12 to clear a sector and open the world route.</p>
       <h3 class="sec">THE CIRCUIT DECK</h3>
       <p>You fight with a <b style="color:var(--teal)">deck of cards</b>, drawn Slay-the-Spire style. Your run starts with 10 cards; salvage caches add more. Each fabrication window is a <b>turn</b>: your old hand is discarded and you draw 5 (Autoloader: +1). Playing a card costs matter, not energy — your resources are the mana pool.</p>
       <p><b style="color:var(--steel)">CIRCUIT BOARDS</b> are the only way to build: select one and tap the field to print its unit — the board is consumed into the discard pile and cycles back on reshuffle. <b style="color:var(--teal)">SUBROUTINES</b> are one-shot skills, including hand-control circuits that discard weak cards or recycle cards from discard. <b style="color:var(--gold)">FIRMWARE</b> installs a sector-wide modifier and always exhausts. <b style="color:#b18cd9">CORRUPTIONS</b> are unplayable curse cards: risky black-box technology adds them permanently, while CLEAN ROOM can purge them.</p>
+
+      <p><b>Targeted cards</b> (RECALIBRATE) resolve on a unit you <b>tap after</b> selecting the card — pick the card first, then the unit. With any card selected, the <b style="color:var(--teal)">✕ DISCARD</b> and <b style="color:var(--red)">♻ RECYCLE</b> buttons in the pile bar let you toss it into the discard pile (ethereal cards burn instead) or tear it out of your deck permanently for a 50% matter refund.</p>
       <p>Keywords: <b style="color:var(--red)">EXHAUST</b> — removed for the rest of the sector after play · <b style="color:#b18cd9">ETHEREAL</b> — exhausts if still unplayed when the turn ends (hand redraw) · <b style="color:var(--teal)">RETAIN</b> — not discarded at turn end · <b style="color:var(--steel)">INNATE</b> — guaranteed in the sector's opening hand · <b style="color:var(--gold)">CONSUME</b> — torn from the deck permanently after one use. When the draw pile empties, the discard pile reshuffles into it. Deploying to a new sector restores exhausted cards and deals a fresh opening hand. Press <kbd>D</kbd> or tap the pile counters to audit every pile.</p>
       <h3 class="sec">SALVAGE DOCTRINES [M]</h3>
       <p><b style="color:var(--copper)">LOOT</b> — Harvesters fire normally; every wreck drops base salvage.<br>
       <b style="color:var(--teal)">CAPTURE</b> — Harvesters lock a tractor beam on units inside the <b style="color:var(--teal)">teal 30% zone</b> shown on every hull bar. The beam channels just 0.85s, slows the victim 55%, and rasps at 35% of Harvester DPS. While a target is beamed, <b style="color:var(--teal)">allied units hold fire on it</b> whenever another target is in range, and the beam tolerates integrity drift up to 40%. Completed captures yield <b style="color:var(--teal)">×2.5 salvage, +0.4 grid capacity</b> and bonus Silicon from Titans; escapes or forced kills fail the capture.</p>
+      <h3 class="sec">UNIT MODULES</h3>
+      <p><b style="color:#c78bff">MODULE</b> cards bolt a permanent upgrade onto <b>one deployed unit</b>: select the card, then tap a compatible unit on the field (or pick the unit and press <b style="color:var(--gold)">INSTALL</b> in the unit panel). One module of a kind per unit; modules exhaust after use, so each card copy installs once per sector. Examples: <b style="color:#ff8a3d">FLAMETHROWER HEAD</b> makes Needle rounds ignite hosts (40% of each shot burns over 2.5s) · <b style="color:#8fd8ff">TESLA FRAME</b> lets arcs chain two extra full-strength jumps · <b style="color:#e0854e">SMELTER BELLY</b> boosts a Foundry's output and makes its aura grant damage · <b style="color:#ffd23f">RAILGUN COIL</b> makes Rail ignore armor entirely · <b style="color:#7fd8c8">CRYO GRID</b> deepens the Aegis slow field · <b style="color:#3ec9b0">HYDRAULIC GRASP</b> speeds up Harvester captures · <b style="color:#c9a6e0">HOLLOW-POINT AMMO</b> lets Needles punch armor · <b style="color:#c9a6e0">FRAG SHELLS</b> widens Mortar splash · <b style="color:#8fd8ff">STATIC GRID</b> makes the Aegis field zap hosts · <b style="color:#9fb6c9">RANGEFINDER SCOPE</b> / <b style="color:#ffd23f">OVERVOLT CAPACITOR</b> stretch range and fire rate on any gun turret.</p>
       <h3 class="sec">FIRE DOCTRINES [T]</h3>
       <p>Every combat unit carries its own targeting order: <b>1ST</b> furthest along the route · <b>LST</b> closest to your gate · <b>MAX</b> strongest hull · <b>MIN</b> weakest hull · <b>NEAR</b> / <b>FAR</b> by distance from the unit. The active doctrine is badged above each unit — select one and use the chips in the unit panel or <kbd>T</kbd> to cycle. <kbd>E</kbd> cycles selection through deployed units, right-click cancels a placement.</p>
       <h3 class="sec">THREAT INDEX</h3>
-      <p><b style="color:#c9714a">SCRAPLET</b> fodder · <b style="color:#8d9aa5">PLATED</b> 25% armor, leaks 2 · <b style="color:#d8a24a">SWARM</b> fast, fragile, many · <b style="color:#7ac98a">REGEN</b> rebuilds 1.2% hull/s — fight the capture zone · <b style="color:#ffd23f">GILDED</b> fast loot-piñata worth ×3, capture priority · <b style="color:#7fa8d9">PHASE</b> blinks +36px every 2.5s, telegraphs before jumping · <b style="color:#e5484d">TITAN</b> every 8th wave, armored, leaks 5, bonus Silicon on capture. Every 5th wave is a RUSH (double spawn rate), every 12th an ASSAULT.</p>
+      <p><b style="color:#c9714a">SCRAPLET</b> fodder · <b style="color:#8d9aa5">PLATED</b> 25% armor, leaks 2 · <b style="color:#d8a24a">SWARM</b> fast, fragile, many · <b style="color:#7ac98a">REGEN</b> rebuilds 1.2% hull/s — fight the capture zone · <b style="color:#ffd23f">GILDED</b> fast loot-piñata worth ×3, capture priority · <b style="color:#7fa8d9">PHASE</b> blinks +36px every 2.5s, telegraphs before jumping · <b style="color:#b8e986">REAVER</b> heavy 50%-armor linebreaker, drops rich salvage · <b style="color:#e5484d">TITAN</b> every 8th wave, armored, leaks 5, bonus Silicon on capture. Every 5th wave is a RUSH (double spawn rate), every 12th an ASSAULT.</p>
       <p><b style="color:#a58a6a">CARRIER</b> leaks 3 and splits into three swarmlets when destroyed (capture it intact to deny the split) · <b style="color:#8a2a30">DREAD</b> leads every 12th wave — armored, regenerating, leaking 6. Any spawn can roll <b style="color:#ffd23f">VETERAN</b>: +60% hull, +70% bounty, gold frame.</p>
       <h3 class="sec">FIELD ABILITIES &amp; WEATHER</h3>
-      <p><b style="color:var(--gold)">SURGE</b> (40 Fe, 45s recharge): every unit fires 50% faster for 8s — golden overdrive frames show who's boosted. <b style="color:var(--teal)">WELD</b> (30 Fe 15 Cu, 60s): +3 core integrity. Waves can roll weather: <b>ION STORM</b> +40% arc damage · <b>GRAV SHEAR</b> hostiles −15% speed · <b>RUST WIND</b> foundries +40%. Units calibrate every 5 levels (★), gaining +5% damage and rate per star.</p>
+      <p><b style="color:var(--gold)">SURGE</b> (40 Fe, 45s recharge): every unit fires 50% faster for 8s — golden overdrive frames show who's boosted. <b style="color:var(--teal)">WELD</b> (30 Fe 15 Cu, 60s): +3 core integrity. Waves can roll weather: <b>ION STORM</b> +40% arc damage · <b>GRAV SHEAR</b> hostiles −15% speed · <b>RUST WIND</b> foundries +40% · <b>SOLAR FLARE</b> all units +15% damage · <b>HARD FROST</b> hostiles −10% speed (frost frames). Units calibrate every 5 levels (★), gaining +5% damage and rate per star.</p>
       <h3 class="sec">BALANCE LEDGER</h3>
       <table class="bal">
         <tr><td>Wave HP</td><td>(34+11w) × 1.058^(w−1) — compounds forever</td></tr>
@@ -482,13 +516,15 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         <tr><td>Foundry</td><td>0.34 Fe / 0.12 Cu / 0.05 Si per s × 1.13^L · boosts fire rate of units within 92px (+8% each, max +24%)</td></tr>
         <tr><td>Early launch</td><td>+0.8 Fe per skipped fabrication second — aggression is paid, turtling is not</td></tr>
         <tr><td>Rail / Aegis</td><td>Rail: 150-range sniper, ignores 80% armor, Si-hungry. Aegis: 30% slow field, +2%/level (cap 50%), stacks with beams by taking the max</td></tr>
+        <tr><td>Mortar</td><td>lobbed shells, area splash: 60% of shell damage to everything within 34px, halves armor — the swarm answer</td></tr>
+        <tr><td>Modules</td><td>one module per unit per kind · install cost ≈ blueprint cost · exhausts each sector — a targeted spike, never an infinite stack</td></tr>
         <tr><td>Scrap streak</td><td>kills within 2.2s chain: +1% salvage per link, cap +25% (Tithe: +40%) — density pays</td></tr>
         <tr><td>Abilities</td><td>Surge/Weld are matter-sink pressure valves with hard recharge timers — no spam loop possible</td></tr>
         <tr><td>Elites</td><td>veteran rolls scale 3%→25%: +60% hull vs +70% bounty keeps them net-positive but never farmable</td></tr>
         <tr><td>Simulation</td><td>fixed 60Hz ticks, identical at 1× and 100×, runs live between waves</td></tr>
       </table>
       <h3 class="sec">CONTROLS</h3>
-      <p><kbd>1-9</kbd> select hand card (press again to run a subroutine) · <kbd>D</kbd> circuit ledger · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect · with a board selected, drag &amp; release on the field to print — invalid spots snap to the nearest foundation</p>
+      <p><kbd>1-9</kbd> select hand card (press again to run a subroutine) · <kbd>D</kbd> circuit ledger · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect · with a board selected, drag &amp; release on the field to print — invalid spots snap to the nearest foundation. Select a card, then use ✕ DISCARD / ♻ RECYCLE to thin your hand or deck.</p>
     </div>
   </div>
   <div class="modal" id="endModal">

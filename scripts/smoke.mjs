@@ -83,7 +83,8 @@ function handCard(name) {
 assert(doc.querySelectorAll('#cards .card').length === 5, '5-card opening hand rendered (got ' + doc.querySelectorAll('#cards .card').length + ')');
 assert(!!handCard('NEEDLE BOARD'), 'innate NEEDLE BOARD in opening hand');
 assert(!!handCard('FOUNDRY BOARD'), 'innate FOUNDRY BOARD in opening hand');
-assert($('vDraw').textContent === '5', 'draw pile holds the other 5 cards (got ' + $('vDraw').textContent + ')');
+assert(!!handCard('FLAMETHROWER HEAD'), 'innate FLAMETHROWER HEAD module in opening hand');
+assert($('vDraw').textContent === '6', 'draw pile holds the other 6 cards (got ' + $('vDraw').textContent + ')');
 assert($('vDisc').textContent === '0', 'discard pile empty at boot');
 assert($('vExh').textContent === '0', 'exhaust pile empty at boot');
 assert($('vFe').textContent === '120', 'initial iron = 120 (got ' + $('vFe').textContent + ')');
@@ -106,8 +107,41 @@ const gridAfterPlace = $('vW').textContent;
 click($('upBtn'));
 assert($('unitHead').textContent.indexOf('L2') >= 0, 'needle upgraded to L2');
 assert($('vW').textContent !== gridAfterPlace, 'grid usage changed after upgrade');
+
+/* --- install the FLAMETHROWER HEAD module onto the selected needle --- */
+const flame = handCard('FLAMETHROWER HEAD');
+assert(!!flame, 'flamethrower module card in hand');
+const feBeforeMod = parseInt($('vFe').textContent, 10);
+click(flame);                        /* select the module card (unit stays selected) */
+assert($('modBtn').style.display !== 'none', 'INSTALL button appears for the selected unit');
+assert($('unitMods').textContent === '', 'unit has no modules yet');
+click($('modBtn'));                  /* bolt the module on */
+assert($('unitMods').textContent.indexOf('FLAMETHROWER HEAD') >= 0, 'flamethrower installed (got ' + $('unitMods').textContent + ')');
+assert(parseInt($('vFe').textContent, 10) === feBeforeMod - 14, 'module cost 14 Fe deducted (got ' + $('vFe').textContent + ')');
+assert($('vExh').textContent === '1', 'module card exhausted after install (got ' + $('vExh').textContent + ')');
 click($('recBtn'));
 assert($('unitHead').textContent.indexOf('NO UNIT') >= 0, 'recycle deselects unit');
+
+/* --- card management: DISCARD / RECYCLE a selected hand card --- */
+const info0 = $('pileInfo').textContent;
+const deckBefore = parseInt((info0.match(/DECK (\d+)/) || [,'0'])[1], 10);
+const nb = handCard('NEEDLE BOARD');
+assert(!!nb, 'a NEEDLE BOARD remains in hand to manage');
+click(nb);
+assert($('discardCard').classList.contains('on'), 'DISCARD button arms when a card is selected');
+assert($('recycleCard').classList.contains('on'), 'RECYCLE button arms when a card is selected');
+const discBefore = parseInt($('vDisc').textContent, 10);
+click($('discardCard'));
+assert(parseInt($('vDisc').textContent, 10) === discBefore + 1, 'discard moved the selected card to the discard pile');
+const nb2 = handCard('NEEDLE BOARD');
+assert(!!nb2, 'another NEEDLE BOARD remains to recycle');
+click(nb2);
+const handBefore2 = doc.querySelectorAll('#cards .card').length;
+click($('recycleCard'));
+assert(doc.querySelectorAll('#cards .card').length === handBefore2 - 1, 'recycle removed the selected card from the hand');
+const info1 = $('pileInfo').textContent;
+const deckAfter = parseInt((info1.match(/DECK (\d+)/) || [,'0'])[1], 10);
+assert(deckAfter === deckBefore - 1, 'recycle permanently removed the card from the deck (got ' + deckAfter + ')');
 
 /* --- play SCRAP INFUSION if drawn: double-tap runs the subroutine --- */
 const scrap = handCard('SCRAP INFUSION');
@@ -160,6 +194,9 @@ click($('spdUp'));
 assert($('spdVal').textContent === '2×', 'speed bumped to 2×');
 click($('helpBtn'));
 assert($('helpModal').classList.contains('open'), 'help modal opens');
+assert($('helpModal').textContent.indexOf('Mortar') >= 0, 'help manual documents the MORTAR blueprint');
+assert($('helpModal').textContent.indexOf('REAVER') >= 0, 'help manual documents the REAVER class');
+assert($('helpModal').textContent.indexOf('SOLAR FLARE') >= 0, 'help manual documents new weather events');
 doc.querySelector('[data-close="helpModal"]').dispatchEvent(
   new window.MouseEvent('pointerdown', { bubbles: true, cancelable: true })
 );
@@ -178,5 +215,5 @@ assert(sawFabrication, 'back to fabrication between waves (got ' + $('phaseBig')
 const handAfterTurn = doc.querySelectorAll('#cards .card').length;
 assert(handAfterTurn === 5, 'new turn deals a fresh 5-card hand (got ' + handAfterTurn + ')');
 
-console.log('SMOKE TEST PASSED ✓ (boot, deck piles, board deploy, subroutines, wave 1, doctrine/pause/speed/modals, turn redraw)');
+console.log('SMOKE TEST PASSED ✓ (boot, deck piles, board deploy, module install, card discard/recycle, subroutines, wave 1, doctrine/pause/speed/modals, turn redraw)');
 process.exit(0);

@@ -7,8 +7,8 @@
    guaranteed in the sector's opening hand · CONSUME = torn from the deck
    permanently. A "turn" is one full fabrication-window + wave cycle. */
 import { S } from './state';
-import { DECK_CARDS, CARDS, STARTER_DECK } from './data';
-import type { CardInst, DeckCardDef, Card } from './types';
+import { DECK_CARDS, CARDS, STARTER_DECK, MODULES } from './data';
+import type { CardInst, DeckCardDef, Card, ModuleDef, Enemy, Cost, Tower } from './types';
 import { canAfford, spend, gainRes, usedGrid, gridCap } from './economy';
 import { burst, float } from './fx';
 import { Snd } from './audio';
@@ -21,12 +21,20 @@ let uidC = 1;
 const DEFS: Record<string, DeckCardDef> = {};
 DECK_CARDS.forEach(function (d) { DEFS[d.id] = d; });
 
+const MODDEFS: Record<string, ModuleDef> = {};
+MODULES.forEach(function (m) { MODDEFS[m.id] = m; });
+
 export function defOf(ci: CardInst): DeckCardDef {
   return DEFS[ci.id];
 }
 
 export function defById(id: string): DeckCardDef {
   return DEFS[id];
+}
+
+/** The module definition behind a module id (e.g. 'flame'). */
+export function modById(id: string): ModuleDef {
+  return MODDEFS[id];
 }
 
 function shuffleInPlace<T>(a: T[]): T[] {
@@ -148,6 +156,31 @@ export function selBoard(): Card | null {
   return CARDS[d.tower];
 }
 
+/** The upgrade module behind the currently selected hand card (or null when
+    nothing is selected / the selection is not a module card). */
+export function selModule(): ModuleDef | null {
+  if (S.selCard == null) return null;
+  var ci = S.hand[S.selCard];
+  if (!ci) return null;
+  var d = defOf(ci);
+  if (d.kind !== 'module' || !d.module) return null;
+  return modById(d.module);
+}
+
+/** Targeted skills resolve on a unit you tap AFTER selecting the card. */
+export function isTargetedSkill(d: DeckCardDef): boolean {
+  return d.id === 'skill_recal';
+}
+
+/** The targeted-skill def behind the selected hand card (or null). */
+export function selTargetedSkill(): DeckCardDef | null {
+  if (S.selCard == null) return null;
+  var ci = S.hand[S.selCard];
+  if (!ci) return null;
+  var d = defOf(ci);
+  return isTargetedSkill(d) ? d : null;
+}
+
 export function canPlayDef(d: DeckCardDef): { ok: boolean; why?: string } {
   if (d.kind === 'curse') return { ok: false, why: 'CURSES CANNOT BE PLAYED — DISCARD OR PURGE IT' };
   if (!canAfford(d.cost)) return { ok: false, why: 'INSUFFICIENT MATTER' };
@@ -177,6 +210,8 @@ export function playCard(handIdx: number): { ok: boolean; msg: string } {
   if (!ci) return { ok: false, msg: 'NO CARD' };
   var d = defOf(ci);
   if (d.kind === 'board') return { ok: false, msg: 'SELECT A FOUNDATION TO DEPLOY' };
+  if (d.kind === 'module') return { ok: false, msg: 'SELECT A COMPATIBLE UNIT TO INSTALL' };
+  if (isTargetedSkill(d)) return { ok: false, msg: 'SELECT A UNIT TO RECALIBRATE' };
   var chk = canPlayDef(d);
   if (!chk.ok) return { ok: false, msg: chk.why! };
   spend(d.cost);
@@ -411,6 +446,34 @@ export function playCard(handIdx: number): { ok: boolean; msg: string } {
       addCardToDeck('curse_rust');
       msg += ' — +7 GRID · RUST DEBT ADDED TO DECK';
       break;
+    case 'skill_artillery': {
+      var targets: Enemy[] = [];
+      for (i = 0; i < S.enemies.length; i++) {
+        if (!S.enemies[i].dead) targets.push(S.enemies[i]);
+      }
+      var hits = 0;
+      for (i = 0; i < 3 && targets.length; i++) {
+        var pick = targets.splice(Math.floor(Math.random() * targets.length), 1)[0];
+        pick.hp -= 45;
+        pick.flash = .08;
+        S.shots.push({ x: cp.x, y: cp.y - 30, tx: pick.x, ty: pick.y, life: .18, col: '#c9a6e0', kind: 3 });
+        hits++;
+        if (pick.hp <= 0) killEnemy(pick, false);
+      }
+      S.shake = Math.max(S.shake, 4);
+      Snd.play('boom', true);
+      msg += hits ? ' — ' + hits + ' SHELL' + (hits > 1 ? 'S' : '') + ' ON TARGET' : ' — NO HOSTILES TO STRIKE (EXHAUSTED)';
+      break;
+    }
+    case 'skill_deepfreeze':
+      for (i = 0; i < S.enemies.length; i++) {
+        var fe = S.enemies[i];
+        if (!fe.dead) fe.slowT = Math.max(fe.slowT, 6);
+      }
+      S.rings.push({ x: cp.x, y: cp.y, r: 8, max: 80, col: '#8fd8ff' });
+      Snd.play('weld');
+      msg += ' — ALL HOSTILES SLOWED 60% FOR 6s';
+      break;
     default:
       break;
   }
@@ -439,4 +502,57 @@ export function powerRangeMult(): number {
 
 export function powerRateMult(): number {
   return 1 + .12 * (S.powers.power_feedback || 0);
+}
+
+/** Toss the selected hand card into the discard pile (ETHEREAL cards burn
+    into the exhaust pile instead). Returns a toast message, or '' if nothing
+    was selected. */
+export function discardSelCard(): string {
+  if (S.selCard == null) return '';
+  var ci = S.hand[S.selCard];
+  if (!ci) { S.selCard = null; return ''; }
+  var d = defOf(ci);
+  S.hand.splice(S.selCard, 1);
+  if (d.ethereal) S.exhaustPile.push(ci);
+  else S.discardPile.push(ci);
+  S.selCard = null;
+  return d.name + (d.ethereal ? ' — BURNED (ETHEREAL)' : ' → DISCARD PILE');
+}
+
+/** Tear the selected hand card out of the deck permanently for a 50% matter
+    refund. Returns a toast message, or '' if nothing was selected. */
+export function recycleSelCard(): string {
+  if (S.selCard == null) return '';
+  var ci = S.hand[S.selCard];
+  if (!ci) { S.selCard = null; return ''; }
+  var d = defOf(ci);
+  S.hand.splice(S.selCard, 1);
+  S.deck = S.deck.filter(function (c) { return c !== ci; });
+  var cp = corePt();
+  var refund: Cost = {
+    fe: Math.ceil(d.cost.fe * .5),
+    cu: Math.ceil(d.cost.cu * .5),
+    si: Math.ceil(d.cost.si * .5)
+  };
+  var bits: string[] = [];
+  if (refund.fe) bits.push('+' + refund.fe + 'Fe');
+  if (refund.cu) bits.push('+' + refund.cu + 'Cu');
+  if (refund.si) bits.push('+' + refund.si + 'Si');
+  if (bits.length) gainRes(refund, cp.x, cp.y - 12);
+  S.selCard = null;
+  return d.name + ' TORN FROM DECK' + (bits.length ? ' · ' + bits.join(' ') : '');
+}
+
+/** Apply the selected RECALIBRATE card to a unit (+1 level, free, exhausts). */
+export function castRecalibrate(t: Tower): string {
+  if (S.selCard == null) return 'SELECT RECALIBRATE FIRST';
+  var d = defOf(S.hand[S.selCard]);
+  if (!isTargetedSkill(d)) return 'SELECT RECALIBRATE FIRST';
+  if (!canAfford(d.cost)) return 'INSUFFICIENT MATTER';
+  spend(d.cost);
+  t.lvl++;
+  resolveAfterPlay(S.selCard);
+  burst(t.x, t.y, '#ffd23f', 8);
+  Snd.play('upgrade');
+  return d.name + ' — ' + CARDS[t.i].name + ' +1 LEVEL';
 }

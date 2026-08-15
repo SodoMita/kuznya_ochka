@@ -150,6 +150,11 @@ button:focus-visible{outline:1px solid var(--teal);outline-offset:1px}
 #pileBar button b{color:var(--ink);font-size:9.5px;font-variant-numeric:tabular-nums;margin-left:2px}
 #pileDraw{border-left-color:var(--teal)}#pileDisc{border-left-color:var(--copper)}#pileExh{border-left-color:var(--red)}
 #pileDraw b{color:var(--teal)}#pileDisc b{color:var(--copper)}#pileExh b{color:var(--red)}
+#discardCard,#recycleCard{border-left-color:var(--steel);opacity:.35;filter:grayscale(.6);cursor:default}
+#discardCard.on,#recycleCard.on{opacity:1;filter:none;cursor:pointer;border-left-color:var(--teal);color:var(--ink)}
+#discardCard.on:hover{border-color:var(--teal);color:var(--ink)}
+#recycleCard.on{border-left-color:var(--red)}
+#recycleCard.on:hover{border-color:var(--red);color:var(--ink)}
 #pileBar button.tick{animation:pileTick .45s var(--ease)}
 @keyframes pileTick{0%{transform:translateY(-3px) scale(1.06);border-color:var(--gold);color:var(--ink);filter:brightness(1.7)}}
 #pileInfo{margin-left:auto;font-size:7px;letter-spacing:1px;color:var(--dim2);white-space:nowrap;overflow:hidden}
@@ -247,6 +252,26 @@ button:focus-visible{outline:1px solid var(--teal);outline-offset:1px}
 #unitStats{font-size:8px;color:var(--dim);letter-spacing:.4px;line-height:1.45}
 #upBtn{border-color:#7a5b22;background:linear-gradient(#3f3316,#2b2310);color:var(--gold)}
 #upBtn:hover{border-color:var(--gold);background:linear-gradient(#4a3c1a,#332a13);box-shadow:var(--bevel),0 0 10px #ffd23f2e}
+/* --- merged: selectors unique to the gameplay branch --- */
+#deckList{display:flex;flex-direction:column;gap:10px}
+#deckList h4{font-family:var(--disp);font-size:12px;letter-spacing:1px;margin:0;font-weight:400;color:var(--teal)}
+#deckList h4 span{color:var(--dim);font-family:var(--mono);font-size:8px;letter-spacing:1px}
+.pileRow{display:flex;flex-wrap:wrap;gap:4px}
+.mini{border:1px solid var(--line2);border-left:3px solid currentColor;background:#151d21;padding:3px 6px;font-size:8px;letter-spacing:.4px;cursor:help}
+.mini b{color:var(--ink);font-weight:400;font-family:var(--disp);letter-spacing:.5px}
+.mini u{text-decoration:none;color:var(--gold);font-weight:700;margin-left:4px}
+.mini i{font-style:normal;color:var(--dim);font-size:7px;margin-left:4px}
+.pileEmpty{font-size:8px;color:var(--dim);letter-spacing:1px;border:1px dashed var(--line2);padding:3px 8px}
+#unitMods{font-size:7px;letter-spacing:.6px;color:var(--dim);line-height:1.5;min-height:0}
+#unitMods b{color:var(--gold);margin-right:3px}
+#unitMods em{font-style:normal;white-space:nowrap}
+#modBtn{border-color:#7a5b22;background:linear-gradient(#2c2a14,#232014);color:var(--gold);font-family:var(--disp);font-size:11px;letter-spacing:1px}
+#modBtn small{display:block;font-size:7px;color:#b39a55;margin-top:2px;letter-spacing:.3px;font-family:var(--mono)}
+#modBtn.on{border-color:var(--gold);color:var(--gold)}
+#modBtn.broke{opacity:.55;filter:grayscale(.6);border-color:var(--line)}
+#recalBtn{border-color:#12312c;background:linear-gradient(#122720,#0e1f1a);color:var(--teal);font-family:var(--disp);font-size:11px;letter-spacing:1px}
+#recalBtn small{display:block;font-size:7px;color:#3f7a6e;margin-top:2px;letter-spacing:.3px;font-family:var(--mono)}
+#recalBtn:hover{border-color:var(--teal)}
 #upBtn small{display:block;font-size:7px;color:#b39a55;margin-top:2px;letter-spacing:.3px}
 #tgtRow{display:none;grid-template-columns:repeat(6,1fr);gap:3px}
 #tgtRow button{border:1px solid var(--line2);border-radius:2px;background:#141b1f;color:var(--dim2);font-size:7px;letter-spacing:.5px;
@@ -378,7 +403,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     <div id="stInfo"><b id="sectorName">SECTOR 01 · RUST BASIN</b><span id="sectorMix">SALVAGE Fe-heavy</span></div>
     <div id="banner"></div>
     <div id="toast"></div>
-    <div id="hint">SELECT A CARD [1-9] · BOARDS: TAP FIELD TO PRINT — SKILLS: TAP CARD AGAIN TO RUN · [D] DECK · [SPACE] LAUNCH</div>
+    <div id="hint">SELECT A CARD [1-9] · BOARDS: TAP FIELD · MODULES/RECALIBRATE: TAP A UNIT · SKILLS: TAP AGAIN · [D] DECK · ✕/♻ TOSS A SELECTED CARD · [SPACE] LAUNCH</div>
     <div id="abils">
       <button id="abilSurge" title="All units +50% fire rate for 8s — costs 40 Fe">SURGE<small id="surgeCd">READY · 40Fe</small></button>
       <button id="abilWeld" title="Restore 3 core integrity — costs 30 Fe 15 Cu">WELD<small id="weldCd">READY · 30Fe 15Cu</small></button>
@@ -404,6 +429,8 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         <button id="pileDraw" title="Draw pile (D)">DRAW <b id="vDraw">0</b></button>
         <button id="pileDisc" title="Discard pile (D)">DISCARD <b id="vDisc">0</b></button>
         <button id="pileExh" title="Exhausted this sector (D)">EXHAUST <b id="vExh">0</b></button>
+        <button id="discardCard" title="Discard the selected card into the discard pile">✕ DISCARD</button>
+        <button id="recycleCard" title="Permanently remove the selected card from your deck for 50% matter">♻ RECYCLE</button>
         <span id="pileInfo">HAND 0/10 · DECK 10</span>
       </div>
     </div>
@@ -411,6 +438,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       <div id="unitBox">
         <div id="unitHead">NO UNIT SELECTED</div>
         <div id="unitStats">tap near a unit — nearest one is grabbed</div>
+        <div id="unitMods"></div>
         <div id="tgtRow">
           <button data-tgt="first" title="furthest along route">1ST</button>
           <button data-tgt="last" title="closest to your gate">LST</button>
@@ -419,6 +447,8 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
           <button data-tgt="near" title="nearest unit">NEAR</button>
           <button data-tgt="far" title="farthest unit">FAR</button>
         </div>
+        <button id="modBtn" class="sq" style="display:none"><span>INSTALL MODULE</span><small>—</small></button>
+        <button id="recalBtn" class="sq" style="display:none"><span>RECALIBRATE</span><small>—</small></button>
         <div class="row2">
           <button id="upBtn" class="sq">UPGRADE<small id="upCost">—</small></button>
           <button id="recBtn" class="sq warn">RECYCLE<small id="recVal" style="display:block;font-size:7px;color:#8f9aa0;margin-top:2px">—</small></button>
@@ -458,21 +488,25 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       <h2>FIELD MANUAL</h2>
       <div class="sub">ECONOMY · DOCTRINE · BALANCE LEDGER</div>
       <h3 class="sec">OBJECTIVE</h3>
-      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, nine hostile classes, eighteen relics, two field abilities. Survive wave 12 to clear a sector and open the world route.</p>
+      <p>Robots building robots, fighting robots. Hostile machines march the convoy route toward your CORE (20 integrity). Destroy them to strip Iron, Copper and Silicon — there is no money, only matter. One circuit deck, seven blueprints, ten hostile classes, twenty-one relics, eleven modules, two field abilities. Survive wave 12 to clear a sector and open the world route.</p>
       <h3 class="sec">THE CIRCUIT DECK</h3>
       <p>You fight with a <b style="color:var(--teal)">deck of cards</b>, drawn Slay-the-Spire style. Your run starts with 10 cards; salvage caches add more. Each fabrication window is a <b>turn</b>: your old hand is discarded and you draw 5 (Autoloader: +1). Playing a card costs matter, not energy — your resources are the mana pool.</p>
       <p><b style="color:var(--steel)">CIRCUIT BOARDS</b> are the only way to build: select one and tap the field to print its unit — the board is consumed into the discard pile and cycles back on reshuffle. <b style="color:var(--teal)">SUBROUTINES</b> are one-shot skills, including hand-control circuits that discard weak cards or recycle cards from discard. <b style="color:var(--gold)">FIRMWARE</b> installs a sector-wide modifier and always exhausts. <b style="color:#b18cd9">CORRUPTIONS</b> are unplayable curse cards: risky black-box technology adds them permanently, while CLEAN ROOM can purge them.</p>
+
+      <p><b>Targeted cards</b> (RECALIBRATE) resolve on a unit you <b>tap after</b> selecting the card — pick the card first, then the unit. With any card selected, the <b style="color:var(--teal)">✕ DISCARD</b> and <b style="color:var(--red)">♻ RECYCLE</b> buttons in the pile bar let you toss it into the discard pile (ethereal cards burn instead) or tear it out of your deck permanently for a 50% matter refund.</p>
       <p>Keywords: <b style="color:var(--red)">EXHAUST</b> — removed for the rest of the sector after play · <b style="color:#b18cd9">ETHEREAL</b> — exhausts if still unplayed when the turn ends (hand redraw) · <b style="color:var(--teal)">RETAIN</b> — not discarded at turn end · <b style="color:var(--steel)">INNATE</b> — guaranteed in the sector's opening hand · <b style="color:var(--gold)">CONSUME</b> — torn from the deck permanently after one use. When the draw pile empties, the discard pile reshuffles into it. Deploying to a new sector restores exhausted cards and deals a fresh opening hand. Press <kbd>D</kbd> or tap the pile counters to audit every pile.</p>
       <h3 class="sec">SALVAGE DOCTRINES [M]</h3>
       <p><b style="color:var(--copper)">LOOT</b> — Harvesters fire normally; every wreck drops base salvage.<br>
       <b style="color:var(--teal)">CAPTURE</b> — Harvesters lock a tractor beam on units inside the <b style="color:var(--teal)">teal 30% zone</b> shown on every hull bar. The beam channels just 0.85s, slows the victim 55%, and rasps at 35% of Harvester DPS. While a target is beamed, <b style="color:var(--teal)">allied units hold fire on it</b> whenever another target is in range, and the beam tolerates integrity drift up to 40%. Completed captures yield <b style="color:var(--teal)">×2.5 salvage, +0.4 grid capacity</b> and bonus Silicon from Titans; escapes or forced kills fail the capture.</p>
+      <h3 class="sec">UNIT MODULES</h3>
+      <p><b style="color:#c78bff">MODULE</b> cards bolt a permanent upgrade onto <b>one deployed unit</b>: select the card, then tap a compatible unit on the field (or pick the unit and press <b style="color:var(--gold)">INSTALL</b> in the unit panel). One module of a kind per unit; modules exhaust after use, so each card copy installs once per sector. Examples: <b style="color:#ff8a3d">FLAMETHROWER HEAD</b> makes Needle rounds ignite hosts (40% of each shot burns over 2.5s) · <b style="color:#8fd8ff">TESLA FRAME</b> lets arcs chain two extra full-strength jumps · <b style="color:#e0854e">SMELTER BELLY</b> boosts a Foundry's output and makes its aura grant damage · <b style="color:#ffd23f">RAILGUN COIL</b> makes Rail ignore armor entirely · <b style="color:#7fd8c8">CRYO GRID</b> deepens the Aegis slow field · <b style="color:#3ec9b0">HYDRAULIC GRASP</b> speeds up Harvester captures · <b style="color:#c9a6e0">HOLLOW-POINT AMMO</b> lets Needles punch armor · <b style="color:#c9a6e0">FRAG SHELLS</b> widens Mortar splash · <b style="color:#8fd8ff">STATIC GRID</b> makes the Aegis field zap hosts · <b style="color:#9fb6c9">RANGEFINDER SCOPE</b> / <b style="color:#ffd23f">OVERVOLT CAPACITOR</b> stretch range and fire rate on any gun turret.</p>
       <h3 class="sec">FIRE DOCTRINES [T]</h3>
       <p>Every combat unit carries its own targeting order: <b>1ST</b> furthest along the route · <b>LST</b> closest to your gate · <b>MAX</b> strongest hull · <b>MIN</b> weakest hull · <b>NEAR</b> / <b>FAR</b> by distance from the unit. The active doctrine is badged above each unit — select one and use the chips in the unit panel or <kbd>T</kbd> to cycle. <kbd>E</kbd> cycles selection through deployed units, right-click cancels a placement.</p>
       <h3 class="sec">THREAT INDEX</h3>
-      <p><b style="color:#c9714a">SCRAPLET</b> fodder · <b style="color:#8d9aa5">PLATED</b> 25% armor, leaks 2 · <b style="color:#d8a24a">SWARM</b> fast, fragile, many · <b style="color:#7ac98a">REGEN</b> rebuilds 1.2% hull/s — fight the capture zone · <b style="color:#ffd23f">GILDED</b> fast loot-piñata worth ×3, capture priority · <b style="color:#7fa8d9">PHASE</b> blinks +36px every 2.5s, telegraphs before jumping · <b style="color:#e5484d">TITAN</b> every 8th wave, armored, leaks 5, bonus Silicon on capture. Every 5th wave is a RUSH (double spawn rate), every 12th an ASSAULT.</p>
+      <p><b style="color:#c9714a">SCRAPLET</b> fodder · <b style="color:#8d9aa5">PLATED</b> 25% armor, leaks 2 · <b style="color:#d8a24a">SWARM</b> fast, fragile, many · <b style="color:#7ac98a">REGEN</b> rebuilds 1.2% hull/s — fight the capture zone · <b style="color:#ffd23f">GILDED</b> fast loot-piñata worth ×3, capture priority · <b style="color:#7fa8d9">PHASE</b> blinks +36px every 2.5s, telegraphs before jumping · <b style="color:#b8e986">REAVER</b> heavy 50%-armor linebreaker, drops rich salvage · <b style="color:#e5484d">TITAN</b> every 8th wave, armored, leaks 5, bonus Silicon on capture. Every 5th wave is a RUSH (double spawn rate), every 12th an ASSAULT.</p>
       <p><b style="color:#a58a6a">CARRIER</b> leaks 3 and splits into three swarmlets when destroyed (capture it intact to deny the split) · <b style="color:#8a2a30">DREAD</b> leads every 12th wave — armored, regenerating, leaking 6. Any spawn can roll <b style="color:#ffd23f">VETERAN</b>: +60% hull, +70% bounty, gold frame.</p>
       <h3 class="sec">FIELD ABILITIES &amp; WEATHER</h3>
-      <p><b style="color:var(--gold)">SURGE</b> (40 Fe, 45s recharge): every unit fires 50% faster for 8s — golden overdrive frames show who's boosted. <b style="color:var(--teal)">WELD</b> (30 Fe 15 Cu, 60s): +3 core integrity. Waves can roll weather: <b>ION STORM</b> +40% arc damage · <b>GRAV SHEAR</b> hostiles −15% speed · <b>RUST WIND</b> foundries +40%. Units calibrate every 5 levels (★), gaining +5% damage and rate per star.</p>
+      <p><b style="color:var(--gold)">SURGE</b> (40 Fe, 45s recharge): every unit fires 50% faster for 8s — golden overdrive frames show who's boosted. <b style="color:var(--teal)">WELD</b> (30 Fe 15 Cu, 60s): +3 core integrity. Waves can roll weather: <b>ION STORM</b> +40% arc damage · <b>GRAV SHEAR</b> hostiles −15% speed · <b>RUST WIND</b> foundries +40% · <b>SOLAR FLARE</b> all units +15% damage · <b>HARD FROST</b> hostiles −10% speed (frost frames). Units calibrate every 5 levels (★), gaining +5% damage and rate per star.</p>
       <h3 class="sec">BALANCE LEDGER</h3>
       <table class="bal">
         <tr><td>Wave HP</td><td>(34+11w) × 1.058^(w−1) — compounds forever</td></tr>
@@ -482,13 +516,15 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         <tr><td>Foundry</td><td>0.34 Fe / 0.12 Cu / 0.05 Si per s × 1.13^L · boosts fire rate of units within 92px (+8% each, max +24%)</td></tr>
         <tr><td>Early launch</td><td>+0.8 Fe per skipped fabrication second — aggression is paid, turtling is not</td></tr>
         <tr><td>Rail / Aegis</td><td>Rail: 150-range sniper, ignores 80% armor, Si-hungry. Aegis: 30% slow field, +2%/level (cap 50%), stacks with beams by taking the max</td></tr>
+        <tr><td>Mortar</td><td>lobbed shells, area splash: 60% of shell damage to everything within 34px, halves armor — the swarm answer</td></tr>
+        <tr><td>Modules</td><td>one module per unit per kind · install cost ≈ blueprint cost · exhausts each sector — a targeted spike, never an infinite stack</td></tr>
         <tr><td>Scrap streak</td><td>kills within 2.2s chain: +1% salvage per link, cap +25% (Tithe: +40%) — density pays</td></tr>
         <tr><td>Abilities</td><td>Surge/Weld are matter-sink pressure valves with hard recharge timers — no spam loop possible</td></tr>
         <tr><td>Elites</td><td>veteran rolls scale 3%→25%: +60% hull vs +70% bounty keeps them net-positive but never farmable</td></tr>
         <tr><td>Simulation</td><td>fixed 60Hz ticks, identical at 1× and 100×, runs live between waves</td></tr>
       </table>
       <h3 class="sec">CONTROLS</h3>
-      <p><kbd>1-9</kbd> select hand card (press again to run a subroutine) · <kbd>D</kbd> circuit ledger · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect · with a board selected, drag &amp; release on the field to print — invalid spots snap to the nearest foundation</p>
+      <p><kbd>1-9</kbd> select hand card (press again to run a subroutine) · <kbd>D</kbd> circuit ledger · <kbd>SPACE</kbd> launch · <kbd>M</kbd> salvage doctrine · <kbd>T</kbd> targeting · <kbd>E</kbd> cycle units · <kbd>P</kbd> pause · <kbd>+/-</kbd> speed · <kbd>U</kbd> upgrade · <kbd>X</kbd> recycle · <kbd>ESC</kbd>/<kbd>RMB</kbd> deselect · with a board selected, drag &amp; release on the field to print — invalid spots snap to the nearest foundation. Select a card, then use ✕ DISCARD / ♻ RECYCLE to thin your hand or deck.</p>
     </div>
   </div>
   <div class="modal" id="endModal">
@@ -549,7 +585,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     spawnT: 0,
     time: 0,
     shake: 0,
-    stat: { kills: 0, captures: 0, leaks: 0, waves: 0, salvaged: 0, gilds: 0, surges: 0 },
+    stat: { kills: 0, captures: 0, leaks: 0, waves: 0, salvaged: 0, gilds: 0, surges: 0, burnKills: 0 },
     streak: { n: 0, t: 0 },
     medals: {},
     ability: { surge: { cd: 0, until: 0 }, weld: { cd: 0 } },
@@ -637,7 +673,9 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     harvest: '<svg viewBox="0 0 16 16"><path d="M3 3v6a5 5 0 0 0 10 0V3M8 6v9M5 15h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
     foundry: '<svg viewBox="0 0 16 16"><path d="M2 14V7l4 2V7l4 2V4h3v10H2zM11 1v2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
     rail: '<svg viewBox="0 0 16 16"><path d="M1 13L13 3M13 3l2-2M13 3v3M10 6v3M3 15h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
-    aegis: '<svg viewBox="0 0 16 16"><path d="M8 1l6 3v4c0 3.5-2.7 6-6 7-3.3-1-6-3.5-6-7V4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="7.5" r="1.6" fill="currentColor"/></svg>'
+    aegis: '<svg viewBox="0 0 16 16"><path d="M8 1l6 3v4c0 3.5-2.7 6-6 7-3.3-1-6-3.5-6-7V4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="7.5" r="1.6" fill="currentColor"/></svg>',
+    mortar: '<svg viewBox="0 0 16 16"><path d="M3 13h10M4 13V9l3-2h4l2 2v4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 4l2-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    mod: '<svg viewBox="0 0 16 16"><path d="M10 2l4 4-6 6-3 1-1-3 6-8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="4" cy="12" r="1.3" fill="currentColor"/></svg>'
   };
   var CARDS = [
     { id: "needle", name: "NEEDLE", desc: "rapid kinetic sentry", cost: { fe: 24, cu: 8, si: 2 }, dmg: 7, rate: 4.2, range: 92, draw: 1, col: "#d9e2b0" },
@@ -645,7 +683,21 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     { id: "harvest", name: "HARVESTER", desc: "tractor-beam captor", cost: { fe: 30, cu: 12, si: 7 }, dmg: 12, rate: 1.7, range: 78, draw: 2, col: "#3ec9b0" },
     { id: "foundry", name: "FOUNDRY", desc: "refines matter, feeds nearby units +8%", cost: { fe: 40, cu: 10, si: 10 }, dmg: 0, rate: 0, range: 92, draw: 1, col: "#e0854e" },
     { id: "rail", name: "RAIL", desc: "long-range sniper, punches 80% of armor", cost: { fe: 20, cu: 12, si: 26 }, dmg: 60, rate: 0.5, range: 150, draw: 3, col: "#ffd23f" },
-    { id: "aegis", name: "AEGIS", desc: "slow field 30% \u2014 no guns, pure drag", cost: { fe: 12, cu: 26, si: 6 }, dmg: 0, rate: 0, range: 70, draw: 1, col: "#7fd8c8" }
+    { id: "aegis", name: "AEGIS", desc: "slow field 30% \u2014 no guns, pure drag", cost: { fe: 12, cu: 26, si: 6 }, dmg: 0, rate: 0, range: 70, draw: 1, col: "#7fd8c8" },
+    { id: "mortar", name: "MORTAR", desc: "lobbed shells, area splash", cost: { fe: 30, cu: 14, si: 12 }, dmg: 42, rate: 0.55, range: 118, draw: 2, col: "#c9a6e0" }
+  ];
+  var MODULES = [
+    { id: "flame", name: "FLAMETHROWER HEAD", forIds: ["needle"], desc: "Needle rounds ignite hosts \u2014 40% of each shot burns over 2.5s", cost: { fe: 14, cu: 16, si: 4 }, rar: 1, col: "#ff8a3d" },
+    { id: "tesla", name: "TESLA FRAME", forIds: ["arc"], desc: "Arcs chain to +2 targets at full strength, +40% jump reach", cost: { fe: 10, cu: 24, si: 8 }, rar: 1, col: "#8fd8ff" },
+    { id: "grasp", name: "HYDRAULIC GRASP", forIds: ["harvest"], desc: "Beam channels 60% faster and rasps 25% harder", cost: { fe: 12, cu: 18, si: 6 }, rar: 1, col: "#3ec9b0" },
+    { id: "smelter", name: "SMELTER BELLY", forIds: ["foundry"], desc: "Foundry output +60%; its aura also grants +8% damage", cost: { fe: 18, cu: 14, si: 10 }, rar: 1, col: "#e0854e" },
+    { id: "railcoil", name: "RAILGUN COIL", forIds: ["rail"], desc: "Rail ignores armor entirely and hits 25% harder", cost: { fe: 10, cu: 12, si: 18 }, rar: 1, col: "#ffd23f" },
+    { id: "cryo", name: "CRYO GRID", forIds: ["aegis"], desc: "Slow field 45% and +25% range", cost: { fe: 8, cu: 16, si: 8 }, rar: 1, col: "#7fd8c8" },
+    { id: "scope", name: "RANGEFINDER SCOPE", forIds: ["needle", "arc", "harvest", "rail"], desc: "+35% range", cost: { fe: 10, cu: 14, si: 6 }, rar: 0, col: "#9fb6c9" },
+    { id: "overvolt", name: "OVERVOLT CAPACITOR", forIds: ["needle", "arc", "rail"], desc: "+20% fire rate", cost: { fe: 8, cu: 18, si: 6 }, rar: 0, col: "#ffd23f" },
+    { id: "hollow", name: "HOLLOW-POINT AMMO", forIds: ["needle"], desc: "Needle rounds punch through 40% of armor", cost: { fe: 12, cu: 20, si: 4 }, rar: 1, col: "#c9a6e0" },
+    { id: "frag", name: "FRAG SHELLS", forIds: ["mortar"], desc: "Mortar splash radius +50%, splash damage +25%", cost: { fe: 16, cu: 12, si: 8 }, rar: 1, col: "#c9a6e0" },
+    { id: "static", name: "STATIC GRID", forIds: ["aegis"], desc: "Aegis field also zaps hosts for 2 + 0.5/level dps", cost: { fe: 10, cu: 20, si: 8 }, rar: 1, col: "#8fd8ff" }
   ];
   var DECK_CARDS = [
     /* circuit boards — the only way to deploy units */
@@ -655,6 +707,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     { id: "board_foundry", name: "FOUNDRY BOARD", kind: "board", tower: 3, desc: "print a FOUNDRY \u2014 refines matter, feeds allies", cost: CARDS[3].cost, rar: 0, innate: true },
     { id: "board_rail", name: "RAIL BOARD", kind: "board", tower: 4, desc: "print a RAIL \u2014 long-range armor-piercing sniper", cost: CARDS[4].cost, rar: 2, exhaust: true },
     { id: "board_aegis", name: "AEGIS BOARD", kind: "board", tower: 5, desc: "print an AEGIS \u2014 30% slow field, pure drag", cost: CARDS[5].cost, rar: 1 },
+    { id: "board_mortar", name: "MORTAR BOARD", kind: "board", tower: 6, desc: "print a MORTAR \u2014 lobbed shells, area splash", cost: CARDS[6].cost, rar: 1, exhaust: true },
     /* subroutines — one-shot skills */
     { id: "skill_scrap", name: "SCRAP INFUSION", kind: "skill", desc: "gain 26 Fe \xB7 10 Cu \xB7 4 Si", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
     { id: "skill_hotswap", name: "HOTSWAP", kind: "skill", desc: "draw 2 cards", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
@@ -681,6 +734,9 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     { id: "skill_quarantine", name: "QUARANTINE", kind: "skill", desc: "exhaust every curse in hand this sector \xB7 gain 12 Fe each", cost: { fe: 0, cu: 5, si: 0 }, rar: 0, exhaust: true },
     { id: "skill_siphon", name: "ORE SIPHON", kind: "skill", desc: "gain 3 Fe per living hostile, up to 45 Fe", cost: { fe: 0, cu: 4, si: 0 }, rar: 0 },
     { id: "skill_gridloan", name: "GRID LOAN", kind: "skill", desc: "+7 grid this sector, but add a permanent RUST DEBT", cost: { fe: 0, cu: 0, si: 0 }, rar: 1, exhaust: true },
+    { id: "skill_artillery", name: "ARTILLERY CALL", kind: "skill", desc: "3 shells strike random hostiles for 45 damage each", cost: { fe: 0, cu: 10, si: 14 }, rar: 2, exhaust: true },
+    { id: "skill_deepfreeze", name: "DEEPFREEZE", kind: "skill", desc: "all hostiles slowed 60% for 6s", cost: { fe: 0, cu: 12, si: 10 }, rar: 1, exhaust: true },
+    { id: "skill_recal", name: "RECALIBRATE", kind: "skill", desc: "selected unit gains +1 level, free", cost: { fe: 0, cu: 0, si: 10 }, rar: 1, exhaust: true },
     /* firmware — sector-wide powers, always exhaust */
     { id: "power_lathe", name: "TUNGSTEN LATHE", kind: "power", desc: "+10% unit damage this sector", cost: { fe: 20, cu: 0, si: 8 }, rar: 1, exhaust: true },
     { id: "power_sub", name: "SUBSTATION", kind: "power", desc: "+4 grid capacity this sector", cost: { fe: 0, cu: 18, si: 0 }, rar: 0, exhaust: true },
@@ -695,7 +751,21 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     /* curses — dead draws acquired by risky technology; never offered directly */
     { id: "curse_jam", name: "SIGNAL JAM", kind: "curse", desc: "unplayable \xB7 clogs your hand until discarded", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
     { id: "curse_rust", name: "RUST DEBT", kind: "curse", desc: "unplayable \xB7 lose 8 Fe when left in hand at turn end", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
-    { id: "curse_breach", name: "HULL BREACH", kind: "curse", desc: "unplayable \xB7 lose 1 core when left in hand at turn end", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 }
+    { id: "curse_breach", name: "HULL BREACH", kind: "curse", desc: "unplayable \xB7 lose 1 core when left in hand at turn end", cost: { fe: 0, cu: 0, si: 0 }, rar: 0 },
+    { id: "power_reactor", name: "ARC REACTOR", kind: "power", desc: "arcs chain to +1 target this sector", cost: { fe: 12, cu: 16, si: 10 }, rar: 1, exhaust: true },
+    { id: "power_seek", name: "HOMING RIG", kind: "power", desc: "units +20% range this sector", cost: { fe: 8, cu: 14, si: 8 }, rar: 1, exhaust: true },
+    /* modules — bolt an upgrade onto one deployed unit, then exhaust */
+    { id: "mod_flame", name: "FLAMETHROWER HEAD", kind: "module", module: "flame", desc: "bolt onto a NEEDLE \u2014 rounds ignite hosts: 40% of each shot burns 2.5s", cost: MODULES[0].cost, rar: 1, innate: true, exhaust: true },
+    { id: "mod_tesla", name: "TESLA FRAME", kind: "module", module: "tesla", desc: "bolt onto an ARC COIL \u2014 chains +2 targets, full strength, +40% reach", cost: MODULES[1].cost, rar: 1, exhaust: true },
+    { id: "mod_grasp", name: "HYDRAULIC GRASP", kind: "module", module: "grasp", desc: "bolt onto a HARVESTER \u2014 beam channels 60% faster, rasps 25% harder", cost: MODULES[2].cost, rar: 1, exhaust: true },
+    { id: "mod_smelter", name: "SMELTER BELLY", kind: "module", module: "smelter", desc: "bolt onto a FOUNDRY \u2014 +60% output, aura grants +8% damage", cost: MODULES[3].cost, rar: 1, exhaust: true },
+    { id: "mod_railcoil", name: "RAILGUN COIL", kind: "module", module: "railcoil", desc: "bolt onto a RAIL \u2014 ignores armor entirely, +25% damage", cost: MODULES[4].cost, rar: 1, exhaust: true },
+    { id: "mod_cryo", name: "CRYO GRID", kind: "module", module: "cryo", desc: "bolt onto an AEGIS \u2014 slow field 45%, +25% range", cost: MODULES[5].cost, rar: 1, exhaust: true },
+    { id: "mod_scope", name: "RANGEFINDER SCOPE", kind: "module", module: "scope", desc: "bolt onto any gun turret \u2014 +35% range", cost: MODULES[6].cost, rar: 0, exhaust: true },
+    { id: "mod_overvolt", name: "OVERVOLT CAPACITOR", kind: "module", module: "overvolt", desc: "bolt onto a gun turret \u2014 +20% fire rate", cost: MODULES[7].cost, rar: 0, exhaust: true },
+    { id: "mod_hollow", name: "HOLLOW-POINT AMMO", kind: "module", module: "hollow", desc: "bolt onto a NEEDLE \u2014 rounds punch 40% of armor", cost: MODULES[8].cost, rar: 1, exhaust: true },
+    { id: "mod_frag", name: "FRAG SHELLS", kind: "module", module: "frag", desc: "bolt onto a MORTAR \u2014 +50% splash radius, +25% splash damage", cost: MODULES[9].cost, rar: 1, exhaust: true },
+    { id: "mod_static", name: "STATIC GRID", kind: "module", module: "static", desc: "bolt onto an AEGIS \u2014 field zaps hosts for 2 + 0.5/level dps", cost: MODULES[10].cost, rar: 1, exhaust: true }
   ];
   var STARTER_DECK = [
     "board_needle",
@@ -707,13 +777,15 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     "skill_scrap",
     "skill_scrap",
     "skill_hotswap",
-    "skill_weld"
+    "skill_weld",
+    "mod_flame"
   ];
   var KIND_LABEL = {
     board: "CIRCUIT BOARD",
     skill: "SUBROUTINE",
     power: "FIRMWARE",
-    curse: "CORRUPTION"
+    curse: "CORRUPTION",
+    module: "MODULE"
   };
   var RELICS = [
     { id: "cap", name: "CAPACITOR BANK", desc: "+8 grid capacity, immediately", rar: 1 },
@@ -733,7 +805,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     { id: "twin", name: "TWIN FEED", desc: "Needle fire rate +20%", rar: 1 },
     { id: "lattice", name: "ARC LATTICE", desc: "arc chains to one extra target", rar: 2 },
     { id: "tithe", name: "SCRAP TITHE", desc: "streak salvage cap +25% \u2192 +40%", rar: 2 },
-    { id: "lens", name: "ORBITAL LENS", desc: "Rail range +25%", rar: 1 }
+    { id: "lens", name: "ORBITAL LENS", desc: "Rail range +25%", rar: 1 },
+    { id: "shock", name: "VOLT COUPLING", desc: "arcs chain to one extra target, +15% arc damage", rar: 2 },
+    { id: "flak", name: "PROXIMITY FUSES", desc: "mortar splash radius +40%", rar: 1 },
+    { id: "shrine", name: "SALVAGE SHRINE", desc: "captured titans yield +4 bonus silicon", rar: 2 }
   ];
   var ETYPES = {
     scrap: { hp: 1, sp: 1, dmg: 1, armor: 0, reward: 1, size: 6, col: "#c9714a" },
@@ -744,7 +819,8 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     gilded: { hp: 0.8, sp: 1.35, dmg: 1, armor: 0, reward: 3, size: 5, col: "#ffd23f" },
     phase: { hp: 1.1, sp: 0.9, dmg: 1, armor: 0, reward: 1.2, size: 6, col: "#7fa8d9" },
     carrier: { hp: 6, sp: 0.65, dmg: 3, armor: 0.1, reward: 4, size: 11, col: "#a58a6a" },
-    dread: { hp: 22, sp: 0.45, dmg: 6, armor: 0.35, regen: 8e-3, reward: 12, size: 15, col: "#8a2a30" }
+    dread: { hp: 22, sp: 0.45, dmg: 6, armor: 0.35, regen: 8e-3, reward: 12, size: 15, col: "#8a2a30" },
+    reaver: { hp: 1.6, sp: 0.72, dmg: 2, armor: 0.5, reward: 2.6, size: 8, col: "#b8e986" }
   };
   var SECTORS = [
     { name: "RUST BASIN", mix: { fe: 1.25, cu: 0.9, si: 0.8 }, tint: "#241b16", grid: "#33261f", path: "#4a382c", haz: 0 },
@@ -752,10 +828,11 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     { name: "SILICA FLATS", mix: { fe: 0.8, cu: 0.85, si: 1.5 }, tint: "#171d22", grid: "#243039", path: "#3a4a55", haz: 2 },
     { name: "GRINDER'S DELTA", mix: { fe: 1.05, cu: 1.05, si: 0.95 }, tint: "#221818", grid: "#332424", path: "#4d3535", haz: 5 },
     { name: "MAGNA TRENCH", mix: { fe: 1.1, cu: 0.95, si: 1.1 }, tint: "#191a22", grid: "#272a37", path: "#3d4155", haz: 3 },
-    { name: "VAULT MERIDIAN", mix: { fe: 0.9, cu: 1.15, si: 1.05 }, tint: "#221f14", grid: "#33301f", path: "#57513a", haz: 4, gild: 2.2 }
+    { name: "VAULT MERIDIAN", mix: { fe: 0.9, cu: 1.15, si: 1.05 }, tint: "#221f14", grid: "#33301f", path: "#57513a", haz: 4, gild: 2.2 },
+    { name: "REAVER SLAG", mix: { fe: 1.15, cu: 0.9, si: 1 }, tint: "#171c16", grid: "#26301f", path: "#46563a", haz: 6, gild: 0.4 }
   ];
-  var HAZNAMES = ["PLATED HEAVY", "SWARM DENSE", "REGEN CELLS", "PHASE SHIFTERS", "GILDED VEINS", "CARRIER BELT"];
-  var HAZCODE = ["PL", "SW", "RG", "PH", "GL", "CR"];
+  var HAZNAMES = ["PLATED HEAVY", "SWARM DENSE", "REGEN CELLS", "PHASE SHIFTERS", "GILDED VEINS", "CARRIER BELT", "REAVER ARMOR"];
+  var HAZCODE = ["PL", "SW", "RG", "PH", "GL", "CR", "RV"];
   var MEDALS = [
     ["firstcap", "FIRST RECLAMATION"],
     ["cap25", "SALVAGE BARON"],
@@ -766,12 +843,15 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     ["dreadkill", "KINGSLAYER"],
     ["gild5", "GOLD RUSH"],
     ["surge10", "OVERDRIVER"],
-    ["calib", "MASTERWORK"]
+    ["calib", "MASTERWORK"],
+    ["burn10", "PYROMANIAC"]
   ];
   var EVENTS = [
     { id: "ion", name: "ION STORM" },
     { id: "grav", name: "GRAV SHEAR" },
-    { id: "rust", name: "RUST WIND" }
+    { id: "rust", name: "RUST WIND" },
+    { id: "solar", name: "SOLAR FLARE" },
+    { id: "frost", name: "HARD FROST" }
   ];
   var SPEEDS = [1, 2, 4, 8, 16, 32, 64, 100];
   var TGTS = ["first", "last", "strong", "weak", "near", "far"];
@@ -919,6 +999,47 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     const spawnCands = [0, side];
     return { nodes, edges, core: n - 1, spawnCands, forced: [side] };
   }
+  function genLoops(r) {
+    const landscape = W >= H;
+    const cells = 4 + Math.floor(r() * 2);
+    const nodes = [];
+    const edges = [];
+    const gx0 = 0.06, gx1 = 0.94;
+    const span = gx1 - gx0;
+    const cw = span / cells;
+    for (let c = 0; c < cells; c++) {
+      const cx = gx0 + cw * (c + 0.5) + jittered(r, 0.02);
+      const cy = landscape ? 0.5 + jittered(r, 0.12) : 0.5 + jittered(r, 0.12);
+      const base = nodes.length;
+      const rx = landscape ? cw * 0.34 : 0.18 + r() * 0.08;
+      const ry = landscape ? 0.16 + r() * 0.1 : cw * 0.34;
+      const m = 5 + Math.floor(r() * 3);
+      for (let k = 0; k < m; k++) {
+        const a = k / m * Math.PI * 2 - Math.PI / 2;
+        nodes.push({
+          x: clamp(cx + Math.cos(a) * rx + jittered(r, 0.015), 0.06, 0.94),
+          y: clamp(cy + Math.sin(a) * ry + jittered(r, 0.015), 0.1, 0.9),
+          px: 0,
+          py: 0,
+          kind: "junc"
+        });
+      }
+      for (let k = 0; k < m; k++) edges.push([base + k, base + (k + 1) % m]);
+      if (c > 0) {
+        const prev = base - 1;
+        edges.push([prev, base], [prev - 2, base + 1]);
+      }
+    }
+    const last2 = nodes.length - 1;
+    let core = 0;
+    for (let i = 1; i < nodes.length; i++) {
+      if (nodes[i].x > nodes[core].x) core = i;
+    }
+    const spawnCands = [];
+    for (let i = 0; i < nodes.length; i++) if (nodes[i].x < nodes[core].x - 0.12) spawnCands.push(i);
+    if (!spawnCands.length) spawnCands.push(0, 1);
+    return { nodes, edges, core, spawnCands };
+  }
   function genWeb(r) {
     const landscape = W >= H;
     const n = 12;
@@ -1064,7 +1185,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   function genSector() {
     S.sectorGen++;
     const r = mulberry32(S.seed + S.sector * 7919 >>> 0);
-    const gens = [genGrid, genRadial, genRiver, genWeb];
+    const gens = [genGrid, genRadial, genRiver, genWeb, genLoops];
     const g = assemble(r, gens[Math.floor(r() * gens.length)]);
     S.nodes = g.nodes;
     S.edges = g.edges;
@@ -1845,6 +1966,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       types.push("carrier");
       wts.push(1.1);
     }
+    if (w >= 6) {
+      types.push("reaver");
+      wts.push(0.6 + w * 0.05 + (sector().reaver || 0));
+    }
     var haz = sector().haz;
     if (haz === 0 && w >= 3) wts[types.indexOf("plated")] *= 2;
     if (haz === 1 && w >= 5) wts[types.indexOf("swarm")] *= 2;
@@ -1852,6 +1977,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (haz === 3 && w >= 7) wts[types.indexOf("phase")] *= 2;
     if (haz === 4 && w >= 4) wts[types.indexOf("gilded")] *= 3;
     if (haz === 5 && w >= 11) wts[types.indexOf("carrier")] *= 2;
+    if (haz === 6 && w >= 6) wts[types.indexOf("reaver")] *= 3;
     var tot = 0;
     wts.forEach(function(x) {
       tot += x;
@@ -1899,7 +2025,11 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       col: e.col,
       regen: e.regen || 0,
       slow: 0,
+      slowT: 0,
+      frozen: false,
       flash: 0,
+      burn: 0,
+      burnT: 0,
       beamT: -1,
       x: rp.pts[0].x,
       y: rp.pts[0].y,
@@ -1987,7 +2117,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       si: e.mhp * 45e-4 * rw * mix.si * sc * mult
     };
     if (captured) {
-      if (e.type === "titan") b.si += 1;
+      if (e.type === "titan") b.si += 1 + (S.relics.shrine ? 4 : 0);
       S.gridMax += S.relics.magnet ? 0.9 : 0.4;
       S.stat.captures++;
       S.rings.push({ x: e.x, y: e.y, r: 4, max: 34, col: "#3ec9b0" });
@@ -2049,11 +2179,18 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   DECK_CARDS.forEach(function(d) {
     DEFS[d.id] = d;
   });
+  var MODDEFS = {};
+  MODULES.forEach(function(m) {
+    MODDEFS[m.id] = m;
+  });
   function defOf(ci) {
     return DEFS[ci.id];
   }
   function defById(id) {
     return DEFS[id];
+  }
+  function modById(id) {
+    return MODDEFS[id];
   }
   function shuffleInPlace(a) {
     for (var i = a.length - 1; i > 0; i--) {
@@ -2155,6 +2292,24 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (d.kind !== "board" || d.tower == null) return null;
     return CARDS[d.tower];
   }
+  function selModule() {
+    if (S.selCard == null) return null;
+    var ci = S.hand[S.selCard];
+    if (!ci) return null;
+    var d = defOf(ci);
+    if (d.kind !== "module" || !d.module) return null;
+    return modById(d.module);
+  }
+  function isTargetedSkill(d) {
+    return d.id === "skill_recal";
+  }
+  function selTargetedSkill() {
+    if (S.selCard == null) return null;
+    var ci = S.hand[S.selCard];
+    if (!ci) return null;
+    var d = defOf(ci);
+    return isTargetedSkill(d) ? d : null;
+  }
   function canPlayDef(d) {
     if (d.kind === "curse") return { ok: false, why: "CURSES CANNOT BE PLAYED \u2014 DISCARD OR PURGE IT" };
     if (!canAfford(d.cost)) return { ok: false, why: "INSUFFICIENT MATTER" };
@@ -2181,6 +2336,8 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (!ci) return { ok: false, msg: "NO CARD" };
     var d = defOf(ci);
     if (d.kind === "board") return { ok: false, msg: "SELECT A FOUNDATION TO DEPLOY" };
+    if (d.kind === "module") return { ok: false, msg: "SELECT A COMPATIBLE UNIT TO INSTALL" };
+    if (isTargetedSkill(d)) return { ok: false, msg: "SELECT A UNIT TO RECALIBRATE" };
     var chk = canPlayDef(d);
     if (!chk.ok) return { ok: false, msg: chk.why };
     spend(d.cost);
@@ -2422,6 +2579,34 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         addCardToDeck("curse_rust");
         msg += " \u2014 +7 GRID \xB7 RUST DEBT ADDED TO DECK";
         break;
+      case "skill_artillery": {
+        var targets = [];
+        for (i = 0; i < S.enemies.length; i++) {
+          if (!S.enemies[i].dead) targets.push(S.enemies[i]);
+        }
+        var hits = 0;
+        for (i = 0; i < 3 && targets.length; i++) {
+          var pick = targets.splice(Math.floor(Math.random() * targets.length), 1)[0];
+          pick.hp -= 45;
+          pick.flash = 0.08;
+          S.shots.push({ x: cp.x, y: cp.y - 30, tx: pick.x, ty: pick.y, life: 0.18, col: "#c9a6e0", kind: 3 });
+          hits++;
+          if (pick.hp <= 0) killEnemy(pick, false);
+        }
+        S.shake = Math.max(S.shake, 4);
+        Snd.play("boom", true);
+        msg += hits ? " \u2014 " + hits + " SHELL" + (hits > 1 ? "S" : "") + " ON TARGET" : " \u2014 NO HOSTILES TO STRIKE (EXHAUSTED)";
+        break;
+      }
+      case "skill_deepfreeze":
+        for (i = 0; i < S.enemies.length; i++) {
+          var fe = S.enemies[i];
+          if (!fe.dead) fe.slowT = Math.max(fe.slowT, 6);
+        }
+        S.rings.push({ x: cp.x, y: cp.y, r: 8, max: 80, col: "#8fd8ff" });
+        Snd.play("weld");
+        msg += " \u2014 ALL HOSTILES SLOWED 60% FOR 6s";
+        break;
       default:
         break;
     }
@@ -2443,6 +2628,58 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
   }
   function powerRateMult() {
     return 1 + 0.12 * (S.powers.power_feedback || 0);
+  }
+  function discardSelCard() {
+    if (S.selCard == null) return "";
+    var ci = S.hand[S.selCard];
+    if (!ci) {
+      S.selCard = null;
+      return "";
+    }
+    var d = defOf(ci);
+    S.hand.splice(S.selCard, 1);
+    if (d.ethereal) S.exhaustPile.push(ci);
+    else S.discardPile.push(ci);
+    S.selCard = null;
+    return d.name + (d.ethereal ? " \u2014 BURNED (ETHEREAL)" : " \u2192 DISCARD PILE");
+  }
+  function recycleSelCard() {
+    if (S.selCard == null) return "";
+    var ci = S.hand[S.selCard];
+    if (!ci) {
+      S.selCard = null;
+      return "";
+    }
+    var d = defOf(ci);
+    S.hand.splice(S.selCard, 1);
+    S.deck = S.deck.filter(function(c) {
+      return c !== ci;
+    });
+    var cp = corePt();
+    var refund = {
+      fe: Math.ceil(d.cost.fe * 0.5),
+      cu: Math.ceil(d.cost.cu * 0.5),
+      si: Math.ceil(d.cost.si * 0.5)
+    };
+    var bits = [];
+    if (refund.fe) bits.push("+" + refund.fe + "Fe");
+    if (refund.cu) bits.push("+" + refund.cu + "Cu");
+    if (refund.si) bits.push("+" + refund.si + "Si");
+    if (bits.length) gainRes(refund, cp.x, cp.y - 12);
+    S.selCard = null;
+    return d.name + " TORN FROM DECK" + (bits.length ? " \xB7 " + bits.join(" ") : "");
+  }
+  function castRecalibrate(t) {
+    if (S.selCard == null) return "SELECT RECALIBRATE FIRST";
+    var d = defOf(S.hand[S.selCard]);
+    if (!isTargetedSkill(d)) return "SELECT RECALIBRATE FIRST";
+    if (!canAfford(d.cost)) return "INSUFFICIENT MATTER";
+    spend(d.cost);
+    t.lvl++;
+    resolveAfterPlay(S.selCard);
+    burst(t.x, t.y, "#ffd23f", 8);
+    Snd.play("upgrade");
+    return d.name + " \u2014 " + CARDS[t.i].name + " +1 LEVEL";
   }
 
   // src/hud.ts
@@ -2523,6 +2760,9 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (sec.mix.cu > sec.mix.fe && sec.mix.cu >= sec.mix.si) dom = "Cu";
     if (sec.mix.si > sec.mix.fe && sec.mix.si > sec.mix.cu) dom = "Si";
     $("sectorMix").textContent = "SALVAGE " + dom + "-HEAVY \xB7 " + HAZNAMES[sec.haz];
+    var hasSel = S.selCard != null;
+    $("discardCard").classList.toggle("on", hasSel);
+    $("recycleCard").classList.toggle("on", hasSel);
     var sig = handSignature();
     if (sig !== handSig) {
       handSig = sig;
@@ -2536,7 +2776,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       return (canPlayDef(d).ok ? "1" : "0") + (S.res.fe >= d.cost.fe ? "" : "f") + (S.res.cu >= d.cost.cu ? "" : "c") + (S.res.si >= d.cost.si ? "" : "s");
     }).join("|") + "\xB7" + S.hand.length + "\xB7" + S.selCard;
   }
-  var KIND_COL = { board: "#9fb6c9", skill: "#3ec9b0", power: "#ffd23f", curse: "#b18cd9" };
+  var KIND_COL = { board: "#9fb6c9", skill: "#3ec9b0", power: "#ffd23f", curse: "#b18cd9", module: "#c78bff" };
   var TAG_TIP = {
     INNATE: "guaranteed in the sector\u2019s opening hand",
     RETAIN: "not discarded when the turn ends",
@@ -2570,13 +2810,13 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     var h = "", dealt = 0;
     for (var i = 0; i < S.hand.length; i++) {
       var ci = S.hand[i], d = defOf(ci);
-      var col = d.kind === "board" ? CARDS[d.tower].col : KIND_COL[d.kind];
+      var col = d.kind === "board" ? CARDS[d.tower].col : d.kind === "module" ? modById(d.module).col : KIND_COL[d.kind];
       var chk = canPlayDef(d);
-      var glyph = d.kind === "board" ? GLYPHS[CARDS[d.tower].id] : "";
+      var glyph = d.kind === "board" ? GLYPHS[CARDS[d.tower].id] : d.kind === "module" ? GLYPHS.mod : "";
       var rankTag = d.kind === "board" && S.ranks[CARDS[d.tower].id] ? '<span class="rank">Mk.' + (S.ranks[CARDS[d.tower].id] + 1) + "</span>" : "";
       var isNew = !seenUids[ci.uid];
       if (isNew) dealt++;
-      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div><div class="hd">' + glyph + "<strong>" + d.name + "</strong>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + "</div><p>" + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "curse" ? "UNPLAYABLE" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
+      h += '<div class="card' + (i === S.selCard ? " sel" : "") + (chk.ok ? " runnable" : " broke") + (isNew ? " deal" : "") + '" data-card="' + i + '" style="color:' + col + (isNew ? ";animation-delay:" + (dealt - 1) * 45 + "ms" : "") + '"' + (chk.ok ? "" : ' title="' + chk.why + '"') + '><div class="kind"><i>' + KIND_LABEL[d.kind] + '</i></div><div class="hd">' + glyph + "<strong>" + d.name + "</strong>" + (i < 9 ? '<span class="key">' + (i + 1) + "</span>" : "") + "</div><p>" + d.desc + '</p><div class="tags">' + tagStr(d) + '</div><div class="cst">' + costHtml(d.cost) + "</div>" + rankTag + '<div class="play">' + (d.kind === "board" ? "\u25B8 TAP FIELD TO PRINT" : d.kind === "curse" ? "UNPLAYABLE" : d.kind === "module" ? "\u25B8 TAP A UNIT TO INSTALL" : isTargetedSkill(d) ? "\u25B8 TAP A UNIT TO CAST" : "\u25B8 TAP AGAIN TO RUN") + "</div></div>";
     }
     if (!S.hand.length) {
       h = '<div id="handEmpty">HAND EMPTY \u2014 NEW CARDS DEALT NEXT FABRICATION WINDOW</div>';
@@ -2610,7 +2850,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (!ci) return;
     var d = defOf(ci);
     if (S.selCard === i) {
-      if (d.kind === "board") {
+      if (d.kind === "board" || d.kind === "module" || isTargetedSkill(d)) {
         S.selCard = null;
         hud(true);
         return;
@@ -2619,7 +2859,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       if (!res) return;
     } else {
       S.selCard = i;
-      S.selTower = null;
+      if (d.kind !== "module" && !isTargetedSkill(d)) S.selTower = null;
       Snd.play("ui");
     }
     hud(true);
@@ -2651,7 +2891,7 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     $("pileInfo").textContent = "HAND " + S.hand.length + "/" + HAND_CAP + " \xB7 DRAW " + handSize() + "/TURN \xB7 DECK " + S.deck.length;
   }
   function miniCard(d, n) {
-    var col = d.kind === "board" ? CARDS[d.tower].col : KIND_COL[d.kind];
+    var col = d.kind === "board" ? CARDS[d.tower].col : d.kind === "module" ? modById(d.module).col : KIND_COL[d.kind];
     var flags = [];
     if (d.exhaust) flags.push("EXH");
     if (d.ethereal) flags.push("ETH");
@@ -2685,20 +2925,47 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     var t = S.selTower;
     var has = !!(t && S.towers.indexOf(t) >= 0);
     $("tgtRow").style.display = has ? "grid" : "none";
+    var md = selModule();
+    var rk = selTargetedSkill();
     if (!t || !has) {
       $("unitHead").textContent = "NO UNIT SELECTED";
-      $("unitStats").textContent = "tap near a unit \u2014 nearest one is grabbed \xB7 tap again to release";
+      $("unitStats").textContent = md ? "MODULE READY \u2014 SELECT A COMPATIBLE UNIT TO INSTALL" : rk ? "RECALIBRATE READY \u2014 TAP A UNIT TO +1 LEVEL" : "tap near a unit \u2014 nearest one is grabbed \xB7 tap again to release";
+      $("unitMods").innerHTML = "";
+      $("modBtn").style.display = "none";
+      $("recalBtn").style.display = "none";
       $("upCost").textContent = "\u2014";
       $("recVal").textContent = "\u2014";
       return;
     }
     var c = CARDS[t.i], st = stats(t), uc = upCost(t);
+    var modHtml = t.mods.map(function(id) {
+      var m = modById(id);
+      return '<em style="color:' + m.col + '">' + m.name + "</em>";
+    }).join(" \xB7 ");
+    $("unitMods").innerHTML = t.mods.length ? "<b>MODS</b> " + modHtml : "";
+    var compat = !!(md && md.forIds.indexOf(c.id) >= 0);
+    var dup = !!(md && hasMod(t, md.id));
+    $("modBtn").style.display = md ? "block" : "none";
+    $("modBtn").classList.toggle("on", compat);
+    $("modBtn").classList.toggle("broke", !compat || dup);
+    if (md) {
+      $("modBtn").querySelector("span").textContent = compat ? dup ? "MODULE INSTALLED" : "INSTALL " + md.name.toUpperCase() : md.name.toUpperCase() + " \xD7";
+      $("modBtn").querySelector("small").textContent = compat && !dup ? "\u25B8 tap field unit or press here" : compat ? "one per unit" : "needs " + md.forIds.join("/").toUpperCase();
+    } else {
+      $("modBtn").querySelector("span").textContent = "INSTALL MODULE";
+      $("modBtn").querySelector("small").textContent = "\u2014";
+    }
+    $("recalBtn").style.display = rk ? "block" : "none";
+    if (rk) {
+      $("recalBtn").querySelector("span").textContent = "RECALIBRATE " + c.name.toUpperCase();
+      $("recalBtn").querySelector("small").textContent = canAfford(rk.cost) ? "\u25B8 tap field unit or press here" : "INSUFFICIENT MATTER";
+    }
     $("unitHead").textContent = c.name + " \xB7 L" + t.lvl + (S.ranks[c.id] ? " Mk." + (S.ranks[c.id] + 1) : "") + (st.stars ? " \xB7 " + "\u2605".repeat(Math.min(st.stars, 5)) + (st.stars > 5 ? "+" + (st.stars - 5) : "") : "");
     if (c.id === "foundry") {
       var o = foundryOut(t);
       $("unitStats").textContent = "refines " + o.fe.toFixed(2) + "Fe " + o.cu.toFixed(2) + "Cu " + o.si.toFixed(2) + "Si /s \xB7 aura +8% rate";
     } else if (c.id === "aegis") {
-      $("unitStats").textContent = "slow field " + Math.round(Math.min(50, 30 + 2 * (t.lvl - 1))) + "% \xB7 rng " + Math.round(st.range) + " \xB7 grid " + (c.draw + 0.3 * (t.lvl - 1)).toFixed(1);
+      $("unitStats").textContent = "slow field " + Math.round(Math.min(50, 30 + 2 * (t.lvl - 1))) + "% \xB7 rng " + Math.round(st.range) + (hasMod(t, "static") ? " \xB7 zaps " + (2 + 0.5 * (t.lvl - 1)).toFixed(1) + "/s" : "") + " \xB7 grid " + (c.draw + 0.3 * (t.lvl - 1)).toFixed(1);
     } else {
       $("unitStats").textContent = "dps " + (st.dmg * st.rate).toFixed(1) + " \xB7 rng " + Math.round(st.range) + " \xB7 grid " + (c.draw + 0.3 * (t.lvl - 1)).toFixed(1) + " \xB7 tgt " + TGT_LABEL[t.tgt];
     }
@@ -2716,6 +2983,16 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     });
     return 1 + 0.08 * Math.min(3, n);
   }
+  function hasMod(t, id) {
+    return t.mods.indexOf(id) >= 0;
+  }
+  function foundryDmgBoost(t) {
+    var n = 0;
+    S.towers.forEach(function(o) {
+      if (o !== t && CARDS[o.i].id === "foundry" && hasMod(o, "smelter") && Math.hypot(o.x - t.x, o.y - t.y) <= 92) n++;
+    });
+    return 1 + 0.08 * Math.min(3, n);
+  }
   function stats(t) {
     var c = CARDS[t.i], L = t.lvl - 1, rank = Math.pow(1.05, S.ranks[c.id] || 0);
     var sm = Math.pow(1.05, Math.floor(L / 5));
@@ -2724,13 +3001,22 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     if (c.id === "needle" && S.relics.twin) rate *= 1.2;
     if (S.time < S.ability.surge.until) rate *= 1.5;
     if (c.id === "arc" && S.event && S.event.id === "ion") dmg *= 1.4;
+    if (c.id === "arc" && S.relics.shock) dmg *= 1.15;
+    if (S.event && S.event.id === "solar") dmg *= 1.15;
+    if (hasMod(t, "overvolt")) rate *= 1.2;
+    if (hasMod(t, "railcoil")) dmg *= 1.25;
+    if (c.id !== "foundry" && c.id !== "aegis") dmg *= foundryDmgBoost(t);
     var range = c.range * (1 + 0.04 * L) * (S.relics.cryo ? 1.12 : 1) * powerRangeMult();
     if (c.id === "rail" && S.relics.lens) range *= 1.25;
+    if (hasMod(t, "scope")) range *= 1.35;
+    if (hasMod(t, "cryo")) range *= 1.25;
+    if (S.powers.power_seek) range *= 1.2;
     return { dmg, rate, range, stars: Math.floor(L / 5) };
   }
   function foundryOut(t) {
     var m = Math.pow(1.13, t.lvl - 1) * Math.pow(1.05, S.ranks.foundry) * (S.relics.metal ? 1.18 : 1) * powerFoundryMult();
     if (S.event && S.event.id === "rust") m *= 1.4;
+    if (hasMod(t, "smelter")) m *= 1.6;
     return { fe: 0.34 * m, cu: 0.12 * m, si: 0.05 * m };
   }
   function pickTarget(t, st) {
@@ -2826,8 +3112,10 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       cool: 0,
       ang: -Math.PI / 2,
       flash: 0,
+      slow: 0,
       tgt: "first",
-      inv: { fe: d.cost.fe, cu: d.cost.cu, si: d.cost.si }
+      inv: { fe: d.cost.fe, cu: d.cost.cu, si: d.cost.si },
+      mods: []
     };
     S.towers.push(t);
     S.selTower = t;
@@ -2841,6 +3129,54 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     toast(d.name + (d.consume ? " \u2014 CONSUMED FROM DECK" : d.exhaust ? " \u2014 EXHAUSTED THIS SECTOR" : " \u2192 DISCARD PILE"));
     burst(x, y, "#8fa0a6", 8);
     Snd.play("place");
+    hud(true);
+  }
+  function installModule(t) {
+    var md = selModule();
+    if (!md || S.selCard == null) {
+      toast("SELECT A MODULE CARD FIRST");
+      Snd.play("error");
+      return;
+    }
+    if (S.towers.indexOf(t) < 0) {
+      toast("UNIT OFFLINE");
+      Snd.play("error");
+      return;
+    }
+    var handIdx = S.selCard;
+    var d = defOf(S.hand[handIdx]);
+    var c = CARDS[t.i];
+    if (md.forIds.indexOf(c.id) < 0) {
+      toast("INCOMPATIBLE \u2014 " + md.name + " FITS " + md.forIds.join("/").toUpperCase());
+      Snd.play("error");
+      return;
+    }
+    if (hasMod(t, md.id)) {
+      toast(c.name + " ALREADY HAS " + md.name);
+      Snd.play("error");
+      return;
+    }
+    if (!canAfford(d.cost)) {
+      toast("INSUFFICIENT MATTER");
+      Snd.play("error");
+      return;
+    }
+    spend(d.cost);
+    RKEYS.forEach(function(k2) {
+      t.inv[k2] += d.cost[k2];
+    });
+    t.mods.push(md.id);
+    resolveAfterPlay(handIdx);
+    for (var k = 0; k < S.hand.length; k++) {
+      if (S.hand[k].id === d.id) {
+        S.selCard = k;
+        break;
+      }
+    }
+    S.selTower = t;
+    burst(t.x, t.y, md.col, 10);
+    toast(md.name + " \u2192 " + c.name + (d.exhaust ? " (EXHAUSTED THIS SECTOR)" : ""));
+    Snd.play("upgrade");
     hud(true);
   }
 
@@ -2883,6 +3219,22 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     ev.preventDefault();
     Snd.init();
     var p = canvasPos(ev), hit = towerNear(p, 30);
+    if (hit && S.selCard != null) {
+      var sd = defOf(S.hand[S.selCard]);
+      if (sd.kind === "module") {
+        installModule(hit);
+        S.ghost = updGhost(p);
+        return;
+      }
+      if (isTargetedSkill(sd)) {
+        var msg = castRecalibrate(hit);
+        if (msg === "SELECT RECALIBRATE FIRST" || msg === "INSUFFICIENT MATTER") Snd.play("error");
+        toast(msg);
+        hud(true);
+        S.ghost = updGhost(p);
+        return;
+      }
+    }
     if (hit) {
       if (S.selTower === hit) {
         S.selTower = null;
@@ -3015,6 +3367,51 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
     toast("70% MATTER RECOVERED");
     hud(true);
   });
+  $("modBtn").addEventListener("pointerdown", function() {
+    Snd.init();
+    const t = S.selTower;
+    if (!t || S.towers.indexOf(t) < 0) {
+      Snd.play("error");
+      return;
+    }
+    installModule(t);
+  });
+  $("recalBtn").addEventListener("pointerdown", function() {
+    Snd.init();
+    const t = S.selTower;
+    if (!t || S.towers.indexOf(t) < 0) {
+      Snd.play("error");
+      return;
+    }
+    var msg = castRecalibrate(t);
+    if (msg === "SELECT RECALIBRATE FIRST" || msg === "INSUFFICIENT MATTER") Snd.play("error");
+    toast(msg);
+    hud(true);
+  });
+  $("discardCard").addEventListener("pointerdown", function() {
+    Snd.init();
+    var msg = discardSelCard();
+    if (!msg) {
+      toast("SELECT A CARD FIRST");
+      Snd.play("error");
+      return;
+    }
+    toast(msg);
+    Snd.play("ui");
+    hud(true);
+  });
+  $("recycleCard").addEventListener("pointerdown", function() {
+    Snd.init();
+    var msg = recycleSelCard();
+    if (!msg) {
+      toast("SELECT A CARD FIRST");
+      Snd.play("error");
+      return;
+    }
+    toast(msg);
+    Snd.play("upgrade");
+    hud(true);
+  });
   Array.prototype.forEach.call($("tgtRow").children, function(b) {
     b.addEventListener("pointerdown", function(ev) {
       ev.stopPropagation();
@@ -3129,11 +3526,12 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         Snd.play("error");
         return;
       }
-      if (S.selCard === hi && defOf(S.hand[hi]).kind !== "board") {
+      var d = defOf(S.hand[hi]);
+      if (S.selCard === hi && d.kind !== "board" && d.kind !== "module" && !isTargetedSkill(d)) {
         playHandCard(hi);
       } else {
         S.selCard = hi;
-        S.selTower = null;
+        if (d.kind !== "module" && !isTargetedSkill(d)) S.selTower = null;
         Snd.play("ui");
       }
       hud(true);
@@ -3509,6 +3907,18 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         ctx.stroke();
         ctx.strokeStyle = "#f2fbff";
         ctx.lineWidth = 0.8;
+        ctx.stroke();
+      } else if (sh.kind === 3) {
+        var cxq = (sh.x + sh.tx) / 2, cyq = Math.min(sh.y, sh.ty) - 14;
+        ctx.globalAlpha = sa * 0.3;
+        ctx.strokeStyle = sh.col;
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(sh.x, sh.y);
+        ctx.quadraticCurveTo(cxq, cyq, sh.tx, sh.ty);
+        ctx.stroke();
+        ctx.globalAlpha = sa;
+        ctx.lineWidth = 2;
         ctx.stroke();
       } else if (sh.kind === 2) {
         ctx.globalAlpha = sa * 0.28;
@@ -3975,6 +4385,12 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         ctx.fillRect(-6, -3, 5, 6);
         ctx.fillStyle = hexA("#ffd23f", 0.3 + 0.25 * ((Math.sin(S.time * 4 + t.x) + 1) / 2));
         ctx.fillRect(-5, -2, 3, 4);
+      } else if (c.id === "mortar") {
+        ctx.fillStyle = c.col;
+        ctx.fillRect(-5, -2.5, 9, 5);
+        ctx.fillRect(2, -2.6, 11, 2.2);
+        ctx.fillStyle = "#8f6bb8";
+        ctx.fillRect(11, -3, 2, 3);
       } else {
         ctx.fillRect(2, -1, 11, 2);
         ctx.fillStyle = "rgba(255,255,255,.16)";
@@ -4047,6 +4463,18 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.textAlign = "center";
       ctx.fillText("\u2605".repeat(Math.min(stx, 4)) + (stx > 4 ? stx : ""), t.x, t.y + 23);
       ctx.textAlign = "left";
+    }
+    if (t.mods.length) {
+      var rowW = t.mods.length * 5 - 1;
+      for (var mk = 0; mk < t.mods.length; mk++) {
+        var mc = modById(t.mods[mk]).col;
+        ctx.fillStyle = mc;
+        ctx.strokeStyle = "#0d1012";
+        ctx.lineWidth = 0.5;
+        var mx = t.x - rowW / 2 + mk * 5;
+        ctx.fillRect(mx, t.y - 21, 3, 3);
+        ctx.strokeRect(mx, t.y - 21, 3, 3);
+      }
     }
     if (S.time < S.ability.surge.until) {
       var sg2 = (Math.sin(S.time * 8) + 1) / 2;
@@ -4173,6 +4601,13 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.beginPath();
       ctx.arc(0, 0, e.size * 0.45, 0, 7);
       ctx.fill();
+    } else if (e.type === "reaver") {
+      ctx.fillRect(-e.size, -e.size * 0.7, e.size * 2, e.size * 1.4);
+      ctx.strokeStyle = "#5f7a3a";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-e.size + 1.5, -e.size * 0.7 + 1.5, e.size * 2 - 3, e.size * 1.4 - 3);
+      ctx.fillStyle = "#2f4a1e";
+      ctx.fillRect(-e.size + 3, -e.size * 0.7 + 3, e.size * 2 - 6, e.size * 1.4 - 6);
     } else {
       ctx.fillRect(-e.size, -e.size * 0.75, e.size * 2, e.size * 1.5);
       ctx.fillStyle = "rgba(255,255,255,.12)";
@@ -4185,6 +4620,13 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.fillStyle = "#fff";
       ctx.fillRect(-e.size, -e.size, e.size * 2, e.size * 2);
       ctx.globalAlpha = 1;
+    }
+    if (e.burnT > 0) {
+      var bf = (Math.sin(S.time * 14 + e.d * 0.1) + 1) / 2;
+      ctx.fillStyle = hexA("#ff8a3d", 0.28 + 0.28 * bf);
+      ctx.beginPath();
+      ctx.arc(0, 0, e.size + 3, 0, 7);
+      ctx.fill();
     }
     ctx.rotate(-(e.ang || 0));
     if (capT && S.mode === "capture") {
@@ -4201,6 +4643,11 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       ctx.strokeStyle = "rgba(62,201,176,.55)";
       ctx.lineWidth = 1;
       ctx.strokeRect(-e.size - 2, -e.size - 2, e.size * 2 + 4, e.size * 2 + 4);
+    }
+    if (e.frozen) {
+      ctx.strokeStyle = hexA("#8fd8ff", 0.5 + Math.sin(S.time * 8) * 0.3);
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(-e.size - 2.5, -e.size - 2.5, e.size * 2 + 5, e.size * 2 + 5);
     }
     if (e.vet) {
       ctx.strokeStyle = "#ffd23f";
@@ -4269,6 +4716,11 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       var en0 = S.enemies[i];
       en0.slow = 0;
       en0.bm = 0;
+      en0.frozen = !!(S.event && S.event.id === "frost");
+      if (en0.slowT > 0) {
+        en0.slowT -= dt;
+        en0.slow = Math.max(en0.slow, 0.6);
+      }
     }
     var slowAmt = S.relics.tread ? 0.72 : 0.55;
     for (i = S.beams.length - 1; i >= 0; i--) {
@@ -4282,8 +4734,9 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       }
       e.slow = Math.max(e.slow, slowAmt);
       e.bm = 1;
-      e.hp -= st.dmg * st.rate * 0.35 * dt;
-      bm.t += dt / (S.relics.lace ? 0.64 : 0.85);
+      var rasp = 0.35 * (hasMod(t, "grasp") ? 1.25 : 1);
+      e.hp -= st.dmg * st.rate * rasp * dt;
+      bm.t += dt / ((S.relics.lace ? 0.64 : 0.85) / (hasMod(t, "grasp") ? 1.6 : 1));
       if (e.hp <= 0) {
         killEnemy(e, true);
         S.beams.splice(i, 1);
@@ -4303,10 +4756,17 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       if ((t.selF || 0) > 0) t.selF = (t.selF || 0) - dt * 3;
       s = t._st;
       if (c.id === "aegis") {
-        var as = Math.min(0.5, 0.3 + 0.02 * (t.lvl - 1));
+        var as = Math.min(0.5, (hasMod(t, "cryo") ? 0.45 : 0.3) + 0.02 * (t.lvl - 1));
+        var zap = hasMod(t, "static") ? 2 + 0.5 * (t.lvl - 1) : 0;
         for (j = 0; j < S.enemies.length; j++) {
           e = S.enemies[j];
-          if (!e.dead && Math.hypot(e.x - t.x, e.y - t.y) <= s.range) e.slow = Math.max(e.slow, as);
+          if (!e.dead && Math.hypot(e.x - t.x, e.y - t.y) <= s.range) {
+            e.slow = Math.max(e.slow, as);
+            if (zap) {
+              e.hp -= zap * dt;
+              e.flash = Math.max(e.flash, 0.05);
+            }
+          }
         }
         continue;
       }
@@ -4325,7 +4785,27 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         }
         continue;
       }
-      var dmg = s.dmg * (1 - inR.armor * (c.id === "arc" ? 0.35 : c.id === "rail" ? 0.2 : 1));
+      if (c.id === "mortar") {
+        var splR = 34 * (S.relics.flak ? 1.4 : 1) * (hasMod(t, "frag") ? 1.5 : 1);
+        var splDmg = s.dmg * 0.6 * (hasMod(t, "frag") ? 1.25 : 1);
+        inR.hp -= s.dmg * (1 - inR.armor);
+        inR.flash = 0.05;
+        S.shots.push({ x: t.x, y: t.y, tx: inR.x, ty: inR.y, life: 0.16, col: c.col, kind: 3 });
+        for (j = 0; j < S.enemies.length; j++) {
+          var e3 = S.enemies[j];
+          if (e3.dead || e3 === inR) continue;
+          if (Math.hypot(e3.x - inR.x, e3.y - inR.y) <= splR) {
+            e3.hp -= splDmg * (1 - e3.armor * 0.5);
+            e3.flash = 0.06;
+            if (e3.hp <= 0) killEnemy(e3, false);
+          }
+        }
+        burst(inR.x, inR.y, "#c9a6e0", 8);
+        Snd.play("boom", true);
+        if (inR.hp <= 0) killEnemy(inR, false);
+        continue;
+      }
+      var dmg = s.dmg * (1 - inR.armor * (c.id === "arc" ? 0.35 : c.id === "rail" ? hasMod(t, "railcoil") ? 0 : 0.2 : c.id === "needle" && hasMod(t, "hollow") ? 0.4 : 1));
       inR.hp -= dmg;
       inR.flash = 0.05;
       S.shots.push({
@@ -4337,14 +4817,21 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
         col: c.col,
         kind: c.id === "arc" ? 1 : c.id === "rail" ? 2 : 0
       });
+      if (c.id === "needle" && hasMod(t, "flame")) {
+        inR.burn = Math.max(inR.burn, dmg * 0.4 / 2.5);
+        inR.burnT = 2.5;
+      }
       if (c.id === "arc") {
         Snd.play("arc", true);
         var chained = 0;
-        for (j = 0; j < S.enemies.length && chained < 2 + (S.relics.lattice ? 1 : 0); j++) {
+        var chainMax = 2 + (S.relics.lattice ? 1 : 0) + (S.relics.shock ? 1 : 0) + (S.powers.power_reactor || 0) + (hasMod(t, "tesla") ? 2 : 0);
+        var chainRng = hasMod(t, "tesla") ? 64 : 46;
+        var falloff = hasMod(t, "tesla") ? 1 : 0.36;
+        for (j = 0; j < S.enemies.length && chained < chainMax; j++) {
           var e2 = S.enemies[j];
           if (e2 === inR || e2.dead) continue;
-          if (Math.hypot(e2.x - inR.x, e2.y - inR.y) < 46) {
-            e2.hp -= dmg * 0.36;
+          if (Math.hypot(e2.x - inR.x, e2.y - inR.y) < chainRng) {
+            e2.hp -= dmg * falloff;
             e2.flash = 0.05;
             chained++;
             S.shots.push({ x: inR.x, y: inR.y, tx: e2.x, ty: e2.y, life: 0.09, col: "#bdeef7", kind: 1 });
@@ -4362,6 +4849,17 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
       }
       if (e.flash > 0) e.flash -= dt;
       if (e.regen) e.hp = Math.min(e.mhp, e.hp + e.mhp * e.regen * dt);
+      if (e.burnT > 0) {
+        e.burnT -= dt;
+        e.hp -= e.burn * dt;
+        e.flash = Math.max(e.flash, 0.04);
+        if (e.hp <= 0) {
+          S.stat.burnKills++;
+          if (S.stat.burnKills >= 10) award("burn10");
+          killEnemy(e, false);
+          continue;
+        }
+      }
       if (e.type === "phase") {
         e.ph = (e.ph || 0) + dt;
         if (e.ph >= 2.5) {
@@ -4370,7 +4868,8 @@ kbd{border:1px solid var(--line);border-radius:2px;padding:0 4px;color:var(--gol
           S.rings.push({ x: e.x, y: e.y, r: 2, max: 16, col: "#7fa8d9" });
         }
       }
-      e.d += e.sp * (1 - e.slow) * (S.event && S.event.id === "grav" ? 0.85 : 1) * dt;
+      var slowTot = Math.min(0.9, e.slow + (e.frozen ? 0.1 : 0));
+      e.d += e.sp * (1 - slowTot) * (S.event && S.event.id === "grav" ? 0.85 : 1) * dt;
       var p = pointOnPoly(e.routePx, e.routeLen, e.d);
       e.x = p.x;
       e.y = p.y;
