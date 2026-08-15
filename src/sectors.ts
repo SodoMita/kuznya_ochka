@@ -325,6 +325,7 @@ function assemble(r: () => number, gen: (r: () => number) => GenResult) {
 /* ---------------- public API ---------------- */
 
 export function genSector(): void {
+  S.sectorGen++;                 /* invalidates cached road/grid/sky layers */
   const r = mulberry32((S.seed + S.sector * 7919) >>> 0);
   const gens: ((r: () => number) => GenResult)[] = [genGrid, genRadial, genRiver, genWeb];
   const g = assemble(r, gens[Math.floor(r() * gens.length)]);

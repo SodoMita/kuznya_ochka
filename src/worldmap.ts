@@ -14,19 +14,44 @@ export function drawWorld(): void {
   wcv.height = Math.max(1, dh * dpr);
   wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   wctx.clearRect(0, 0, dw, dh);
-  wctx.fillStyle = '#0e1417';
+  /* deep-space backdrop with a soft central glow */
+  var bg = wctx.createRadialGradient(dw / 2, dh / 2, 10, dw / 2, dh / 2, Math.max(dw, dh) * .7);
+  bg.addColorStop(0, '#141d22');
+  bg.addColorStop(1, '#090d10');
+  wctx.fillStyle = bg;
   wctx.fillRect(0, 0, dw, dh);
+  /* faint survey grid */
+  wctx.strokeStyle = 'rgba(62,201,176,.05)';
+  wctx.lineWidth = 1;
+  wctx.beginPath();
+  for (var gx = 0; gx < dw; gx += 28) { wctx.moveTo(gx + .5, 0); wctx.lineTo(gx + .5, dh); }
+  for (var gy = 0; gy < dh; gy += 28) { wctx.moveTo(0, gy + .5); wctx.lineTo(dw, gy + .5); }
+  wctx.stroke();
+
   var i, n;
-  wctx.strokeStyle = '#223038';
   wctx.lineWidth = 1.5;
   for (i = 0; i < S.worldEdges.length; i++) {
     var a = S.worldNodes[S.worldEdges[i][0]], b = S.worldNodes[S.worldEdges[i][1]];
     var open = S.cleared[a.idx];
-    wctx.strokeStyle = open ? '#3ec9b0' : '#223038';
-    wctx.setLineDash(open ? [] : [3, 4]);
+    var ax = a.x * dw, ay = a.y * dh, bx = b.x * dw, by = b.y * dh;
+    if (open) {                       /* live route: glowing solid link */
+      wctx.strokeStyle = 'rgba(62,201,176,.14)';
+      wctx.lineWidth = 4;
+      wctx.beginPath();
+      wctx.moveTo(ax, ay);
+      wctx.lineTo(bx, by);
+      wctx.stroke();
+      wctx.strokeStyle = '#3ec9b0';
+      wctx.lineWidth = 1.5;
+      wctx.setLineDash([]);
+    } else {                          /* locked route: dashed and dim */
+      wctx.strokeStyle = '#223038';
+      wctx.lineWidth = 1.5;
+      wctx.setLineDash([3, 4]);
+    }
     wctx.beginPath();
-    wctx.moveTo(a.x * dw, a.y * dh);
-    wctx.lineTo(b.x * dw, b.y * dh);
+    wctx.moveTo(ax, ay);
+    wctx.lineTo(bx, by);
     wctx.stroke();
   }
   wctx.setLineDash([]);
@@ -38,6 +63,21 @@ export function drawWorld(): void {
     var tt = performance.now() / 1000;
     wctx.save();
     wctx.translate(nx, ny);
+    /* halo marks sectors you can actually deploy to */
+    if (open && !done) {
+      var hg = wctx.createRadialGradient(0, 0, 3, 0, 0, 20);
+      hg.addColorStop(0, 'rgba(233,228,214,.13)');
+      hg.addColorStop(1, 'rgba(233,228,214,0)');
+      wctx.fillStyle = hg;
+      wctx.fillRect(-20, -20, 40, 40);
+    }
+    if (done) {
+      var cg = wctx.createRadialGradient(0, 0, 3, 0, 0, 20);
+      cg.addColorStop(0, 'rgba(62,201,176,.16)');
+      cg.addColorStop(1, 'rgba(62,201,176,0)');
+      wctx.fillStyle = cg;
+      wctx.fillRect(-20, -20, 40, 40);
+    }
     if (isCur) {
       wctx.strokeStyle = '#ffa02f';
       wctx.lineWidth = 2;
@@ -52,19 +92,35 @@ export function drawWorld(): void {
     wctx.lineWidth = 1.5;
     wctx.fillRect(-sz, -sz, sz * 2, sz * 2);
     wctx.strokeRect(-sz, -sz, sz * 2, sz * 2);
+    /* inner bevel on the diamond */
+    wctx.strokeStyle = 'rgba(255,255,255,.07)';
+    wctx.lineWidth = 1;
+    wctx.strokeRect(-sz + 2, -sz + 2, sz * 2 - 4, sz * 2 - 4);
     wctx.rotate(-Math.PI / 4);
     wctx.fillStyle = col;
     wctx.font = 'bold 8px ui-monospace,Menlo,monospace';
     wctx.textAlign = 'center';
     wctx.fillText(pad2(n.idx + 1), 0, 3);
-    /* mix bars */
+    /* mix bars — salvage gauges with dark tracks behind them */
     var mix = sec.mix, tot = mix.fe + mix.cu + mix.si;
-    wctx.fillStyle = '#c9714a';
-    wctx.fillRect(-9, 12, 18 * mix.fe / tot, 2);
-    wctx.fillStyle = '#ffa02f';
-    wctx.fillRect(-9, 15, 18 * mix.cu / tot, 2);
-    wctx.fillStyle = '#9fb6c9';
-    wctx.fillRect(-9, 18, 18 * mix.si / tot, 2);
+    var mcol = ['#c9714a', '#ffa02f', '#9fb6c9'], mval = [mix.fe, mix.cu, mix.si];
+    for (var mb = 0; mb < 3; mb++) {
+      var myy = 12 + mb * 3;
+      wctx.fillStyle = 'rgba(0,0,0,.45)';
+      wctx.fillRect(-9, myy, 18, 2);
+      wctx.fillStyle = mcol[mb];
+      wctx.fillRect(-9, myy, 18 * mval[mb] / tot, 2);
+    }
+    /* cleared tick */
+    if (done) {
+      wctx.strokeStyle = '#3ec9b0';
+      wctx.lineWidth = 1.5;
+      wctx.beginPath();
+      wctx.moveTo(-13, -9);
+      wctx.lineTo(-10.5, -6.5);
+      wctx.lineTo(-6, -12);
+      wctx.stroke();
+    }
     wctx.fillStyle = '#697a80';
     wctx.fillText(HAZCODE[sec.haz] || '?', 14, -8);
     wctx.restore();

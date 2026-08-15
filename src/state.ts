@@ -7,6 +7,7 @@ import type {
 
 export interface GameState {
   seed: number;
+  sectorGen: number;      // bumped on every genSector(); invalidates baked render layers
   sector: number;
   wave: number;
   phase: 'build' | 'wave';
@@ -71,6 +72,7 @@ export interface GameState {
 
 export const S: GameState = {
   seed: (Date.now() ^ 0x5f3a9) >>> 0,
+  sectorGen: 0,
   sector: 0,
   wave: 0,
   phase: 'build',

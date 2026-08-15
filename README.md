@@ -19,7 +19,7 @@ The game logic is written in **TypeScript**, split by concern under `src/`:
 | --- | --- |
 | `main.ts` | boot, resize handling, fixed-60Hz game loop |
 | `types.ts` | shared data structures |
-| `utils.ts` | DOM `$`, PRNG, math, formatting |
+| `utils.ts` | DOM `$`, PRNG, math, formatting, color shading (`shade`/`shadeA`) |
 | `data.ts` | tower blueprints, the circuit-deck card pool, relics, enemy archetypes, sector templates, speeds |
 | `deck.ts` | **Slay-the-Spire style card engine**: draw/hand/discard/exhaust piles, hand recycling, curses, keywords (exhaust, ethereal, retain, innate, consume), card play resolution |
 | `state.ts` | central mutable game state `S` |
@@ -32,7 +32,7 @@ The game logic is written in **TypeScript**, split by concern under `src/`:
 | `enemies.ts` | wave composition, spawning, kills, leaks, sector clears |
 | `sim.ts` | the fixed-60Hz simulation step |
 | `fx.ts` | particles, floating text, rings |
-| `render.ts` | battlefield canvas rendering |
+| `render.ts` | battlefield canvas rendering + baked static layers (roads/grid/skyline) |
 | `hud.ts` | DOM HUD: chips, phase bar, cards, unit panel, toasts |
 | `draft.ts` | salvage-cache draft offers |
 | `modals.ts` | modal open/close plumbing |
@@ -61,6 +61,8 @@ npm run typecheck   # tsc --noEmit only
 npm run serve       # static server (http://0.0.0.0:4173) for previewing
 npm test            # headless jsdom smoke test of the built index.html
 npm run gencheck    # generator quality check: 400 seeds, asserts crossings/loops/spawns
+npm run rendercheck # render harness: drives many game states, asserts no NaN coords,
+                    # balanced save/restore and well-formed gradients across ~3M canvas ops
 ```
 
 ## Feature set
@@ -90,6 +92,23 @@ Each sector is a small **route network** (a connected graph), not a single path:
   if the strict pass starves.
 
 Verify with `npm run gencheck` (400 seeds, currently 100% crossings / 100% loops / 100% multi-spawn).
+
+## Rendering
+
+The battlefield is drawn on a single 2D canvas at a fixed 60Hz. Presentation is layered:
+
+- **Baked static layers.** The road network (seven stroke passes), the survey grid and the
+  ruined skyline are static for a given sector + viewport, so each is rendered once into an
+  offscreen canvas and blitted per frame. They are keyed on `S.sectorGen` (bumped by
+  `genSector()`) plus size/DPR, so regenerating or resizing a sector invalidates them.
+- **Cached gradients.** Gradients resolve against the transform in effect when they are *used*,
+  so any gradient with constant local coordinates (tower chassis, core housing, spawn gates) is
+  built once via `lgrad()`/`rgrad()` and reused, keeping the loop allocation-free.
+- **Live passes only for motion:** flow chevrons, beacons, embers, projectiles, particles,
+  beams, floating text and the phase/danger overlays.
+
+Net result: the richer art is *cheaper* per frame than the flat version it replaced
+(~630 vs ~652 canvas ops/frame under battle load).
 
 ## Controls
 
